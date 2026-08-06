@@ -9,6 +9,8 @@ import { queryClient } from "@/lib/queryClient";
 import { toast } from "@/components/ui/toaster";
 import { useState } from "react";
 
+import { cn } from "@/utils/cn";
+
 function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-3xl border border-[hsl(var(--border))] bg-card/70 backdrop-blur-sm overflow-hidden shadow-sm">
@@ -70,7 +72,7 @@ export default function SettingsPage() {
       localStorage.setItem("app_language", newLang);
     }
     toast.success(
-      newLang === "ru" ? "Язык интерфейса установлен: Русский" : "Interface language set: English"
+      newLang === "ru" ? "Язык интерфейса: Русский" : "Interface language: English"
     );
   }
 
@@ -109,14 +111,32 @@ export default function SettingsPage() {
               label="Язык интерфейса"
               description="Основной язык приложения и поиска ИИ"
               action={
-                <select
-                  value={language}
-                  onChange={(e) => handleLanguageChange(e.target.value)}
-                  className="text-xs font-bold text-foreground bg-muted hover:bg-muted/80 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] outline-none cursor-pointer focus:ring-2 focus:ring-brand-500/20 transition-all"
-                >
-                  <option value="ru">Русский</option>
-                  <option value="en">English</option>
-                </select>
+                <div className="flex items-center p-1 rounded-2xl bg-muted/80 border border-[hsl(var(--border))] shadow-inner">
+                  <button
+                    type="button"
+                    onClick={() => handleLanguageChange("ru")}
+                    className={cn(
+                      "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200",
+                      language === "ru"
+                        ? "bg-card text-brand-500 shadow-md border border-[hsl(var(--border))]"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Русский
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLanguageChange("en")}
+                    className={cn(
+                      "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200",
+                      language === "en"
+                        ? "bg-card text-brand-500 shadow-md border border-[hsl(var(--border))]"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    English
+                  </button>
+                </div>
               }
             />
           </SettingsSection>
