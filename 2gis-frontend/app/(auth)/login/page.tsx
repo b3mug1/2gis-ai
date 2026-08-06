@@ -48,9 +48,9 @@ export default function LoginPage() {
           <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center mb-4 shadow-lg shadow-brand-500/25">
             <MapPin className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-foreground">Welcome Back</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-foreground">С возвращением</h1>
           <p className="text-muted-foreground text-xs sm:text-sm">
-            Sign in to access your saved places and search history
+            Войдите в аккаунт для сохранения избранных мест и истории
           </p>
         </div>
 
@@ -63,7 +63,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="email">
-              Email
+              Электронная почта
             </label>
             <div className="relative flex items-center">
               <Mail className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
@@ -81,7 +81,7 @@ export default function LoginPage() {
 
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="password">
-              Password
+              Пароль
             </label>
             <div className="relative flex items-center">
               <Lock className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
@@ -102,15 +102,15 @@ export default function LoginPage() {
             disabled={isLoading}
             className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 py-3.5 px-6 text-sm font-semibold text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/35 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 transition-all duration-200"
           >
-            {isLoading ? "Signing in..." : "Sign in"}
+            {isLoading ? "Выполняется вход..." : "Войти"}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
         <div className="mt-8 text-center text-xs text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          Ещё нет аккаунта?{" "}
           <Link href="/register" className="font-bold text-brand-500 hover:underline">
-            Create account
+            Создать аккаунт
           </Link>
         </div>
       </motion.div>

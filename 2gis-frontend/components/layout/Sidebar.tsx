@@ -21,12 +21,12 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { toast } from "@/components/ui/toaster";
 
 const navItems = [
-  { href: "/", icon: Home, label: "Home" },
-  { href: "/chat", icon: Bot, label: "AI Chat" },
-  { href: "/history", icon: History, label: "History" },
-  { href: "/favorites", icon: Heart, label: "Favorites" },
-  { href: "/profile", icon: User, label: "Profile" },
-  { href: "/settings", icon: Settings, label: "Settings" },
+  { href: "/", icon: Home, label: "Главная" },
+  { href: "/chat", icon: Bot, label: "ИИ Поиск" },
+  { href: "/history", icon: History, label: "История" },
+  { href: "/favorites", icon: Heart, label: "Избранное" },
+  { href: "/profile", icon: User, label: "Профиль" },
+  { href: "/settings", icon: Settings, label: "Настройки" },
 ];
 
 export function Sidebar() {
@@ -37,7 +37,7 @@ export function Sidebar() {
 
   async function handleLogout() {
     await logout();
-    toast.info("Logged out successfully");
+    toast.info("Вы успешно вышли из аккаунта");
     router.push("/login");
   }
 
@@ -145,7 +145,7 @@ export function Sidebar() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  Sign out
+                  Выйти
                 </motion.span>
               )}
             </AnimatePresence>

@@ -19,10 +19,10 @@ export function SearchResults({ data }: SearchResultsProps) {
         className="space-y-3 w-full"
       >
         <div className="flex items-center justify-between mb-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            {all.length} place{all.length !== 1 ? "s" : ""} found
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            Найдено мест: {all.length}
           </p>
-          <span className="text-xs text-muted-foreground">{data.source}</span>
+          <span className="text-xs font-medium text-muted-foreground">{data.source}</span>
         </div>
 
         <div className="grid gap-3">

@@ -49,9 +49,9 @@ export default function RegisterPage() {
           <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center mb-4 shadow-lg shadow-brand-500/25">
             <MapPin className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-foreground">Create Account</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-foreground">Регистрация</h1>
           <p className="text-muted-foreground text-xs sm:text-sm">
-            Sign up to get personalized recommendations and save your favorite spots
+            Создайте аккаунт, чтобы получать персональные рекомендации и сохранять избранные места
           </p>
         </div>
 
@@ -64,7 +64,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4 font-sans">
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="fullName">
-              Full Name
+              Имя и фамилия
             </label>
             <div className="relative flex items-center">
               <User className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
@@ -72,7 +72,7 @@ export default function RegisterPage() {
                 id="fullName"
                 type="text"
                 required
-                placeholder="John Doe"
+                placeholder="Иван Иванов"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full rounded-xl border border-[hsl(var(--border))] bg-muted/40 pl-10 pr-4 py-3 text-sm outline-none focus:border-brand-500 focus:bg-card focus:ring-4 focus:ring-brand-500/10 transition-all text-foreground"
@@ -82,7 +82,7 @@ export default function RegisterPage() {
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="email">
-              Email
+              Электронная почта
             </label>
             <div className="relative flex items-center">
               <Mail className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
@@ -100,7 +100,7 @@ export default function RegisterPage() {
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="password">
-              Password
+              Пароль
             </label>
             <div className="relative flex items-center">
               <Lock className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
@@ -121,15 +121,15 @@ export default function RegisterPage() {
             disabled={isLoading}
             className="w-full mt-3 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 py-3.5 px-6 text-sm font-semibold text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/35 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 transition-all duration-200"
           >
-            {isLoading ? "Creating account..." : "Sign up"}
+            {isLoading ? "Создание аккаунта..." : "Зарегистрироваться"}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
         <div className="mt-8 text-center text-xs text-muted-foreground">
-          Already have an account?{" "}
+          Уже есть аккаунт?{" "}
           <Link href="/login" className="font-bold text-brand-500 hover:underline">
-            Sign in
+            Войти
           </Link>
         </div>
       </motion.div>

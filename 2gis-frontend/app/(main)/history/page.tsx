@@ -40,9 +40,9 @@ export default function HistoryPage() {
             <History className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Search History</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">История поисков</h1>
             <p className="text-muted-foreground text-xs sm:text-sm">
-              {history?.length ?? 0} query record{history?.length !== 1 ? "s" : ""} saved
+              Сохранено записей: {history?.length ?? 0}
             </p>
           </div>
         </div>
@@ -54,7 +54,7 @@ export default function HistoryPage() {
         <input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter past queries..."
+          placeholder="Фильтр по прошлым запросам..."
           className="w-full pl-11 pr-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/60 backdrop-blur-md text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all text-foreground placeholder:text-muted-foreground"
         />
       </div>
@@ -68,11 +68,11 @@ export default function HistoryPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon="history"
-          title={searchQuery ? "No matching history" : "No searches yet"}
+          title={searchQuery ? "Ничего не найдено" : "История пуста"}
           description={
             searchQuery
-              ? "Try adjusting your filter search"
-              : "Your natural language queries will be saved here automatically"
+              ? "Попробуйте изменить параметры фильтрации"
+              : "Ваши ИИ-запросы будут автоматически сохраняться здесь"
           }
         />
       ) : (
@@ -118,7 +118,7 @@ export default function HistoryPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-xs font-medium text-brand-500">Run search</span>
+                        <span className="text-xs font-medium text-brand-500">Повторить поиск</span>
                         <ArrowRight className="w-4 h-4 text-brand-500" />
                       </div>
                     </button>

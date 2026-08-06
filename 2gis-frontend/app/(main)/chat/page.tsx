@@ -41,8 +41,8 @@ export default function ChatPage() {
         setPlaces(all);
 
         const summary =
-          `I found **${all.length} place${all.length > 1 ? "s" : ""}** matching your request.\n\n` +
-          `**Top pick:** ${result.recommendation.name} — ${result.recommendation.reason}`;
+          `Найдено мест по вашему запросу: **${all.length}**\n\n` +
+          `**Лучший выбор:** ${result.recommendation.name} — ${result.recommendation.reason}`;
 
         const aiMsg: ChatMessage = {
           id: uuidv4(),
@@ -56,7 +56,7 @@ export default function ChatPage() {
       } catch (err: unknown) {
         const message =
           (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-          "I couldn't find results for that query. Please try a different search.";
+          "К сожалению, по данному запросу ничего не найдено. Попробуйте сформулировать по-другому.";
 
         const errMsg: ChatMessage = {
           id: uuidv4(),
@@ -93,29 +93,29 @@ export default function ChatPage() {
         <div className="flex items-center justify-between px-4 h-14 border-b border-[hsl(var(--border))] shrink-0">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-brand-500" />
-            <span className="text-sm font-semibold">AI Chat</span>
+            <span className="text-sm font-bold text-foreground">ИИ Поиск</span>
           </div>
           <div className="flex items-center gap-2">
             {messages.length > 0 && (
               <button
                 onClick={clearChat}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2.5 py-1.5 rounded-lg hover:bg-muted transition-colors"
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2.5 py-1.5 rounded-lg hover:bg-muted transition-colors font-medium"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                New chat
+                Новый чат
               </button>
             )}
             <button
               onClick={() => setShowMap((s) => !s)}
               className={cn(
-                "flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-colors xl:hidden",
+                "flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors xl:hidden",
                 showMap
                   ? "bg-brand-500/10 text-brand-500"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
               <Map className="w-3.5 h-3.5" />
-              Map
+              Карта
             </button>
           </div>
         </div>

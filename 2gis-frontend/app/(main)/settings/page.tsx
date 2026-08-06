@@ -47,13 +47,13 @@ export default function SettingsPage() {
 
   async function handleLogout() {
     await logout();
-    toast.info("Signed out");
+    toast.info("Вы вышли из системы");
     router.replace("/login");
   }
 
   function clearCache() {
     queryClient.clear();
-    toast.success("Cache cleared");
+    toast.success("Кэш очищен");
     setClearConfirm(false);
   }
 
@@ -65,8 +65,8 @@ export default function SettingsPage() {
             <Settings className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Preferences</h1>
-            <p className="text-muted-foreground text-xs sm:text-sm">Customize application appearance and data storage</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Настройки</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">Персонализация внешнего вида и локальное хранилище</p>
           </div>
         </div>
       </motion.div>
@@ -74,11 +74,11 @@ export default function SettingsPage() {
       <div className="space-y-6">
         {/* Appearance */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <SettingsSection title="Appearance">
+          <SettingsSection title="Внешний вид">
             <SettingsRow
               icon={Moon}
-              label="Visual Theme"
-              description="Switch between light and dark modes"
+              label="Визуальная тема"
+              description="Переключение между светлой и темной темами"
               action={<ThemeSwitcher />}
             />
           </SettingsSection>
@@ -86,14 +86,14 @@ export default function SettingsPage() {
 
         {/* Preferences */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <SettingsSection title="Localization">
+          <SettingsSection title="Локализация">
             <SettingsRow
               icon={Globe}
-              label="Interface Language"
-              description="Default response and search language"
+              label="Язык интерфейса"
+              description="Основной язык приложения и поиска ИИ"
               action={
-                <span className="text-xs font-semibold text-muted-foreground bg-muted px-3 py-1.5 rounded-xl border border-[hsl(var(--border))] flex items-center gap-1">
-                  English <ChevronRight className="w-3.5 h-3.5" />
+                <span className="text-xs font-semibold text-foreground bg-muted px-3 py-1.5 rounded-xl border border-[hsl(var(--border))] flex items-center gap-1">
+                  Русский <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               }
             />
@@ -102,20 +102,20 @@ export default function SettingsPage() {
 
         {/* Data */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <SettingsSection title="Data & Storage">
+          <SettingsSection title="Данные и хранилище">
             <SettingsRow
               icon={Trash2}
-              label="Clear Local Cache"
-              description="Flushes locally stored search queries and place metadata"
+              label="Очистить локальный кэш"
+              description="Сбрасывает сохраненные данные запросов и карточек мест"
               action={
                 clearConfirm ? (
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setClearConfirm(false)} className="text-xs text-muted-foreground px-2 py-1">Cancel</button>
-                    <button onClick={clearCache} className="text-xs font-bold text-destructive bg-destructive/10 px-3 py-1.5 rounded-xl border border-destructive/20">Confirm</button>
+                    <button onClick={() => setClearConfirm(false)} className="text-xs text-muted-foreground px-2 py-1">Отмена</button>
+                    <button onClick={clearCache} className="text-xs font-bold text-destructive bg-destructive/10 px-3 py-1.5 rounded-xl border border-destructive/20">Подтвердить</button>
                   </div>
                 ) : (
                   <button onClick={() => setClearConfirm(true)} className="text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-3 py-1.5 rounded-xl transition-all">
-                    Clear Cache
+                    Очистить кэш
                   </button>
                 )
               }
@@ -125,17 +125,17 @@ export default function SettingsPage() {
 
         {/* Account */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <SettingsSection title="Account">
+          <SettingsSection title="Аккаунт">
             <SettingsRow
               icon={LogOut}
-              label="Sign Out"
-              description="End current active user session"
+              label="Выйти из системы"
+              description="Завершение текущей активной сессии"
               action={
                 <button
                   onClick={handleLogout}
                   className="text-xs font-bold text-destructive hover:bg-destructive/10 px-4 py-2 rounded-xl border border-destructive/20 transition-all"
                 >
-                  Sign Out
+                  Выйти
                 </button>
               }
             />
@@ -143,7 +143,7 @@ export default function SettingsPage() {
         </motion.div>
 
         <p className="text-center text-xs text-muted-foreground pt-6">
-          City Guide AI · 2GIS 3.0 API & Gemini Integration
+          City Guide AI · Интеграция 2GIS 3.0 API & Gemini ИИ
         </p>
       </div>
     </div>

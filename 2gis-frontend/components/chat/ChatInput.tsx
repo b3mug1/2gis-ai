@@ -82,9 +82,9 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
           value={value}
           onChange={(e) => { setValue(e.target.value); autoResize(); }}
           onKeyDown={handleKey}
-          placeholder="Ask about restaurants, cafes, places…"
+          placeholder="Спросите про рестораны, суши, тихие кафе, места в Астане…"
           rows={1}
-          className="flex-1 bg-transparent text-sm resize-none outline-none placeholder:text-muted-foreground py-1.5 max-h-[140px] leading-relaxed"
+          className="flex-1 bg-transparent text-sm resize-none outline-none placeholder:text-muted-foreground py-1.5 max-h-[140px] leading-relaxed text-foreground"
           disabled={isLoading || disabled}
         />
 
@@ -98,7 +98,7 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
               ? "bg-gradient-to-br from-brand-500 to-purple-600 text-white shadow-sm shadow-brand-500/30 hover:shadow-md hover:shadow-brand-500/40"
               : "bg-muted text-muted-foreground cursor-not-allowed"
           )}
-          aria-label="Send message"
+          aria-label="Отправить запрос"
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -109,13 +109,13 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
       </div>
 
       {coords && (
-        <p className="text-[10px] text-brand-500 mt-1.5 px-2 flex items-center gap-1">
+        <p className="text-[10px] text-brand-500 mt-1.5 px-2 flex items-center gap-1 font-medium">
           <MapPin className="w-2.5 h-2.5" />
-          Location attached — results will be near you
+          Геопозиция прикреплена — поиск с учетом вашего местоположения
         </p>
       )}
       <p className="text-[10px] text-muted-foreground text-center mt-1.5">
-        Press Enter to send · Shift+Enter for new line
+        Нажмите Enter для отправки · Shift+Enter для переноса строки
       </p>
     </div>
   );

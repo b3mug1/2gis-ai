@@ -55,8 +55,8 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 relative">
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1 text-foreground">User Profile</h1>
-        <p className="text-muted-foreground text-xs sm:text-sm">Manage your account and view AI search analytics</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1 text-foreground">Профиль пользователя</h1>
+        <p className="text-muted-foreground text-xs sm:text-sm">Управление аккаунтом и аналитика ИИ-поисков</p>
       </motion.div>
 
       {/* Profile banner card */}
@@ -98,25 +98,25 @@ export default function ProfilePage() {
       >
         <StatCard
           icon={Search}
-          label="Total Queries"
+          label="Всего запросов"
           value={totalSearches}
           color="from-brand-500 to-indigo-600"
         />
         <StatCard
           icon={Heart}
-          label="Saved Places"
+          label="Сохраненные места"
           value={favsLoading ? "…" : favorites?.length ?? 0}
           color="from-rose-500 to-pink-600"
         />
         <StatCard
           icon={TrendingUp}
-          label="AI Match Score"
+          label="Точность Match"
           value={successRate != null ? `${successRate}%` : "98%"}
           color="from-emerald-500 to-teal-600"
         />
         <StatCard
           icon={Calendar}
-          label="Days Active"
+          label="Дней в сервисе"
           value={stats?.length ?? "1"}
           color="from-amber-500 to-orange-600"
         />
@@ -131,7 +131,7 @@ export default function ProfilePage() {
       >
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="w-4 h-4 text-brand-500" />
-          <h3 className="font-bold text-base text-foreground">Recent Activity</h3>
+          <h3 className="font-bold text-base text-foreground">Недавняя активность</h3>
         </div>
         {histLoading ? (
           <div className="space-y-2">
@@ -140,7 +140,7 @@ export default function ProfilePage() {
             ))}
           </div>
         ) : (history?.length ?? 0) === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">No search history recorded yet.</p>
+          <p className="text-sm text-muted-foreground py-4 text-center">Записи в истории пока отсутствуют.</p>
         ) : (
           <div className="space-y-2">
             {history!.slice(0, 5).map((item) => (

@@ -39,9 +39,9 @@ export function ChatWindow({ messages, isLoading, onPromptSelect }: ChatWindowPr
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-xl font-bold mb-2"
+            className="text-xl font-bold mb-2 text-foreground"
           >
-            Where would you like to go?
+            Куда бы вы хотели отправиться?
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 10 }}
@@ -49,7 +49,7 @@ export function ChatWindow({ messages, isLoading, onPromptSelect }: ChatWindowPr
             transition={{ delay: 0.15 }}
             className="text-sm text-muted-foreground mb-8 max-w-sm"
           >
-            Ask me anything — sushi restaurants, quiet cafes, romantic dinners, group venues, and more.
+            Задайте вопрос на обыкновенном языке — рестораны, суши, тихие кафе для работы или места под ваш бюджет.
           </motion.p>
           <SuggestedPrompts onSelect={onPromptSelect} />
         </div>

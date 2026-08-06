@@ -48,9 +48,9 @@ export default function FavoritesPage() {
             <Heart className="w-5 h-5 fill-rose-500" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Favorites</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Избранное</h1>
             <p className="text-muted-foreground text-xs sm:text-sm">
-              {favorites?.length ?? 0} saved place{favorites?.length !== 1 ? "s" : ""} in your collection
+              Сохранено заведений в вашей коллекции: {favorites?.length ?? 0}
             </p>
           </div>
         </div>
@@ -63,7 +63,7 @@ export default function FavoritesPage() {
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search saved places..."
+            placeholder="Поиск по сохраненным местам..."
             className="w-full pl-11 pr-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/60 backdrop-blur-md text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all text-foreground placeholder:text-muted-foreground"
           />
         </div>
@@ -72,9 +72,9 @@ export default function FavoritesPage() {
           onChange={(e) => setSort(e.target.value as SortKey)}
           className="px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/60 backdrop-blur-md text-sm outline-none cursor-pointer focus:border-brand-500 text-foreground"
         >
-          <option value="date_desc">Newest first</option>
-          <option value="date_asc">Oldest first</option>
-          <option value="name_asc">Name A–Z</option>
+          <option value="date_desc">Сначала новые</option>
+          <option value="date_asc">Сначала старые</option>
+          <option value="name_asc">По алфавиту А–Я</option>
         </select>
       </div>
 
@@ -86,11 +86,11 @@ export default function FavoritesPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon="heart"
-          title={searchQuery ? "No matching favorites" : "No favorites yet"}
+          title={searchQuery ? "Ничего не найдено" : "Список избранного пуст"}
           description={
             searchQuery
-              ? "Try a different search query"
-              : "Save restaurants and cafes to build your personal Astana guide"
+              ? "Попробуйте изменить запрос"
+              : "Сохраняйте рестораны и кафе для быстрого доступа"
           }
         />
       ) : (
@@ -129,7 +129,7 @@ export default function FavoritesPage() {
                     <button
                       onClick={() => removeFav.mutate(fav.id)}
                       className="p-2 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                      title="Remove from favorites"
+                      title="Удалить из избранного"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -153,7 +153,7 @@ export default function FavoritesPage() {
                 <div className="flex items-center justify-between gap-2 pt-4 border-t border-[hsl(var(--border))] mt-auto">
                   <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                     <Clock className="w-3.5 h-3.5" />
-                    Saved {timeAgo(fav.created_at)}
+                    Сохранено {timeAgo(fav.created_at)}
                   </div>
 
                   {payload.url_2gis && (
