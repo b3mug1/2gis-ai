@@ -11,9 +11,9 @@ import { useState } from "react";
 
 function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-[hsl(var(--border))] bg-card overflow-hidden">
-      <div className="px-5 py-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))]">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</h2>
+    <div className="rounded-3xl border border-[hsl(var(--border))] bg-card/70 backdrop-blur-sm overflow-hidden shadow-sm">
+      <div className="px-6 py-3.5 border-b border-[hsl(var(--border))] bg-muted/40">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{title}</h2>
       </div>
       <div className="divide-y divide-[hsl(var(--border))]">{children}</div>
     </div>
@@ -27,12 +27,12 @@ function SettingsRow({ icon: Icon, label, description, action }: {
   action: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-4 px-5 py-4">
-      <div className="w-9 h-9 rounded-xl bg-[hsl(var(--muted))] flex items-center justify-center shrink-0">
-        <Icon className="w-4 h-4 text-muted-foreground" />
+    <div className="flex items-center gap-4 px-6 py-4.5 hover:bg-muted/20 transition-colors">
+      <div className="w-10 h-10 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center shrink-0">
+        <Icon className="w-5 h-5" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">{label}</p>
+        <p className="text-sm font-bold text-foreground">{label}</p>
         {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
       </div>
       {action}
@@ -58,70 +58,64 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-2xl font-bold flex items-center gap-2 mb-1">
-          <Settings className="w-6 h-6 text-brand-500" />
-          Settings
-        </h1>
-        <p className="text-muted-foreground text-sm">Customize your experience</p>
+    <div className="max-w-3xl mx-auto px-6 py-10 relative">
+      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
+            <Settings className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Preferences</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">Customize application appearance and data storage</p>
+          </div>
+        </div>
       </motion.div>
 
-      <div className="space-y-5">
+      <div className="space-y-6">
         {/* Appearance */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <SettingsSection title="Appearance">
             <SettingsRow
               icon={Moon}
-              label="Theme"
-              description="Choose how City Guide AI looks"
+              label="Visual Theme"
+              description="Switch between light and dark modes"
               action={<ThemeSwitcher />}
             />
           </SettingsSection>
         </motion.div>
 
         {/* Preferences */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <SettingsSection title="Preferences">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <SettingsSection title="Localization">
             <SettingsRow
               icon={Globe}
-              label="Language"
-              description="Interface language"
+              label="Interface Language"
+              description="Default response and search language"
               action={
-                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                <span className="text-xs font-semibold text-muted-foreground bg-muted px-3 py-1.5 rounded-xl border border-[hsl(var(--border))] flex items-center gap-1">
                   English <ChevronRight className="w-3.5 h-3.5" />
                 </span>
-              }
-            />
-            <SettingsRow
-              icon={Bell}
-              label="Notifications"
-              description="Search result notifications"
-              action={
-                <button className="relative w-10 h-5 rounded-full bg-brand-500 transition-colors">
-                  <span className="absolute right-1 top-1 w-3 h-3 rounded-full bg-white shadow-sm" />
-                </button>
               }
             />
           </SettingsSection>
         </motion.div>
 
         {/* Data */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <SettingsSection title="Data & Privacy">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <SettingsSection title="Data & Storage">
             <SettingsRow
               icon={Trash2}
-              label="Clear local cache"
-              description="Removes cached queries from this device"
+              label="Clear Local Cache"
+              description="Flushes locally stored search queries and place metadata"
               action={
                 clearConfirm ? (
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setClearConfirm(false)} className="text-xs text-muted-foreground">Cancel</button>
-                    <button onClick={clearCache} className="text-xs font-medium text-destructive">Confirm</button>
+                    <button onClick={() => setClearConfirm(false)} className="text-xs text-muted-foreground px-2 py-1">Cancel</button>
+                    <button onClick={clearCache} className="text-xs font-bold text-destructive bg-destructive/10 px-3 py-1.5 rounded-xl border border-destructive/20">Confirm</button>
                   </div>
                 ) : (
-                  <button onClick={() => setClearConfirm(true)} className="text-xs font-medium text-muted-foreground hover:text-destructive transition-colors">
-                    Clear
+                  <button onClick={() => setClearConfirm(true)} className="text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-3 py-1.5 rounded-xl transition-all">
+                    Clear Cache
                   </button>
                 )
               }
@@ -130,28 +124,29 @@ export default function SettingsPage() {
         </motion.div>
 
         {/* Account */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <SettingsSection title="Account">
             <SettingsRow
               icon={LogOut}
-              label="Sign out"
-              description="End your current session"
+              label="Sign Out"
+              description="End current active user session"
               action={
                 <button
                   onClick={handleLogout}
-                  className="text-sm font-medium text-destructive hover:underline"
+                  className="text-xs font-bold text-destructive hover:bg-destructive/10 px-4 py-2 rounded-xl border border-destructive/20 transition-all"
                 >
-                  Sign out
+                  Sign Out
                 </button>
               }
             />
           </SettingsSection>
         </motion.div>
 
-        <p className="text-center text-xs text-muted-foreground pt-4">
-          City Guide AI v1.0.0 · Powered by Gemini + 2GIS
+        <p className="text-center text-xs text-muted-foreground pt-6">
+          City Guide AI · 2GIS 3.0 API & Gemini Integration
         </p>
       </div>
     </div>
   );
 }
+

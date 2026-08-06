@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
+import { MapPin, ArrowRight, Lock, Mail, User } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -31,89 +33,107 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Orbs */}
-      <div className="orb bg-brand-500/20 w-[400px] h-[400px] -top-[100px] -left-[100px]" />
-      <div className="orb bg-purple-500/20 w-[300px] h-[300px] bottom-[100px] -right-[50px]" />
+    <div className="flex min-h-screen items-center justify-center p-6 relative overflow-hidden bg-background">
+      {/* Ambient background glows */}
+      <div className="orb w-[500px] h-[500px] bg-brand-500/10 -top-40 -left-40 animate-pulse-subtle" />
+      <div className="orb w-[400px] h-[400px] bg-purple-500/10 -bottom-20 -right-20 animate-pulse-subtle" />
 
-      <div className="glass w-full max-w-md rounded-2xl p-8 relative z-10 shadow-2xl animate-in fade-in zoom-in duration-500">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="w-full max-w-md rounded-3xl border border-[hsl(var(--border)/0.8)] bg-card/80 backdrop-blur-2xl p-8 sm:p-10 relative z-10 shadow-2xl shadow-brand-500/5"
+      >
+        {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight mb-2 gradient-text">Create Account</h1>
-          <p className="text-muted-foreground text-sm">
-            Sign up to get personalized recommendations
+          <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center mb-4 shadow-lg shadow-brand-500/25">
+            <MapPin className="w-6 h-6 text-white" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-foreground">Create Account</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">
+            Sign up to get personalized recommendations and save your favorite spots
           </p>
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm border border-destructive/20 text-center">
+          <div className="mb-6 p-3.5 rounded-xl bg-destructive/10 text-destructive text-xs font-semibold border border-destructive/20 text-center">
             {errorMsg}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-2">
-            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="fullName">
+        <form onSubmit={handleSubmit} className="space-y-4 font-sans">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="fullName">
               Full Name
             </label>
-            <input
-              id="fullName"
-              type="text"
-              required
-              placeholder="John Doe"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:bg-background/80 focus:bg-background"
-            />
+            <div className="relative flex items-center">
+              <User className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
+              <input
+                id="fullName"
+                type="text"
+                required
+                placeholder="John Doe"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full rounded-xl border border-[hsl(var(--border))] bg-muted/40 pl-10 pr-4 py-3 text-sm outline-none focus:border-brand-500 focus:bg-card focus:ring-4 focus:ring-brand-500/10 transition-all text-foreground"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="email">
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="email">
               Email
             </label>
-            <input
-              id="email"
-              type="email"
-              required
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:bg-background/80 focus:bg-background"
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="password">
-                Password
-              </label>
+            <div className="relative flex items-center">
+              <Mail className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
+              <input
+                id="email"
+                type="email"
+                required
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border border-[hsl(var(--border))] bg-muted/40 pl-10 pr-4 py-3 text-sm outline-none focus:border-brand-500 focus:bg-card focus:ring-4 focus:ring-brand-500/10 transition-all text-foreground"
+              />
             </div>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:bg-background/80 focus:bg-background"
-            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="password">
+              Password
+            </label>
+            <div className="relative flex items-center">
+              <Lock className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
+              <input
+                id="password"
+                type="password"
+                required
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-xl border border-[hsl(var(--border))] bg-muted/40 pl-10 pr-4 py-3 text-sm outline-none focus:border-brand-500 focus:bg-card focus:ring-4 focus:ring-brand-500/10 transition-all text-foreground"
+              />
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 w-full relative overflow-hidden group shadow-[0_0_15px_rgba(97,113,246,0.3)] hover:shadow-[0_0_25px_rgba(97,113,246,0.5)]"
+            className="w-full mt-3 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 py-3.5 px-6 text-sm font-semibold text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/35 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 transition-all duration-200"
           >
-            <span className="relative z-10 flex items-center gap-2">
-              {isLoading ? "Creating account..." : "Sign up"}
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-brand-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            {isLoading ? "Creating account..." : "Sign up"}
+            <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm">
-          <span className="text-muted-foreground">Already have an account? </span>
-          <Link href="/login" className="font-semibold text-primary hover:underline hover:text-brand-500 transition-colors">
+        <div className="mt-8 text-center text-xs text-muted-foreground">
+          Already have an account?{" "}
+          <Link href="/login" className="font-bold text-brand-500 hover:underline">
             Sign in
           </Link>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
+

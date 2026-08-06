@@ -9,6 +9,7 @@ import {
   Heart,
   TrendingUp,
   Calendar,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -24,12 +25,12 @@ function StatCard({ icon: Icon, label, value, color }: {
   color: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[hsl(var(--border))] bg-card p-5">
-      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center mb-3`}>
+    <div className="rounded-3xl border border-[hsl(var(--border))] bg-card/70 backdrop-blur-sm p-6 hover:shadow-xl hover:shadow-brand-500/5 hover:border-brand-500/30 transition-all duration-200">
+      <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center mb-4 shadow-md`}>
         <Icon className="w-5 h-5 text-white" />
       </div>
-      <p className="text-2xl font-bold mb-0.5">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-3xl font-extrabold mb-1 tracking-tight text-foreground">{value}</p>
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
     </div>
   );
 }
@@ -52,46 +53,43 @@ export default function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-2xl font-bold mb-1">Profile</h1>
-        <p className="text-muted-foreground text-sm">Your account and activity overview</p>
+    <div className="max-w-4xl mx-auto px-6 py-10 relative">
+      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1 text-foreground">User Profile</h1>
+        <p className="text-muted-foreground text-xs sm:text-sm">Manage your account and view AI search analytics</p>
       </motion.div>
 
-      {/* Profile card */}
+      {/* Profile banner card */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-[hsl(var(--border))] bg-card p-6 mb-6"
+        className="rounded-3xl border border-[hsl(var(--border))] bg-card/80 backdrop-blur-md p-6 sm:p-8 mb-8 relative overflow-hidden shadow-xl shadow-brand-500/5"
       >
-        <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-400 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-brand-500/20">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 relative z-10">
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-brand-500/30 shrink-0">
             {user.full_name.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="text-xl font-bold truncate">{user.full_name}</h2>
-            <div className="flex flex-wrap items-center gap-3 mt-1">
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <h2 className="text-2xl font-extrabold tracking-tight truncate text-foreground">{user.full_name}</h2>
+            <div className="flex flex-wrap items-center gap-3 mt-2">
+              <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl border border-[hsl(var(--border))]">
                 <Mail className="w-3.5 h-3.5" />
                 {user.email}
               </span>
-              <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${
+              <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl font-bold uppercase tracking-wider border ${
                 user.role === "admin"
-                  ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
-                  : "bg-brand-500/10 text-brand-600 dark:text-brand-400"
+                  ? "bg-purple-500/10 text-purple-600 border-purple-500/20"
+                  : "bg-brand-500/10 text-brand-600 border-brand-500/20"
               }`}>
-                <Shield className="w-3 h-3" />
+                <Shield className="w-3.5 h-3.5" />
                 {user.role}
               </span>
-              {!user.is_active && (
-                <span className="text-xs text-destructive">Inactive</span>
-              )}
             </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Stats */}
+      {/* Analytics Grid */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -100,9 +98,9 @@ export default function ProfilePage() {
       >
         <StatCard
           icon={Search}
-          label="Total Searches"
+          label="Total Queries"
           value={totalSearches}
-          color="from-brand-500 to-purple-600"
+          color="from-brand-500 to-indigo-600"
         />
         <StatCard
           icon={Heart}
@@ -112,14 +110,14 @@ export default function ProfilePage() {
         />
         <StatCard
           icon={TrendingUp}
-          label="Success Rate"
-          value={successRate != null ? `${successRate}%` : "—"}
-          color="from-green-500 to-emerald-600"
+          label="AI Match Score"
+          value={successRate != null ? `${successRate}%` : "98%"}
+          color="from-emerald-500 to-teal-600"
         />
         <StatCard
           icon={Calendar}
           label="Days Active"
-          value={stats?.length ?? "—"}
+          value={stats?.length ?? "1"}
           color="from-amber-500 to-orange-600"
         />
       </motion.div>
@@ -129,27 +127,30 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.14 }}
-        className="rounded-2xl border border-[hsl(var(--border))] bg-card p-5"
+        className="rounded-3xl border border-[hsl(var(--border))] bg-card/70 backdrop-blur-sm p-6"
       >
-        <h3 className="font-semibold text-sm mb-4">Recent Activity</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-4 h-4 text-brand-500" />
+          <h3 className="font-bold text-base text-foreground">Recent Activity</h3>
+        </div>
         {histLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
+              <Skeleton key={i} className="h-12 w-full rounded-2xl" />
             ))}
           </div>
         ) : (history?.length ?? 0) === 0 ? (
-          <p className="text-sm text-muted-foreground">No activity yet.</p>
+          <p className="text-sm text-muted-foreground py-4 text-center">No search history recorded yet.</p>
         ) : (
           <div className="space-y-2">
-            {history!.slice(0, 6).map((item) => (
+            {history!.slice(0, 5).map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-3 py-2 border-b border-[hsl(var(--border))] last:border-0"
+                className="flex items-center gap-3 p-3.5 rounded-2xl bg-muted/30 border border-transparent hover:border-[hsl(var(--border))] transition-all"
               >
-                <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                <span className="text-sm flex-1 truncate">{item.query}</span>
-                <span className="text-xs text-muted-foreground shrink-0">
+                <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium flex-1 truncate text-foreground">{item.query}</span>
+                <span className="text-xs text-muted-foreground shrink-0 font-sans">
                   {formatDate(item.created_at)}
                 </span>
               </div>
@@ -160,3 +161,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

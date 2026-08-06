@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Heart, Trash2, Clock, SortAsc } from "lucide-react";
+import { Search, Heart, Trash2, Clock, ExternalLink } from "lucide-react";
 import { useFavorites, useRemoveFavorite } from "@/hooks/useFavorites";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { CardSkeleton } from "@/components/shared/Skeleton";
@@ -40,33 +40,37 @@ export default function FavoritesPage() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
+    <div className="max-w-5xl mx-auto px-6 py-10 relative">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-2xl font-bold flex items-center gap-2 mb-1">
-          <Heart className="w-6 h-6 text-rose-500 fill-rose-500" />
-          Favorites
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          {favorites?.length ?? 0} saved place{favorites?.length !== 1 ? "s" : ""}
-        </p>
+      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+            <Heart className="w-5 h-5 fill-rose-500" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Favorites</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              {favorites?.length ?? 0} saved place{favorites?.length !== 1 ? "s" : ""} in your collection
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 mb-8">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search favorites…"
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm outline-none focus:border-brand-400 transition-colors"
+            placeholder="Search saved places..."
+            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/60 backdrop-blur-md text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all text-foreground placeholder:text-muted-foreground"
           />
         </div>
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="px-3 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm outline-none cursor-pointer focus:border-brand-400"
+          className="px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/60 backdrop-blur-md text-sm outline-none cursor-pointer focus:border-brand-500 text-foreground"
         >
           <option value="date_desc">Newest first</option>
           <option value="date_asc">Oldest first</option>
@@ -76,7 +80,7 @@ export default function FavoritesPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-5">
           {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
@@ -85,15 +89,15 @@ export default function FavoritesPage() {
           title={searchQuery ? "No matching favorites" : "No favorites yet"}
           description={
             searchQuery
-              ? "Try a different search term"
-              : "Start exploring and save places you love"
+              ? "Try a different search query"
+              : "Save restaurants and cafes to build your personal Astana guide"
           }
         />
       ) : (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="grid sm:grid-cols-2 gap-4"
+          className="grid sm:grid-cols-2 gap-5"
         >
           {filtered.map((fav, i) => {
             const payload = fav.payload as {
@@ -101,47 +105,67 @@ export default function FavoritesPage() {
               price_category?: string;
               address?: string;
               reason?: string;
+              url_2gis?: string;
             };
             return (
               <motion.div
                 key={fav.id}
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="rounded-2xl border border-[hsl(var(--border))] bg-card p-5 hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20 transition-all group"
+                className="rounded-3xl border border-[hsl(var(--border))] bg-card/70 backdrop-blur-sm p-6 hover:shadow-xl hover:shadow-brand-500/5 hover:border-brand-500/30 transition-all duration-200 group flex flex-col justify-between"
               >
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <div className="min-w-0">
-                    <h3 className="font-semibold text-sm truncate mb-1">{fav.place_name}</h3>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Rating value={payload.rating} />
-                      <PriceBadge level={payload.price_category} />
+                <div>
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-base truncate text-foreground group-hover:text-brand-500 transition-colors">
+                        {fav.place_name}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <Rating value={payload.rating} />
+                        <PriceBadge level={payload.price_category} />
+                      </div>
                     </div>
+                    <button
+                      onClick={() => removeFav.mutate(fav.id)}
+                      className="p-2 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                      title="Remove from favorites"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => removeFav.mutate(fav.id)}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                    aria-label="Remove from favorites"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+
+                  {payload.address && (
+                    <p className="text-xs text-muted-foreground mb-3 truncate">{payload.address}</p>
+                  )}
+                  {payload.reason && (
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-4 leading-relaxed bg-muted/30 p-3 rounded-xl">
+                      {payload.reason}
+                    </p>
+                  )}
+                  {fav.note && (
+                    <div className="mb-4 text-xs bg-brand-500/5 border border-brand-500/10 px-3.5 py-2.5 rounded-xl italic text-foreground">
+                      &ldquo;{fav.note}&rdquo;
+                    </div>
+                  )}
                 </div>
 
-                {payload.address && (
-                  <p className="text-xs text-muted-foreground mb-2 truncate">{payload.address}</p>
-                )}
-                {payload.reason && (
-                  <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{payload.reason}</p>
-                )}
-                {fav.note && (
-                  <div className="mb-3 text-xs bg-[hsl(var(--muted))] px-3 py-2 rounded-lg italic">
-                    &ldquo;{fav.note}&rdquo;
+                <div className="flex items-center justify-between gap-2 pt-4 border-t border-[hsl(var(--border))] mt-auto">
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <Clock className="w-3.5 h-3.5" />
+                    Saved {timeAgo(fav.created_at)}
                   </div>
-                )}
 
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-3 border-t border-[hsl(var(--border))]">
-                  <Clock className="w-3 h-3" />
-                  Saved {timeAgo(fav.created_at)}
+                  {payload.url_2gis && (
+                    <a
+                      href={payload.url_2gis}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-brand-500 hover:underline"
+                    >
+                      2GIS <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
                 </div>
               </motion.div>
             );
@@ -151,3 +175,4 @@ export default function FavoritesPage() {
     </div>
   );
 }
+
