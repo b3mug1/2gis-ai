@@ -31,10 +31,11 @@ export default function ChatPage() {
       setMessages((prev) => [...prev, userMsg]);
 
       try {
+        const currentLocale = typeof window !== "undefined" ? (localStorage.getItem("app_language") || "ru") : "ru";
         const result = await search.mutateAsync({
           query: text,
           coordinates: coords,
-          locale: "en",
+          locale: currentLocale,
         });
 
         const all = [result.recommendation, ...result.alternatives];

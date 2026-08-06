@@ -57,6 +57,23 @@ export default function SettingsPage() {
     setClearConfirm(false);
   }
 
+  const [language, setLanguage] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("app_language") || "ru";
+    }
+    return "ru";
+  });
+
+  function handleLanguageChange(newLang: string) {
+    setLanguage(newLang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("app_language", newLang);
+    }
+    toast.success(
+      newLang === "ru" ? "Язык интерфейса установлен: Русский" : "Interface language set: English"
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 relative">
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
@@ -92,9 +109,14 @@ export default function SettingsPage() {
               label="Язык интерфейса"
               description="Основной язык приложения и поиска ИИ"
               action={
-                <span className="text-xs font-semibold text-foreground bg-muted px-3 py-1.5 rounded-xl border border-[hsl(var(--border))] flex items-center gap-1">
-                  Русский <ChevronRight className="w-3.5 h-3.5" />
-                </span>
+                <select
+                  value={language}
+                  onChange={(e) => handleLanguageChange(e.target.value)}
+                  className="text-xs font-bold text-foreground bg-muted hover:bg-muted/80 px-3.5 py-2 rounded-xl border border-[hsl(var(--border))] outline-none cursor-pointer focus:ring-2 focus:ring-brand-500/20 transition-all"
+                >
+                  <option value="ru">Русский</option>
+                  <option value="en">English</option>
+                </select>
               }
             />
           </SettingsSection>
