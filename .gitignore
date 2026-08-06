@@ -1,0 +1,33 @@
+# Python & Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.dist-build/
+.pytest_cache/
+.coverage
+
+# Node.js & Next.js Frontend
+node_modules/
+2gis-frontend/node_modules/
+2gis-frontend/.next/
+2gis-frontend/out/
+2gis-frontend/build/
+2gis-frontend/next-env.d.ts
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+
+# Logs & OS / IDE artifacts
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
