@@ -7,9 +7,12 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { MapPin, ArrowRight, Lock, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
+  const { t } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,9 +51,9 @@ export default function LoginPage() {
           <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center mb-4 shadow-lg shadow-brand-500/25">
             <MapPin className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-foreground">С возвращением</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-foreground">{t.login.welcome}</h1>
           <p className="text-muted-foreground text-xs sm:text-sm">
-            Войдите в аккаунт для сохранения избранных мест и истории
+            {t.login.sub}
           </p>
         </div>
 
@@ -63,7 +66,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="email">
-              Электронная почта
+              {t.login.email}
             </label>
             <div className="relative flex items-center">
               <Mail className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
@@ -81,7 +84,7 @@ export default function LoginPage() {
 
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="password">
-              Пароль
+              {t.login.password}
             </label>
             <div className="relative flex items-center">
               <Lock className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
@@ -102,15 +105,15 @@ export default function LoginPage() {
             disabled={isLoading}
             className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 py-3.5 px-6 text-sm font-semibold text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/35 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 transition-all duration-200"
           >
-            {isLoading ? "Выполняется вход..." : "Войти"}
+            {isLoading ? t.login.signingIn : t.login.signIn}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
         <div className="mt-8 text-center text-xs text-muted-foreground">
-          Ещё нет аккаунта?{" "}
+          {t.login.noAccount}{" "}
           <Link href="/register" className="font-bold text-brand-500 hover:underline">
-            Создать аккаунт
+            {t.login.createAccount}
           </Link>
         </div>
       </motion.div>

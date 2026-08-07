@@ -7,9 +7,12 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { MapPin, ArrowRight, Lock, Mail, User } from "lucide-react";
 import { motion } from "framer-motion";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
+  const { t } = useLanguage();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -49,9 +52,9 @@ export default function RegisterPage() {
           <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center mb-4 shadow-lg shadow-brand-500/25">
             <MapPin className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-foreground">Регистрация</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 text-foreground">{t.register.title}</h1>
           <p className="text-muted-foreground text-xs sm:text-sm">
-            Создайте аккаунт, чтобы получать персональные рекомендации и сохранять избранные места
+            {t.register.sub}
           </p>
         </div>
 
@@ -64,7 +67,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4 font-sans">
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="fullName">
-              Имя и фамилия
+              {t.register.fullName}
             </label>
             <div className="relative flex items-center">
               <User className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
@@ -82,7 +85,7 @@ export default function RegisterPage() {
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="email">
-              Электронная почта
+              {t.register.email}
             </label>
             <div className="relative flex items-center">
               <Mail className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
@@ -100,7 +103,7 @@ export default function RegisterPage() {
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground" htmlFor="password">
-              Пароль
+              {t.register.password}
             </label>
             <div className="relative flex items-center">
               <Lock className="absolute left-3.5 w-4 h-4 text-muted-foreground" />
@@ -121,15 +124,15 @@ export default function RegisterPage() {
             disabled={isLoading}
             className="w-full mt-3 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 py-3.5 px-6 text-sm font-semibold text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/35 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 transition-all duration-200"
           >
-            {isLoading ? "Создание аккаунта..." : "Зарегистрироваться"}
+            {isLoading ? t.register.creatingAccount : t.register.signUp}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
         <div className="mt-8 text-center text-xs text-muted-foreground">
-          Уже есть аккаунт?{" "}
+          {t.register.hasAccount}{" "}
           <Link href="/login" className="font-bold text-brand-500 hover:underline">
-            Войти
+            {t.register.signIn}
           </Link>
         </div>
       </motion.div>
