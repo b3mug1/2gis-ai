@@ -34,7 +34,7 @@ export function ChatWindow({ messages, isLoading, onPromptSelect }: ChatWindowPr
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: "spring", stiffness: 200 }}
-            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center mb-5 shadow-xl shadow-brand-500/25"
+            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center mb-5 shadow-xl shadow-brand-500/25"
           >
             <MapPin className="w-8 h-8 text-white" />
           </motion.div>

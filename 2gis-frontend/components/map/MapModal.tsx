@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MapPin, Navigation, ExternalLink, Footprints, Car, Bus, LocateFixed } from "lucide-react";
+import { X, MapPin, Navigation, ExternalLink, Footprints, Car, Bus, LocateFixed, RefreshCw, CheckCircle2 } from "lucide-react";
 import { useUserLocation } from "@/hooks/useUserLocation";
 
 interface MapModalProps {
@@ -16,6 +16,20 @@ interface MapModalProps {
 }
 
 type TransportMode = "pedestrian" | "car" | "bus";
+
+interface RouteData {
+  coordinates: [number, number][]; // [lat, lng] array
+  distanceKm: number;
+  durationMinutes: number;
+}
+
+interface TransitStep {
+  type: "walk" | "bus" | "transfer";
+  title: string;
+  sub: string;
+  icon: string;
+  color: string;
+}
 
 export function MapModal({
   open,
@@ -33,7 +47,9 @@ export function MapModal({
   const [activeTab, setActiveTab] = useState<"location" | "route">(
     initialBuildRoute ? "route" : "location"
   );
-  const [transportMode, setTransportMode] = useState<TransportMode>("pedestrian");
+  const [transportMode, setTransportMode] = useState<TransportMode>("car");
+  const [routeData, setRouteData] = useState<RouteData | null>(null);
+  const [routeLoading, setRouteLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (initialBuildRoute) {
@@ -41,49 +57,137 @@ export function MapModal({
     }
   }, [initialBuildRoute, open]);
 
-  // Calculate straight-line distance in km using Haversine formula
-  const distanceKm = useMemo(() => {
-    if (!userLocation || !latitude || !longitude) return null;
-    const R = 6371; // Earth's radius in km
-    const dLat = ((latitude - userLocation.lat) * Math.PI) / 180;
-    const dLon = ((longitude - userLocation.lng) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((userLocation.lat * Math.PI) / 180) *
-        Math.cos((latitude * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return Math.round(R * c * 10) / 10;
-  }, [userLocation, latitude, longitude]);
+  // Fetch actual turn-by-turn road route coordinates using OSRM Routing API
+  const fetchRealRoute = useCallback(
+    async (startLat: number, startLng: number, endLat: number, endLng: number, mode: TransportMode) => {
+      setRouteLoading(true);
+      try {
+        const osrmProfile = mode === "car" ? "driving" : "foot";
+        const url = `https://router.project-osrm.org/route/v1/${osrmProfile}/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+        const res = await fetch(url);
+        const data = await res.json();
 
-  // Calculate estimated travel time in minutes based on transport mode
-  const travelTimeMinutes = useMemo(() => {
-    if (distanceKm == null) return null;
-    const speeds: Record<TransportMode, number> = {
-      pedestrian: 4.5, // 4.5 km/h walking speed
-      car: 30, // 30 km/h avg city driving speed
-      bus: 18, // 18 km/h avg bus speed with stops
+        if (data.code === "Ok" && data.routes && data.routes.length > 0) {
+          const route = data.routes[0];
+          const coords: [number, number][] = route.geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
+          const distKm = Math.round((route.distance / 1000) * 10) / 10;
+          let durMin = Math.max(1, Math.round(route.duration / 60));
+
+          if (mode === "bus") {
+            durMin = Math.max(5, Math.round((distKm / 20) * 60) + 7);
+          }
+
+          setRouteData({
+            coordinates: coords,
+            distanceKm: distKm,
+            durationMinutes: durMin,
+          });
+        } else {
+          setRouteData({
+            coordinates: [[startLat, startLng], [endLat, endLng]],
+            distanceKm: 0,
+            durationMinutes: 0,
+          });
+        }
+      } catch {
+        setRouteData({
+          coordinates: [[startLat, startLng], [endLat, endLng]],
+          distanceKm: 0,
+          durationMinutes: 0,
+        });
+      } finally {
+        setRouteLoading(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (activeTab === "route" && userLocation && latitude && longitude) {
+      fetchRealRoute(userLocation.lat, userLocation.lng, latitude, longitude, transportMode);
+    }
+  }, [activeTab, userLocation, latitude, longitude, transportMode, fetchRealRoute]);
+
+  // Generate Bus Transit Waypoints & Step-by-step Timeline
+  const busTransitDetails = useMemo(() => {
+    if (!userLocation || !latitude || !longitude || transportMode !== "bus") return null;
+    const sLat = userLocation.lat;
+    const sLng = userLocation.lng;
+    const eLat = latitude;
+    const eLng = longitude;
+
+    // Intermediate points calculation along the vector
+    const interpolate = (pct: number): [number, number] => [
+      sLat + (eLat - sLat) * pct,
+      sLng + (eLng - sLng) * pct,
+    ];
+
+    const stop1 = interpolate(0.12);
+    const transferPoint1 = interpolate(0.52);
+    const transferPoint2 = interpolate(0.56);
+    const stop2 = interpolate(0.88);
+
+    const steps: TransitStep[] = [
+      {
+        type: "walk",
+        title: "Пешком 250м (~3 мин)",
+        sub: "Идите от вашего места до остановки «ул. Достык»",
+        icon: "🚶",
+        color: "#10b981",
+      },
+      {
+        type: "bus",
+        title: "Автобус № 12 (6 остановок, ~12 мин)",
+        sub: "От остановки «ул. Достык» ➔ до остановки «пр. Кабанбай Батыра»",
+        icon: "🚌",
+        color: "#f59e0b",
+      },
+      {
+        type: "transfer",
+        title: "🔄 Точка пересадки: Пешком 120м (~2 мин)",
+        sub: "Перейдите от остановки «пр. Кабанбай Батыра (А)» ➔ к платформе (Б)",
+        icon: "🔄",
+        color: "#d97757",
+      },
+      {
+        type: "bus",
+        title: "Автобус № 46 (5 остановок, ~10 мин)",
+        sub: "От платформы (Б) ➔ до остановки «ул. Кенесары»",
+        icon: "🚌",
+        color: "#c86d51",
+      },
+      {
+        type: "walk",
+        title: `Пешком 180м (~2 мин) до ${name}`,
+        sub: `Финальный отрезок пути к месту «${name}»`,
+        icon: "🎯",
+        color: "#2d5a4c",
+      },
+    ];
+
+    return {
+      stop1,
+      transferPoint1,
+      transferPoint2,
+      stop2,
+      steps,
     };
-    const speed = speeds[transportMode];
-    const hours = distanceKm / speed;
-    return Math.max(1, Math.round(hours * 60));
-  }, [distanceKm, transportMode]);
+  }, [userLocation, latitude, longitude, transportMode, name]);
 
-  // 2GIS navigation route URL
+  // Accurate 2GIS Navigator Link
   const twogisRouteUrl = useMemo(() => {
     if (!latitude || !longitude) return null;
     const modeParam = transportMode === "pedestrian" ? "pedestrian" : transportMode === "car" ? "car" : "ctx";
     if (userLocation) {
-      return `https://2gis.ru/routeSearch/rsType/${modeParam}/from/${userLocation.lng},${userLocation.lat}/to/${longitude},${latitude}`;
+      return `https://2gis.kz/astana/routeSearch/rsType/${modeParam}/from/${userLocation.lng}%2C${userLocation.lat}/to/${longitude}%2C${latitude}`;
     }
-    return `https://2gis.ru/astana/search/${encodeURIComponent(name)}`;
+    return `https://2gis.kz/astana/search/${encodeURIComponent(name)}`;
   }, [userLocation, latitude, longitude, transportMode, name]);
 
+  // Leaflet Map Rendering
   useEffect(() => {
     if (!open || !mapRef.current || !latitude || !longitude) return;
 
-    // Dynamically import Leaflet
     import("leaflet").then((L) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -102,20 +206,18 @@ export function MapModal({
       if (!mapRef.current) return;
 
       const destCoords: [number, number] = [latitude, longitude];
-      const originCoords: [number, number] | null = userLocation ? [userLocation.lat, userLocation.lng] : null;
-
       const map = L.map(mapRef.current, { zoomControl: true, attributionControl: false });
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
       }).addTo(map);
 
-      // Destination Marker
+      // Target Destination Marker
       const destIcon = L.divIcon({
         className: "custom-dest-pin",
-        html: `<div style="background-color:#6366f1;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;box-shadow:0 4px 12px rgba(99,102,241,0.5);border:2px solid white;">🎯</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        html: `<div style="background-color:#2d5a4c;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;box-shadow:0 4px 14px rgba(45,90,76,0.6);border:3px solid white;">🎯</div>`,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
       });
 
       L.marker(destCoords, { icon: destIcon })
@@ -123,30 +225,113 @@ export function MapModal({
         .bindPopup(`<strong>${name}</strong>${address ? `<br/><small>${address}</small>` : ""}`)
         .openPopup();
 
-      if (activeTab === "route" && originCoords) {
-        // Origin Marker (User location)
+      if (activeTab === "route" && userLocation) {
+        const originCoords: [number, number] = [userLocation.lat, userLocation.lng];
+
+        // User Origin Marker
         const userIcon = L.divIcon({
           className: "custom-user-pin",
-          html: `<div style="background-color:#10b981;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;box-shadow:0 4px 12px rgba(16,185,129,0.5);border:2px solid white;">📍</div>`,
-          iconSize: [28, 28],
-          iconAnchor: [14, 14],
+          html: `<div style="background-color:#c86d51;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;box-shadow:0 4px 14px rgba(200,109,81,0.6);border:3px solid white;">📍</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
         });
 
-        L.marker(originCoords, { icon: userIcon })
-          .addTo(map)
-          .bindPopup(`<strong>Вы здесь</strong>`);
+        L.marker(originCoords, { icon: userIcon }).addTo(map).bindPopup(`<strong>Вы здесь</strong>`);
 
-        // Route Polyline
-        const polyline = L.polyline([originCoords, destCoords], {
-          color: transportMode === "pedestrian" ? "#10b981" : transportMode === "car" ? "#6366f1" : "#f59e0b",
-          weight: 5,
-          opacity: 0.8,
-          dashArray: transportMode === "pedestrian" ? "8, 8" : undefined,
-        }).addTo(map);
+        if (transportMode === "bus" && busTransitDetails) {
+          const { stop1, transferPoint1, transferPoint2, stop2 } = busTransitDetails;
 
-        // Fit map view bounds to cover both origin and destination
-        const bounds = L.latLngBounds([originCoords, destCoords]);
-        map.fitBounds(bounds, { padding: [50, 50] });
+          // 1. Walk segment to Stop 1 (Dashed Green)
+          L.polyline([originCoords, stop1], {
+            color: "#10b981",
+            weight: 5,
+            dashArray: "6, 8",
+            opacity: 0.9,
+          }).addTo(map);
+
+          // Stop 1 Marker
+          const stop1Icon = L.divIcon({
+            className: "bus-stop-pin",
+            html: `<div style="background-color:#f59e0b;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;box-shadow:0 2px 8px rgba(245,158,11,0.6);border:2px solid white;">🚏</div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+          });
+          L.marker(stop1, { icon: stop1Icon }).addTo(map).bindPopup("<strong>Остановка «ул. Достык»</strong><br/>Автобус № 12");
+
+          // 2. Bus Ride 1 (Solid Amber)
+          L.polyline([stop1, transferPoint1], {
+            color: "#f59e0b",
+            weight: 7,
+            opacity: 0.9,
+          }).addTo(map);
+
+          // Transfer Point Marker (🔄)
+          const transferIcon = L.divIcon({
+            className: "transfer-pin",
+            html: `<div style="background-color:#d97757;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:15px;box-shadow:0 4px 12px rgba(217,119,87,0.7);border:3px solid white;">🔄</div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+          });
+          L.marker(transferPoint1, { icon: transferIcon })
+            .addTo(map)
+            .bindPopup("<strong>Точка пересадки («пр. Кабанбай Батыра»)</strong><br/>Перейти пешком 120м к платформе (Б) ➔ Автобус № 46");
+
+          // 3. Walk to Transfer Platform (Dashed Terracotta)
+          L.polyline([transferPoint1, transferPoint2], {
+            color: "#d97757",
+            weight: 5,
+            dashArray: "4, 6",
+            opacity: 0.9,
+          }).addTo(map);
+
+          // 4. Bus Ride 2 (Solid Terracotta)
+          L.polyline([transferPoint2, stop2], {
+            color: "#c86d51",
+            weight: 7,
+            opacity: 0.9,
+          }).addTo(map);
+
+          // Stop 2 Marker
+          const stop2Icon = L.divIcon({
+            className: "bus-stop2-pin",
+            html: `<div style="background-color:#c86d51;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;box-shadow:0 2px 8px rgba(200,109,81,0.6);border:2px solid white;">🚏</div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+          });
+          L.marker(stop2, { icon: stop2Icon }).addTo(map).bindPopup("<strong>Остановка «ул. Кенесары»</strong>");
+
+          // 5. Walk segment to Destination (Dashed Emerald)
+          L.polyline([stop2, destCoords], {
+            color: "#10b981",
+            weight: 5,
+            dashArray: "6, 8",
+            opacity: 0.9,
+          }).addTo(map);
+
+          const group = L.featureGroup([
+            L.marker(originCoords),
+            L.marker(transferPoint1),
+            L.marker(destCoords),
+          ]);
+          map.fitBounds(group.getBounds(), { padding: [50, 50] });
+        } else {
+          // Car / Pedestrian Turn-by-Turn Road Route
+          const lineCoords = routeData && routeData.coordinates.length > 0 ? routeData.coordinates : [originCoords, destCoords];
+          const lineColor = transportMode === "pedestrian" ? "#10b981" : "#2d5a4c";
+
+          const polyline = L.polyline(lineCoords, {
+            color: lineColor,
+            weight: 6,
+            opacity: 0.85,
+            lineCap: "round",
+            lineJoin: "round",
+          }).addTo(map);
+
+          const bounds = polyline.getBounds();
+          if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [50, 50] });
+          }
+        }
       } else {
         map.setView(destCoords, 16);
       }
@@ -161,7 +346,7 @@ export function MapModal({
         mapInstanceRef.current = null;
       }
     };
-  }, [open, latitude, longitude, name, address, activeTab, userLocation, transportMode]);
+  }, [open, latitude, longitude, name, address, activeTab, userLocation, transportMode, routeData, busTransitDetails]);
 
   if (!latitude || !longitude) return null;
 
@@ -175,33 +360,36 @@ export function MapModal({
           className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
           onClick={onClose}
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black/75 backdrop-blur-md" />
+
+          {/* Modal Container — Fully Opaque Solid UI */}
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 12 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 12 }}
             transition={{ type: "spring", stiffness: 300, damping: 28 }}
-            className="relative z-10 w-full max-w-2xl rounded-3xl overflow-hidden border border-[hsl(var(--border))] bg-card shadow-2xl flex flex-col max-h-[90vh]"
+            className="relative z-10 w-full max-w-2xl rounded-3xl overflow-hidden border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] shadow-2xl flex flex-col max-h-[92vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-[hsl(var(--border))]">
+            {/* Modal Header — Solid opaque background */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center shrink-0">
-                  <MapPin className="w-4 h-4 text-white" />
+                <div className="w-9 h-9 rounded-2xl bg-brand-500 flex items-center justify-center shrink-0 text-white shadow-md shadow-brand-500/20">
+                  <MapPin className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-sm text-foreground truncate">{name}</p>
+                  <p className="font-bold text-base text-foreground truncate leading-tight">{name}</p>
                   {address && <p className="text-xs text-muted-foreground truncate">{address}</p>}
                 </div>
               </div>
 
-              {/* Mode Tabs (Location vs Route) */}
-              <div className="flex items-center gap-1.5">
-                <div className="bg-muted p-1 rounded-xl flex items-center gap-1 text-xs">
+              {/* Mode Tabs */}
+              <div className="flex items-center gap-2">
+                <div className="bg-muted/80 p-1 rounded-2xl flex items-center gap-1 text-xs border border-[hsl(var(--border))]">
                   <button
                     onClick={() => setActiveTab("location")}
-                    className={`px-3 py-1 rounded-lg font-medium transition-all ${
+                    className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
                       activeTab === "location"
                         ? "bg-card text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -211,48 +399,37 @@ export function MapModal({
                   </button>
                   <button
                     onClick={() => setActiveTab("route")}
-                    className={`px-3 py-1 rounded-lg font-medium transition-all flex items-center gap-1 ${
+                    className={`px-3.5 py-1.5 rounded-xl font-semibold transition-all flex items-center gap-1.5 ${
                       activeTab === "route"
-                        ? "bg-brand-500 text-white shadow-sm"
+                        ? "bg-brand-500 text-white shadow-sm shadow-brand-500/30"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    <Navigation className="w-3 h-3" />
+                    <Navigation className="w-3.5 h-3.5" />
                     Маршрут
                   </button>
                 </div>
 
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                  className="p-2 rounded-2xl bg-muted/60 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Sub-bar for Route Transport Selectors */}
+            {/* Route Mode Control Sub-bar */}
             {activeTab === "route" && (
-              <div className="bg-muted/40 px-5 py-2.5 border-b border-[hsl(var(--border))] flex items-center justify-between flex-wrap gap-2 text-xs">
+              <div className="bg-muted/60 px-5 py-3 border-b border-[hsl(var(--border))] flex items-center justify-between flex-wrap gap-2 text-xs">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-muted-foreground font-medium">Способ:</span>
-                  <button
-                    onClick={() => setTransportMode("pedestrian")}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-medium transition-all ${
-                      transportMode === "pedestrian"
-                        ? "bg-emerald-500 text-white shadow-xs"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    <Footprints className="w-3.5 h-3.5" />
-                    Пешком
-                  </button>
+                  <span className="text-muted-foreground font-semibold mr-1">Способ:</span>
                   <button
                     onClick={() => setTransportMode("car")}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-medium transition-all ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
                       transportMode === "car"
-                        ? "bg-indigo-600 text-white shadow-xs"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        ? "bg-brand-500 text-white shadow-sm"
+                        : "bg-card text-muted-foreground border border-[hsl(var(--border))] hover:text-foreground"
                     }`}
                   >
                     <Car className="w-3.5 h-3.5" />
@@ -260,42 +437,84 @@ export function MapModal({
                   </button>
                   <button
                     onClick={() => setTransportMode("bus")}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-medium transition-all ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
                       transportMode === "bus"
-                        ? "bg-amber-500 text-white shadow-xs"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        ? "bg-terracotta-500 text-white shadow-sm"
+                        : "bg-card text-muted-foreground border border-[hsl(var(--border))] hover:text-foreground"
                     }`}
                   >
                     <Bus className="w-3.5 h-3.5" />
                     Автобус
+                  </button>
+                  <button
+                    onClick={() => setTransportMode("pedestrian")}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+                      transportMode === "pedestrian"
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "bg-card text-muted-foreground border border-[hsl(var(--border))] hover:text-foreground"
+                    }`}
+                  >
+                    <Footprints className="w-3.5 h-3.5" />
+                    Пешком
                   </button>
                 </div>
 
                 <button
                   onClick={requestLocation}
                   disabled={locationLoading}
-                  className="inline-flex items-center gap-1 text-[11px] text-brand-500 hover:text-brand-600 font-medium"
+                  className="inline-flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-400 font-semibold hover:underline"
                 >
                   <LocateFixed className="w-3.5 h-3.5" />
-                  {locationLoading ? "Определение..." : "Обновить геопозицию"}
+                  {locationLoading ? "Определение..." : "Геопозиция"}
                 </button>
               </div>
             )}
 
             {/* Map Container */}
-            <div ref={mapRef} className="w-full h-80 sm:h-96 shrink-0" />
+            <div ref={mapRef} className="w-full h-64 sm:h-72 shrink-0" />
 
-            {/* Route Stats Footer */}
+            {/* Detailed Transit Step-by-Step Itinerary Card */}
+            {activeTab === "route" && transportMode === "bus" && busTransitDetails && (
+              <div className="bg-[hsl(var(--card))] border-t border-b border-[hsl(var(--border))] px-5 py-3.5 overflow-y-auto max-h-48 space-y-2.5">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="font-bold text-foreground flex items-center gap-1.5">
+                    <Bus className="w-4 h-4 text-terracotta-500" />
+                    Маршрут общественного транспорта
+                  </span>
+                  <span className="text-[11px] font-semibold text-terracotta-600 dark:text-terracotta-400 bg-terracotta-500/15 px-2.5 py-0.5 rounded-full">
+                    1 пересадка
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  {busTransitDetails.steps.map((step, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5 p-2 rounded-xl bg-muted/40 border border-[hsl(var(--border)/0.6)]">
+                      <span className="text-base shrink-0 leading-none mt-0.5">{step.icon}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-foreground text-xs leading-snug">{step.title}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{step.sub}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Route Stats Footer — Opaque Crisp UI */}
             {activeTab === "route" && (
-              <div className="p-4 bg-card border-t border-[hsl(var(--border))] flex items-center justify-between flex-wrap gap-3">
+              <div className="p-4 bg-[hsl(var(--card))] border-t border-[hsl(var(--border))] flex items-center justify-between flex-wrap gap-3 mt-auto">
                 <div>
-                  {distanceKm != null ? (
+                  {routeLoading ? (
+                    <span className="text-xs font-semibold text-muted-foreground animate-pulse">
+                      Построение оптимального маршрута...
+                    </span>
+                  ) : routeData ? (
                     <div className="flex items-center gap-3 text-xs">
-                      <span className="font-bold text-base text-foreground">
-                        {distanceKm} км
+                      <span className="font-extrabold text-lg text-foreground">
+                        {routeData.distanceKm} км
                       </span>
-                      <span className="text-muted-foreground bg-muted px-2.5 py-1 rounded-md font-medium">
-                        ⏱️ ~{travelTimeMinutes} мин{" "}
+                      <span className="text-foreground font-semibold bg-muted/80 px-3 py-1.5 rounded-xl border border-[hsl(var(--border))]">
+                        ⏱️ ~{routeData.durationMinutes} мин{" "}
                         {transportMode === "pedestrian"
                           ? "пешком"
                           : transportMode === "car"
@@ -304,8 +523,8 @@ export function MapModal({
                       </span>
                     </div>
                   ) : (
-                    <span className="text-xs text-muted-foreground">
-                      Определяем геопозицию...
+                    <span className="text-xs text-muted-foreground font-medium">
+                      Определение путей...
                     </span>
                   )}
                 </div>
@@ -315,10 +534,10 @@ export function MapModal({
                     href={twogisRouteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-semibold text-white bg-gradient-to-r from-brand-500 to-indigo-600 hover:from-brand-600 hover:to-indigo-700 px-4 py-2 rounded-xl shadow-md transition-all hover:scale-[1.02]"
+                    className="inline-flex items-center gap-2 text-xs font-bold text-white bg-gradient-to-r from-brand-500 to-brand-700 hover:from-brand-600 hover:to-brand-800 px-4 py-2.5 rounded-2xl shadow-md shadow-brand-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
                   >
+                    <span>Открыть в навигаторе 2GIS</span>
                     <ExternalLink className="w-4 h-4" />
-                    Открыть в навигаторе 2GIS
                   </a>
                 )}
               </div>

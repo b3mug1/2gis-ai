@@ -51,7 +51,7 @@ export function AIMessage({ message }: AIMessageProps) {
   return (
     <div className="flex items-start gap-2.5 max-w-[88%] w-full">
       {/* AI Avatar */}
-      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-sm mt-0.5">
+      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shrink-0 shadow-sm mt-0.5">
         <MapPin className="w-3.5 h-3.5" />
       </div>
 

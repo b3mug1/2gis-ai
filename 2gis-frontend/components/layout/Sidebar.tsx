@@ -52,7 +52,7 @@ export function Sidebar() {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 h-16 border-b border-[hsl(var(--border))]">
-        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 shrink-0 shadow-lg shadow-brand-500/30">
+        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 shrink-0 shadow-lg shadow-brand-500/30">
           <MapPin className="w-5 h-5 text-white" />
         </div>
         <AnimatePresence>
@@ -81,7 +81,7 @@ export function Sidebar() {
               className={cn(
                 "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                 active
-                  ? "bg-gradient-to-r from-brand-500/15 to-purple-500/10 text-brand-600 dark:text-brand-400"
+                  ? "bg-brand-500/15 text-brand-600 dark:text-brand-300 font-semibold"
                   : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--accent))]"
               )}
             >
@@ -119,7 +119,7 @@ export function Sidebar() {
       {user && (
         <div className="border-t border-[hsl(var(--border))] p-3 space-y-2">
           <div className="flex items-center gap-3 px-2 py-2 rounded-xl">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
               {user.full_name.charAt(0).toUpperCase()}
             </div>
             <AnimatePresence>

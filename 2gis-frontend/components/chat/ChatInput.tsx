@@ -175,7 +175,7 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
           className={cn(
             "shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all mb-0.5",
             canSend
-              ? "bg-gradient-to-br from-brand-500 to-purple-600 text-white shadow-sm shadow-brand-500/30 hover:shadow-md hover:shadow-brand-500/40"
+              ? "bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-sm shadow-brand-500/30 hover:shadow-md hover:shadow-brand-500/40"
               : "bg-muted text-muted-foreground cursor-not-allowed"
           )}
           aria-label="Send"
