@@ -54,7 +54,6 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
   const existingFav = favorites?.find((f) => f.place_id === place.place_id);
   const isFav = !!existingFav;
 
-  // Extract photos from payload if available
   const photos: string[] = (place as PlaceRecommendation & { photos?: string[] }).photos ?? [];
 
   async function toggleFavorite() {
@@ -102,19 +101,19 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, y: 14 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05, duration: 0.3 }}
+        transition={{ delay: index * 0.04, duration: 0.2 }}
         className={cn(
-          "group relative rounded-2xl border bg-card p-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5",
+          "group relative rounded-md border bg-card p-4 transition-all duration-200 hover:border-[hsl(var(--primary))]",
           isTop
-            ? "border-brand-500/40 bg-gradient-to-b from-brand-500/5 to-transparent shadow-lg shadow-brand-500/5"
-            : "border-[hsl(var(--border))] hover:border-brand-500/30"
+            ? "border-[hsl(var(--primary))]"
+            : "border-[hsl(var(--border))]"
         )}
       >
         {/* Top Best Match Badge */}
         {isTop && (
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-gradient-to-r from-brand-500 to-indigo-600 text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-md shadow-brand-500/20">
+          <div className="absolute top-3 right-3 flex items-center gap-1 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-[11px] font-semibold px-2.5 py-0.5 rounded-md shadow-xs">
             <Sparkles className="w-3 h-3" />
             {t.placeCard.topPickBadge}
           </div>
@@ -124,12 +123,12 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
         {photos.length > 0 && <PhotoCarousel photos={photos} name={place.name} />}
 
         {/* Main Header Info */}
-        <div className={cn("flex items-start justify-between gap-4 mb-3", isTop && photos.length === 0 ? "pr-20" : "")}>
+        <div className={cn("flex items-start justify-between gap-4 mb-2.5", isTop && photos.length === 0 ? "pr-24" : "")}>
           <div>
             <h3
               className={cn(
-                "font-bold tracking-tight leading-snug mb-1 text-foreground group-hover:text-brand-500 transition-colors",
-                isTop ? "text-lg" : "text-base"
+                "font-bold tracking-tight leading-snug mb-1 text-foreground group-hover:text-[hsl(var(--primary))] transition-colors",
+                isTop ? "text-base" : "text-sm sm:text-base"
               )}
             >
               {place.name}
@@ -138,7 +137,7 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
               <Rating value={place.rating} />
               <PriceBadge level={place.price_category} />
               {place.categories[0] && (
-                <span className="text-[11px] font-medium text-muted-foreground/80 bg-muted/60 px-2 py-0.5 rounded-md">
+                <span className="text-[11px] font-medium text-muted-foreground bg-[hsl(var(--secondary))] px-2 py-0.5 rounded">
                   {place.categories[0]}
                 </span>
               )}
@@ -147,15 +146,15 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
         </div>
 
         {/* AI Reasoning Pill */}
-        <div className="p-3 rounded-xl bg-muted/40 border border-muted-foreground/10 text-xs text-muted-foreground leading-relaxed mb-3.5">
+        <div className="p-2.5 rounded-md bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] text-xs text-muted-foreground leading-relaxed mb-3">
           <p className="line-clamp-2">{place.reason}</p>
         </div>
 
         {/* Meta Specs (Distance, Address, Hours, Phone) */}
-        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground mb-4">
+        <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground mb-3">
           {place.distance_m != null && (
-            <span className="inline-flex items-center gap-1 font-medium text-foreground/90 bg-muted/50 px-2 py-0.5 rounded-md">
-              <Navigation className="w-3 h-3 text-brand-500" />
+            <span className="inline-flex items-center gap-1 font-medium text-foreground bg-[hsl(var(--secondary))] px-2 py-0.5 rounded">
+              <Navigation className="w-3 h-3 text-[hsl(var(--primary))]" />
               {formatDistance(place.distance_m)}
               {place.walking_time && (
                 <span className="text-muted-foreground">
@@ -179,7 +178,7 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
           {place.phone && (
             <a
               href={`tel:${place.phone}`}
-              className="inline-flex items-center gap-1 hover:text-brand-500 transition-colors"
+              className="inline-flex items-center gap-1 hover:text-[hsl(var(--primary))] transition-colors"
             >
               <Phone className="w-3.5 h-3.5" />
               {place.phone}
@@ -189,16 +188,16 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
 
         {/* Highlights (Pros / Cons) */}
         {(place.pros.length > 0 || place.cons.length > 0) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 pt-2 border-t border-[hsl(var(--border)/0.6)]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-3 pt-2 border-t border-[hsl(var(--border))]">
             {place.pros.slice(0, 2).map((pro, i) => (
-              <div key={i} className="flex items-start gap-1.5 text-xs text-foreground/80">
-                <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+              <div key={i} className="flex items-start gap-1.5 text-xs text-foreground">
+                <Check className="w-3.5 h-3.5 text-[hsl(var(--primary))] mt-0.5 shrink-0" />
                 <span className="line-clamp-1">{pro}</span>
               </div>
             ))}
             {place.cons.slice(0, 1).map((con, i) => (
               <div key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                <Info className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                <Info className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
                 <span className="line-clamp-1">{con}</span>
               </div>
             ))}
@@ -206,16 +205,16 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
         )}
 
         {/* Footer Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[hsl(var(--border))]">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[hsl(var(--border))]">
           <div className="flex flex-wrap items-center gap-2">
             {place.url && (
               <a
                 href={place.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-500 hover:text-brand-600 transition-colors bg-brand-500/10 hover:bg-brand-500/15 px-3 py-1.5 rounded-lg"
+                className="inline-flex items-center gap-1 text-xs font-medium text-foreground bg-[hsl(var(--secondary))] hover:border-[hsl(var(--primary))] border border-[hsl(var(--border))] transition-colors px-2.5 py-1 rounded-md"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-3 h-3 text-[hsl(var(--primary))]" />
                 2GIS
               </a>
             )}
@@ -223,45 +222,45 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
               <>
                 <button
                   onClick={() => handleOpenMap(true)}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-gradient-to-r from-brand-500 to-indigo-600 hover:from-brand-600 hover:to-indigo-700 transition-all px-3 py-1.5 rounded-lg shadow-sm hover:scale-[1.02]"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-[hsl(var(--primary-foreground))] bg-[hsl(var(--primary))] hover:opacity-90 transition-opacity px-2.5 py-1 rounded-md"
                 >
-                  <Navigation className="w-3.5 h-3.5" />
+                  <Navigation className="w-3 h-3" />
                   Маршрут
                 </button>
                 <button
                   onClick={() => handleOpenMap(false)}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-500 hover:text-indigo-600 transition-colors bg-indigo-500/10 hover:bg-indigo-500/15 px-3 py-1.5 rounded-lg"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-foreground bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--muted))] border border-[hsl(var(--border))] transition-colors px-2.5 py-1 rounded-md"
                 >
-                  <Map className="w-3.5 h-3.5" />
+                  <Map className="w-3 h-3 text-[hsl(var(--primary))]" />
                   {t.placeCard.showOnMap}
                 </button>
               </>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {/* AI Match score badge */}
-            <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
+            <span className="text-[11px] font-medium text-muted-foreground bg-[hsl(var(--secondary))] px-2 py-0.5 rounded-md border border-[hsl(var(--border))]">
               {confidencePct}% {t.placeCard.match}
             </span>
 
             <button
               onClick={handleShare}
-              className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))] transition-colors"
               aria-label={t.placeCard.share}
             >
-              <Share2 className={cn("w-4 h-4", copied && "text-brand-500")} />
+              <Share2 className={cn("w-3.5 h-3.5", copied && "text-[hsl(var(--primary))]")} />
             </button>
             <button
               onClick={toggleFavorite}
               disabled={addFav.isPending || removeFav.isPending}
-              className="p-2 rounded-xl transition-colors hover:bg-rose-500/10"
+              className="p-1.5 rounded-md transition-colors hover:bg-[hsl(var(--muted))]"
               aria-label={isFav ? t.placeCard.favRemoved : t.placeCard.favAdded}
             >
               <Heart
                 className={cn(
-                  "w-4 h-4 transition-all",
-                  isFav ? "fill-rose-500 stroke-rose-500" : "text-muted-foreground hover:text-rose-500"
+                  "w-3.5 h-3.5 transition-all",
+                  isFav ? "fill-destructive stroke-destructive" : "text-muted-foreground hover:text-destructive"
                 )}
               />
             </button>

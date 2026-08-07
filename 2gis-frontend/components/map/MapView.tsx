@@ -96,14 +96,14 @@ export function MapView({ places, center }: MapViewProps) {
         const popupContent = `
           <div style="font-family:system-ui,-apple-system,sans-serif;padding:4px;max-width:220px;">
             <strong style="font-size:13px;color:#0f172a;display:block;margin-bottom:4px;line-height:1.3;">${place.name}</strong>
-            ${place.address ? `<p style="font-size:11px;color:#64748b;margin:0 0 8px 0;line-clamp:2;">📍 ${place.address}</p>` : ""}
+            ${place.address ? `<p style="font-size:11px;color:#64748b;margin:0 0 8px 0;line-clamp:2;">${place.address}</p>` : ""}
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-              ${place.rating ? `<span style="font-size:12px;font-weight:600;color:#f59e0b;">⭐ ${place.rating.toFixed(1)}</span>` : "<span></span>"}
+              ${place.rating ? `<span style="font-size:12px;font-weight:600;color:#f59e0b;">★ ${place.rating.toFixed(1)}</span>` : "<span></span>"}
               <button
                 onclick="window.__2gisBuildRoute && window.__2gisBuildRoute('${place.place_id}')"
-                style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(99,102,241,0.4);"
+                style="background:linear-gradient(135deg,#2d5a4c,#1e3d34);color:white;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(45,90,76,0.4);"
               >
-                🚀 Маршрут
+                Построить маршрут
               </button>
             </div>
           </div>
