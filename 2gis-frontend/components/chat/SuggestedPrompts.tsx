@@ -11,16 +11,20 @@ const PROMPTS = [
   "Здоровая еда и полезные обеды",
 ];
 
+import { useLanguage } from "@/context/LanguageContext";
+
 interface SuggestedPromptsProps {
   onSelect: (prompt: string) => void;
 }
 
 export function SuggestedPrompts({ onSelect }: SuggestedPromptsProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="px-4 py-3">
-      <p className="text-xs text-muted-foreground mb-3 font-semibold uppercase tracking-wider">Попробуйте спросить…</p>
+      <p className="text-xs text-muted-foreground mb-3 font-semibold uppercase tracking-wider">{t.chat.tryAsking}</p>
       <div className="flex flex-wrap gap-2 justify-center">
-        {PROMPTS.map((promptText, i) => (
+        {t.chat.prompts.map((promptText, i) => (
           <motion.button
             key={promptText}
             initial={{ opacity: 0, scale: 0.9 }}

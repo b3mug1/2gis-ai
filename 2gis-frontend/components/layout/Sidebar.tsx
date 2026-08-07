@@ -20,24 +20,27 @@ import { cn } from "@/utils/cn";
 import { useAuth } from "@/features/auth/AuthContext";
 import { toast } from "@/components/ui/toaster";
 
-const navItems = [
-  { href: "/", icon: Home, label: "Главная" },
-  { href: "/chat", icon: Bot, label: "ИИ Поиск" },
-  { href: "/history", icon: History, label: "История" },
-  { href: "/favorites", icon: Heart, label: "Избранное" },
-  { href: "/profile", icon: User, label: "Профиль" },
-  { href: "/settings", icon: Settings, label: "Настройки" },
-];
+import { useLanguage } from "@/context/LanguageContext";
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { href: "/", icon: Home, label: t.sidebar.home },
+    { href: "/chat", icon: Bot, label: t.sidebar.chat },
+    { href: "/history", icon: History, label: t.sidebar.history },
+    { href: "/favorites", icon: Heart, label: t.sidebar.favorites },
+    { href: "/profile", icon: User, label: t.sidebar.profile },
+    { href: "/settings", icon: Settings, label: t.sidebar.settings },
+  ];
 
   async function handleLogout() {
     await logout();
-    toast.info("Вы успешно вышли из аккаунта");
+    toast.info(t.settings.signedOut);
     router.push("/login");
   }
 
@@ -145,7 +148,7 @@ export function Sidebar() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  Выйти
+                  {t.sidebar.logout}
                 </motion.span>
               )}
             </AnimatePresence>

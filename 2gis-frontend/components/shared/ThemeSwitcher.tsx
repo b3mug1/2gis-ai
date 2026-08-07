@@ -5,18 +5,21 @@ import { Sun, Moon, Monitor } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/utils/cn";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 export function ThemeSwitcher({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
+  const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
 
   const themes = [
-    { id: "light", icon: Sun, label: "Light" },
-    { id: "dark", icon: Moon, label: "Dark" },
-    { id: "system", icon: Monitor, label: "System" },
-  ] as const;
+    { id: "light" as const, icon: Sun, label: t.theme.light },
+    { id: "dark" as const, icon: Moon, label: t.theme.dark },
+    { id: "system" as const, icon: Monitor, label: t.theme.system },
+  ];
 
   return (
     <div className={cn("flex items-center gap-1 p-1 rounded-xl bg-[hsl(var(--muted))]", className)}>

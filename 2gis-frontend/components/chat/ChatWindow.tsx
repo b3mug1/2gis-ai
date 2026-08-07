@@ -8,6 +8,8 @@ import { TypingIndicator } from "./TypingIndicator";
 import { SuggestedPrompts } from "./SuggestedPrompts";
 import { MapPin } from "lucide-react";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 interface ChatWindowProps {
   messages: ChatMessage[];
   isLoading: boolean;
@@ -16,6 +18,7 @@ interface ChatWindowProps {
 
 export function ChatWindow({ messages, isLoading, onPromptSelect }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -41,7 +44,7 @@ export function ChatWindow({ messages, isLoading, onPromptSelect }: ChatWindowPr
             transition={{ delay: 0.1 }}
             className="text-xl font-bold mb-2 text-foreground"
           >
-            Куда бы вы хотели отправиться?
+            {t.chat.emptyTitle}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 10 }}
@@ -49,7 +52,7 @@ export function ChatWindow({ messages, isLoading, onPromptSelect }: ChatWindowPr
             transition={{ delay: 0.15 }}
             className="text-sm text-muted-foreground mb-8 max-w-sm"
           >
-            Задайте вопрос на обыкновенном языке — рестораны, суши, тихие кафе для работы или места под ваш бюджет.
+            {t.chat.emptySub}
           </motion.p>
           <SuggestedPrompts onSelect={onPromptSelect} />
         </div>
