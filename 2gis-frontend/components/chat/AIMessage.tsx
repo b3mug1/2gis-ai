@@ -51,17 +51,17 @@ export function AIMessage({ message }: AIMessageProps) {
   return (
     <div className="flex items-start gap-2.5 max-w-[88%] w-full">
       {/* AI Avatar */}
-      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shrink-0 shadow-sm mt-0.5">
+      <div className="w-6 h-6 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center shrink-0 mt-0.5">
         <MapPin className="w-3.5 h-3.5" />
       </div>
 
-      <div className="flex-1 min-w-0 space-y-3">
+      <div className="flex-1 min-w-0 space-y-2.5">
         {/* Text bubble */}
         {displayed && (
           <div className="relative group">
             <div
               className={cn(
-                "bg-[hsl(var(--muted))] rounded-2xl rounded-tl-sm px-4 py-3",
+                "bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] rounded-md px-4 py-3",
                 "chat-prose text-foreground",
                 !done && message.isStreaming && "typing-cursor"
               )}
@@ -77,7 +77,7 @@ export function AIMessage({ message }: AIMessageProps) {
                         style={oneDark}
                         language={match[1]}
                         PreTag="div"
-                        className="rounded-lg text-sm"
+                        className="rounded-md text-sm"
                       >
                         {String(children).replace(/\n$/, "")}
                       </SyntaxHighlighter>
@@ -97,10 +97,10 @@ export function AIMessage({ message }: AIMessageProps) {
             {done && (
               <button
                 onClick={copyText}
-                className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground"
+                className="absolute top-2 right-2 p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground"
                 aria-label="Copy response"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <Check className="w-3.5 h-3.5 text-[hsl(var(--primary))]" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
             )}
           </div>
@@ -111,7 +111,7 @@ export function AIMessage({ message }: AIMessageProps) {
           <SearchResults data={message.searchResponse} />
         )}
 
-        <span className="text-[10px] text-muted-foreground px-1 block">
+        <span className="text-[10px] text-muted-foreground px-0.5 block">
           {timeAgo(message.timestamp.toISOString())}
         </span>
       </div>

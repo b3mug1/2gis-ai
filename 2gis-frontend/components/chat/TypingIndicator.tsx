@@ -1,19 +1,20 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { MapPin } from "lucide-react";
 
 export function TypingIndicator() {
   return (
-    <div className="flex items-center gap-1.5 px-4 py-3">
-      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-xs font-bold shrink-0">
-        AI
+    <div className="flex items-center gap-2 px-4 py-2">
+      <div className="w-6 h-6 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center text-xs shrink-0">
+        <MapPin className="w-3.5 h-3.5" />
       </div>
-      <div className="flex items-center gap-1 bg-[hsl(var(--muted))] rounded-2xl rounded-tl-sm px-4 py-2.5">
+      <div className="flex items-center gap-1 bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] rounded-md px-3 py-2">
         {[0, 1, 2].map((i) => (
           <motion.span
             key={i}
             className="w-1.5 h-1.5 rounded-full bg-muted-foreground/60"
-            animate={{ y: [0, -4, 0] }}
+            animate={{ y: [0, -3, 0] }}
             transition={{
               duration: 0.6,
               repeat: Infinity,

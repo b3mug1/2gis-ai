@@ -78,7 +78,6 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
     const recognition = new SpeechRecognitionAPI();
     recognition.continuous = false;
     recognition.interimResults = true;
-    // Use language for voice recognition
     recognition.lang = language === "ru" ? "ru-RU" : language === "kz" ? "kk-KZ" : "en-US";
     recognition.onstart = () => setIsRecording(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,19 +102,19 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
   return (
     <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--background))] px-4 py-3">
       <div className={cn(
-        "flex items-end gap-2 rounded-2xl border bg-[hsl(var(--muted))] px-3 py-2 transition-colors",
-        "focus-within:border-brand-400 focus-within:bg-[hsl(var(--background))]",
-        isRecording && "border-rose-400 ring-2 ring-rose-400/20"
+        "flex items-end gap-2 rounded-md border border-[hsl(var(--border))] bg-card px-3 py-2 transition-colors",
+        "focus-within:border-[hsl(var(--primary))]",
+        isRecording && "border-destructive ring-1 ring-destructive"
       )}>
         {/* Location button */}
         <button
           onClick={getLocation}
           title={coords ? "Location attached" : "Attach your location"}
           className={cn(
-            "shrink-0 p-1.5 rounded-lg transition-colors mb-0.5",
+            "shrink-0 p-1.5 rounded-md transition-colors mb-0.5",
             coords
-              ? "text-brand-500 bg-brand-500/10"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              ? "text-[hsl(var(--primary))] bg-[hsl(var(--secondary))]"
+              : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))]"
           )}
         >
           {locating ? (
@@ -131,10 +130,10 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
             onClick={toggleVoice}
             title={isRecording ? t.chat.voiceStop : t.chat.voiceStart}
             className={cn(
-              "shrink-0 p-1.5 rounded-lg transition-all mb-0.5",
+              "shrink-0 p-1.5 rounded-md transition-all mb-0.5",
               isRecording
-                ? "text-rose-500 bg-rose-500/10 animate-pulse"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                ? "text-destructive bg-destructive/10 animate-pulse"
+                : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))]"
             )}
           >
             {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -148,7 +147,7 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
           onKeyDown={handleKey}
           placeholder={isRecording ? "..." : t.chat.placeholder}
           rows={1}
-          className="flex-1 bg-transparent text-sm resize-none outline-none placeholder:text-muted-foreground py-1.5 max-h-[140px] leading-relaxed text-foreground"
+          className="flex-1 bg-transparent text-sm resize-none outline-none placeholder:text-muted-foreground py-1 max-h-[140px] leading-relaxed text-foreground"
           disabled={isLoading || disabled}
         />
 
@@ -158,40 +157,39 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
             onClick={onToggleFilters}
             title={t.filters.title}
             className={cn(
-              "shrink-0 p-1.5 rounded-lg transition-colors mb-0.5",
+              "shrink-0 p-1.5 rounded-md transition-colors mb-0.5",
               showFilters
-                ? "text-brand-500 bg-brand-500/10"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                ? "text-[hsl(var(--primary))] bg-[hsl(var(--secondary))]"
+                : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))]"
             )}
           >
             <SlidersHorizontal className="w-4 h-4" />
           </button>
         )}
 
-        <motion.button
+        <button
           onClick={handleSend}
           disabled={!canSend}
-          whileTap={{ scale: 0.9 }}
           className={cn(
-            "shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all mb-0.5",
+            "shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors mb-0.5",
             canSend
-              ? "bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-sm shadow-brand-500/30 hover:shadow-md hover:shadow-brand-500/40"
-              : "bg-muted text-muted-foreground cursor-not-allowed"
+              ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 cursor-pointer"
+              : "bg-[hsl(var(--muted))] text-muted-foreground cursor-not-allowed"
           )}
           aria-label="Send"
         >
           {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
-            <Send className="w-4 h-4" />
+            <Send className="w-3.5 h-3.5" />
           )}
-        </motion.button>
+        </button>
       </div>
 
-      <div className="flex items-center justify-between mt-1.5 px-2">
+      <div className="flex items-center justify-between mt-1.5 px-1">
         <div className="flex items-center gap-2">
           {coords && (
-            <p className="text-[10px] text-brand-500 flex items-center gap-1 font-medium">
+            <p className="text-[10px] text-[hsl(var(--primary))] flex items-center gap-1 font-medium">
               <MapPin className="w-2.5 h-2.5" />
               {t.chat.locationAttached}
             </p>
@@ -199,12 +197,12 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
           <AnimatePresence>
             {isRecording && (
               <motion.p
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="text-[10px] text-rose-500 flex items-center gap-1 font-medium"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-[10px] text-destructive flex items-center gap-1 font-medium"
               >
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
                 {t.chat.voiceStop}
               </motion.p>
             )}

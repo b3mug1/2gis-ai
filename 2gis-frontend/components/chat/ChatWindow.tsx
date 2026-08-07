@@ -31,33 +31,33 @@ export function ChatWindow({ messages, isLoading, onPromptSelect }: ChatWindowPr
       {isEmpty && !isLoading ? (
         <div className="flex flex-col items-center justify-center h-full min-h-[400px] px-6 text-center">
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", stiffness: 200 }}
-            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center mb-5 shadow-xl shadow-brand-500/25"
+            transition={{ duration: 0.2 }}
+            className="w-12 h-12 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center mb-4"
           >
-            <MapPin className="w-8 h-8 text-white" />
+            <MapPin className="w-6 h-6" />
           </motion.div>
           <motion.h2
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-xl font-bold mb-2 text-foreground"
+            transition={{ delay: 0.05 }}
+            className="text-lg font-bold mb-1.5 text-foreground"
           >
             {t.chat.emptyTitle}
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="text-sm text-muted-foreground mb-8 max-w-sm"
+            transition={{ delay: 0.1 }}
+            className="text-xs text-muted-foreground mb-6 max-w-sm"
           >
             {t.chat.emptySub}
           </motion.p>
           <SuggestedPrompts onSelect={onPromptSelect} />
         </div>
       ) : (
-        <div className="py-4 px-3 space-y-4">
+        <div className="py-4 px-4 space-y-4">
           <AnimatePresence initial={false}>
             {messages.map((msg) => (
               <MessageBubble key={msg.id} message={msg} />
