@@ -110,20 +110,20 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       {/* Chat panel */}
       <div className="flex flex-col flex-1 min-w-0 h-full border-r border-[hsl(var(--border))]">
         {/* Chat topbar */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-[hsl(var(--border))] shrink-0">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-brand-500" />
-            <span className="text-sm font-bold text-foreground">{t.chat.title}</span>
+            <MessageSquare className="w-4 h-4 text-[hsl(var(--primary))]" />
+            <span className="text-sm font-semibold text-foreground">{t.chat.title}</span>
           </div>
           <div className="flex items-center gap-2">
             {messages.length > 0 && (
               <button
                 onClick={clearChat}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2.5 py-1.5 rounded-lg hover:bg-muted transition-colors font-medium"
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2.5 py-1.5 rounded-md hover:bg-[hsl(var(--muted))] transition-colors font-medium border border-transparent hover:border-[hsl(var(--border))]"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 {t.chat.newChat}
@@ -132,10 +132,10 @@ export default function ChatPage() {
             <button
               onClick={() => setShowMap((s) => !s)}
               className={cn(
-                "flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors xl:hidden",
+                "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors xl:hidden border border-[hsl(var(--border))]",
                 showMap
-                  ? "bg-brand-500/10 text-brand-500"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))]"
               )}
             >
               <Map className="w-3.5 h-3.5" />
@@ -163,17 +163,16 @@ export default function ChatPage() {
         />
       </div>
 
-
       {/* Map panel */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className={cn(
-          "hidden xl:block w-[420px] shrink-0 p-4",
+          "hidden xl:block w-[420px] shrink-0 p-3",
           showMap && "!block"
         )}
       >
-        <div className="h-full">
+        <div className="h-full rounded-md border border-[hsl(var(--border))] overflow-hidden">
           <MapView places={places} />
         </div>
       </motion.div>

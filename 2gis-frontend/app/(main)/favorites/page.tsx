@@ -9,7 +9,6 @@ import { CardSkeleton } from "@/components/shared/Skeleton";
 import { Rating } from "@/components/shared/Rating";
 import { PriceBadge } from "@/components/shared/PriceBadge";
 import { timeAgo } from "@/utils/format";
-import type { FavoriteResponse } from "@/types/api";
 import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/utils/cn";
 
@@ -54,14 +53,14 @@ export default function FavoritesPage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 relative">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
-            <Heart className="w-5 h-5 fill-rose-500" />
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+        <div className="flex items-center gap-3 mb-1.5">
+          <div className="w-8 h-8 rounded-md bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] text-destructive flex items-center justify-center">
+            <Heart className="w-4 h-4 fill-current" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">{t.favorites.title}</h1>
-            <p className="text-muted-foreground text-xs sm:text-sm">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">{t.favorites.title}</h1>
+            <p className="text-muted-foreground text-xs">
               {t.favorites.savedCount} {favorites?.length ?? 0}
             </p>
           </div>
@@ -69,36 +68,36 @@ export default function FavoritesPage() {
       </motion.div>
 
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-8">
+      <div className="flex flex-col sm:flex-row gap-2.5 mb-6">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t.favorites.searchPlaceholder}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/60 backdrop-blur-md text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all text-foreground placeholder:text-muted-foreground"
+            className="w-full pl-9 pr-3 py-2 rounded-md border border-[hsl(var(--border))] bg-card text-xs sm:text-sm outline-none focus:border-[hsl(var(--primary))] transition-colors text-foreground placeholder:text-muted-foreground"
           />
         </div>
 
-        {/* Custom Glass Dropdown */}
+        {/* Dropdown */}
         <div className="relative shrink-0" ref={sortRef}>
           <button
             type="button"
             onClick={() => setSortOpen((s) => !s)}
-            className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/80 backdrop-blur-md text-sm font-medium text-foreground hover:border-brand-500/50 transition-all min-w-[170px]"
+            className="flex items-center justify-between gap-2 px-3 py-2 rounded-md border border-[hsl(var(--border))] bg-card text-xs font-medium text-foreground hover:border-[hsl(var(--primary))] transition-colors min-w-[150px]"
           >
             <span>{activeSortLabel}</span>
-            <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform duration-200", sortOpen && "rotate-180")} />
+            <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform duration-150", sortOpen && "rotate-180")} />
           </button>
 
           <AnimatePresence>
             {sortOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -6, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.96 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 top-full mt-2 z-50 w-48 rounded-2xl border border-[hsl(var(--border))] bg-card shadow-2xl p-1.5 overflow-hidden"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.1 }}
+                className="absolute right-0 top-full mt-1.5 z-50 w-44 rounded-md border border-[hsl(var(--border))] bg-card shadow-md p-1 overflow-hidden"
               >
                 {SORT_OPTIONS.map((opt) => (
                   <button
@@ -109,14 +108,14 @@ export default function FavoritesPage() {
                       setSortOpen(false);
                     }}
                     className={cn(
-                      "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left",
+                      "w-full flex items-center justify-between px-3 py-2 rounded-sm text-xs font-medium transition-colors text-left",
                       sort === opt.key
-                        ? "bg-brand-500/15 text-brand-500"
-                        : "text-foreground hover:bg-muted"
+                        ? "bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]"
+                        : "text-foreground hover:bg-[hsl(var(--muted))]"
                     )}
                   >
                     <span>{t.favorites[opt.labelKey]}</span>
-                    {sort === opt.key && <Check className="w-3.5 h-3.5 text-brand-500 shrink-0" />}
+                    {sort === opt.key && <Check className="w-3.5 h-3.5 text-[hsl(var(--primary))] shrink-0" />}
                   </button>
                 ))}
               </motion.div>
@@ -127,7 +126,7 @@ export default function FavoritesPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="grid sm:grid-cols-2 gap-5">
+        <div className="grid sm:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
@@ -144,7 +143,7 @@ export default function FavoritesPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="grid sm:grid-cols-2 gap-5"
+          className="grid sm:grid-cols-2 gap-4"
         >
           {filtered.map((fav, i) => {
             const payload = fav.payload as {
@@ -157,15 +156,15 @@ export default function FavoritesPage() {
             return (
               <motion.div
                 key={fav.id}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-                className="rounded-3xl border border-[hsl(var(--border))] bg-card/70 backdrop-blur-sm p-6 hover:shadow-xl hover:shadow-brand-500/5 hover:border-brand-500/30 transition-all duration-200 group flex flex-col justify-between"
+                transition={{ delay: i * 0.03 }}
+                className="rounded-md border border-[hsl(var(--border))] bg-card p-4 hover:border-[hsl(var(--primary))] transition-all duration-150 group flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="min-w-0">
-                      <h3 className="font-bold text-base truncate text-foreground group-hover:text-brand-500 transition-colors">
+                      <h3 className="font-bold text-sm sm:text-base truncate text-foreground group-hover:text-[hsl(var(--primary))] transition-colors">
                         {fav.place_name}
                       </h3>
                       <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -175,7 +174,7 @@ export default function FavoritesPage() {
                     </div>
                     <button
                       onClick={() => removeFav.mutate(fav.id)}
-                      className="p-2 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                      className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-[hsl(var(--muted))] transition-colors opacity-0 group-hover:opacity-100"
                       title={t.placeCard.favRemoved}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -183,23 +182,23 @@ export default function FavoritesPage() {
                   </div>
 
                   {payload.address && (
-                    <p className="text-xs text-muted-foreground mb-3 truncate">{payload.address}</p>
+                    <p className="text-xs text-muted-foreground mb-2 truncate">{payload.address}</p>
                   )}
                   {payload.reason && (
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-4 leading-relaxed bg-muted/30 p-3 rounded-xl">
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed bg-[hsl(var(--secondary))] p-2.5 rounded-md">
                       {payload.reason}
                     </p>
                   )}
                   {fav.note && (
-                    <div className="mb-4 text-xs bg-brand-500/5 border border-brand-500/10 px-3.5 py-2.5 rounded-xl italic text-foreground">
+                    <div className="mb-3 text-xs bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] px-3 py-2 rounded-md italic text-foreground">
                       &ldquo;{fav.note}&rdquo;
                     </div>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between gap-2 pt-4 border-t border-[hsl(var(--border))] mt-auto">
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-[hsl(var(--border))] mt-auto">
                   <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <Clock className="w-3.5 h-3.5" />
+                    <Clock className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
                     {t.favorites.savedAgo} {timeAgo(fav.created_at)}
                   </div>
 
@@ -208,7 +207,7 @@ export default function FavoritesPage() {
                       href={payload.url_2gis}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-brand-500 hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-[hsl(var(--primary))] hover:underline"
                     >
                       2GIS <ExternalLink className="w-3 h-3" />
                     </a>
@@ -222,4 +221,3 @@ export default function FavoritesPage() {
     </div>
   );
 }
-
