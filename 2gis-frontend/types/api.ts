@@ -100,6 +100,7 @@ export interface PlaceRecommendation {
   opening_hours: string | null;
   phone: string | null;
   url: string | null;
+  photos?: string[];
 }
 
 export interface SearchResponse {
