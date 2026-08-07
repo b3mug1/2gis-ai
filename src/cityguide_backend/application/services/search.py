@@ -58,7 +58,43 @@ class SearchService:
         cache_key = self._cache_key(request.query, request.coordinates, user_id)
         cached = await self._cache.get_json(cache_key)
         if cached is not None:
-            return SearchResponse.model_validate(cached)
+            response = SearchResponse.model_validate(cached)
+            if user_id is not None:
+                try:
+                    dummy_intent = SearchIntent(query=request.query)
+                    rec = PlaceRecommendation(
+                        place_id=response.recommendation.place_id,
+                        name=response.recommendation.name,
+                        rating=response.recommendation.rating,
+                        walking_time=response.recommendation.walking_time,
+                        pros=response.recommendation.pros,
+                        cons=response.recommendation.cons,
+                        reason=response.recommendation.reason,
+                        confidence=response.recommendation.confidence,
+                        score=response.recommendation.score,
+                        address=response.recommendation.address,
+                        latitude=response.recommendation.latitude,
+                        longitude=response.recommendation.longitude,
+                        categories=response.recommendation.categories,
+                        distance_m=response.recommendation.distance_m,
+                        price_category=response.recommendation.price_category,
+                        opening_hours=response.recommendation.opening_hours,
+                        phone=response.recommendation.phone,
+                        url=response.recommendation.url,
+                    )
+                    dummy_result = SearchResult(
+                        recommendation=rec,
+                        alternatives=[],
+                        intent=dummy_intent,
+                        source="cache",
+                        generated_at=datetime.now(timezone.utc),
+                    )
+                    await self._history_repo.create(user_id=user_id, query=request.query, intent=dummy_intent, result=dummy_result)
+                    await self._statistics_repo.increment(user_id=user_id, total=1, successful=1)
+                    await self._session.commit()
+                except Exception:
+                    pass
+            return response
 
         intent = await self._ai_client.extract_intent(request.query, user_location=user_location)
         if request.coordinates is not None:
@@ -67,6 +103,8 @@ class SearchService:
             geocoded = await self._place_client.geocode_location(intent.location_text)
             if geocoded is not None:
                 intent.coordinates = geocoded
+                # When user specifies a named location, use a wider radius to find places nearby
+                intent.radius_m = max(intent.radius_m, 3000)
 
         session_id = None
         if user_id is not None:
@@ -74,10 +112,15 @@ class SearchService:
             await self._session.flush()
         places = await self._place_client.search_places(intent)
         if not places:
-            # Fallback search if specific query returned no items
-            if "sushi" in request.query.lower() or "суши" in request.query.lower():
-                fallback_intent = SearchIntent(query="суши", coordinates=intent.coordinates, radius_m=intent.radius_m)
-                places = await self._place_client.search_places(fallback_intent)
+            # Broaden radius and retry
+            broader_intent = SearchIntent(
+                query=intent.query,
+                coordinates=intent.coordinates,
+                radius_m=min(intent.radius_m * 3, 10000),
+                cuisine=intent.cuisine,
+                place_type=intent.place_type,
+            )
+            places = await self._place_client.search_places(broader_intent)
             if not places:
                 raise NoSearchResultsError("No places found for this query")
 
@@ -85,15 +128,16 @@ class SearchService:
         enriched = await asyncio.gather(*[self._enrich_place(intent, place) for place in deduped[:10]])
 
         # Filter out candidates that are category mismatches or have low confidence/score
-        relevant = [p for p in enriched if p.confidence > 0.15 and p.score > 0.15]
+        # Use lenient threshold (0.05) so location-based searches ("кафе рядом с X") always return results
+        relevant = [p for p in enriched if p.confidence > 0.05 and p.score > 0.05]
         if not relevant:
-            # Fallback: if all candidates were filtered out, retry with fallback search
-            fallback_query = "суши" if ("sushi" in request.query.lower() or "суши" in request.query.lower()) else "ресторан"
-            fallback_intent = SearchIntent(query=fallback_query, coordinates=intent.coordinates, radius_m=intent.radius_m)
+            # Fallback: broaden radius and search again with just the main keyword
+            keyword = intent.query or "кафе"
+            fallback_intent = SearchIntent(query=keyword, coordinates=intent.coordinates, radius_m=min(intent.radius_m * 3, 10000))
             fallback_places = await self._place_client.search_places(fallback_intent)
             if fallback_places:
                 enriched_fallback = await asyncio.gather(*[self._enrich_place(intent, place) for place in self._deduplicate_candidates(fallback_places)[:10]])
-                relevant = [p for p in enriched_fallback if p.confidence > 0.15 and p.score > 0.15]
+                relevant = [p for p in enriched_fallback if p.confidence > 0.05 and p.score > 0.05]
 
         final_pool = relevant if relevant else enriched
         ranked = sorted(final_pool, key=lambda item: item.score, reverse=True)
@@ -118,7 +162,7 @@ class SearchService:
         await self._cached_ai_repo.set(cache_key, payload, self._settings.search_cache_ttl_seconds)
         if session_id is not None:
             await self._session_repo.update_result(session_id, result, status="completed")
-        await self._session.flush()
+        await self._session.commit()
         return response
 
     def _deduplicate_candidates(self, places: list[PlaceCandidate]) -> list[PlaceCandidate]:
