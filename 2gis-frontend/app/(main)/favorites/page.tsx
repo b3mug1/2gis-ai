@@ -61,11 +61,11 @@ export default function FavoritesPage() {
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/60 backdrop-blur-md text-sm outline-none cursor-pointer focus:border-brand-500 text-foreground"
+          className="px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card backdrop-blur-md text-sm outline-none cursor-pointer focus:border-brand-500 text-foreground"
         >
-          <option value="date_desc">{t.favorites.newest}</option>
-          <option value="date_asc">{t.favorites.oldest}</option>
-          <option value="name_asc">{t.favorites.alphabetical}</option>
+          <option value="date_desc" className="bg-card text-foreground">{t.favorites.newest}</option>
+          <option value="date_asc" className="bg-card text-foreground">{t.favorites.oldest}</option>
+          <option value="name_asc" className="bg-card text-foreground">{t.favorites.alphabetical}</option>
         </select>
       </div>
 

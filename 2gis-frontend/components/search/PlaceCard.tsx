@@ -26,6 +26,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { PhotoCarousel } from "@/components/search/PhotoCarousel";
 import { MapModal } from "@/components/map/MapModal";
 
+import { useAuth } from "@/features/auth/AuthContext";
+import { useRouter } from "next/navigation";
+
 interface PlaceCardProps {
   place: PlaceRecommendation;
   isTop?: boolean;
@@ -33,6 +36,8 @@ interface PlaceCardProps {
 }
 
 export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
   const { data: favorites } = useFavorites();
   const addFav = useAddFavorite();
   const removeFav = useRemoveFavorite();
@@ -47,16 +52,25 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
   const photos: string[] = (place as PlaceRecommendation & { photos?: string[] }).photos ?? [];
 
   async function toggleFavorite() {
-    if (isFav && existingFav) {
-      await removeFav.mutateAsync(existingFav.id);
-      toast.info(t.placeCard.favRemoved);
-    } else {
-      await addFav.mutateAsync({
-        place_id: place.place_id,
-        place_name: place.name,
-        payload: place as unknown as Record<string, unknown>,
-      });
-      toast.success(t.placeCard.favAdded);
+    if (!isAuthenticated) {
+      toast.info(t.login?.sub || "Войдите в аккаунт для добавления в избранное");
+      router.push("/login");
+      return;
+    }
+    try {
+      if (isFav && existingFav) {
+        await removeFav.mutateAsync(existingFav.id);
+        toast.info(t.placeCard.favRemoved);
+      } else {
+        await addFav.mutateAsync({
+          place_id: place.place_id,
+          place_name: place.name,
+          payload: place as unknown as Record<string, unknown>,
+        });
+        toast.success(t.placeCard.favAdded);
+      }
+    } catch {
+      toast.error("Ошибка при сохранении");
     }
   }
 

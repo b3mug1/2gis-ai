@@ -34,10 +34,10 @@ class FavoritesService:
             phone=payload.get("phone"),
             url=payload.get("url"),
         )
-        async with self._session.begin():
-            row = await self._repository.add(user_id=user_id, place=place, note=request.note)
+        row = await self._repository.add(user_id=user_id, place=place, note=request.note)
+        await self._session.flush()
         return FavoriteResponse.model_validate(row)
 
     async def delete(self, favorite_id: UUID, user_id: UUID) -> None:
-        async with self._session.begin():
-            await self._repository.delete(favorite_id, user_id)
+        await self._repository.delete(favorite_id, user_id)
+        await self._session.flush()
