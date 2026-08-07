@@ -115,6 +115,16 @@ class PlaceRecommendationSchema(BaseModel):
     opening_hours: str | None = None
     phone: str | None = None
     url: str | None = None
+    photos: list[str] = Field(default_factory=list)
+
+
+class SuggestResponse(BaseModel):
+    suggestions: list[str]
+
+
+class PopularResponse(BaseModel):
+    places: list[PlaceRecommendationSchema]
+
 
 
 class SearchResponse(BaseModel):

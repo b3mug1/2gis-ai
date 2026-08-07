@@ -66,6 +66,7 @@ class PlaceCandidate:
     is_open_now: bool | None = None
     has_parking: bool | None = None
     reviews: list[PlaceReview] = field(default_factory=list)
+    photos: list[str] = field(default_factory=list)
     raw: dict[str, Any] = field(default_factory=dict)
 
 
@@ -99,6 +100,7 @@ class PlaceRecommendation:
     opening_hours: str | None = None
     phone: str | None = None
     url: str | None = None
+    photos: list[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)

@@ -61,7 +61,7 @@ class TwoGISClientHTTP:
             "q": query_text,
             "page_size": min(10, max(1, self._settings.search_max_candidates)),
             "sort": sort_value,
-            "fields": "items.point,items.rubrics,items.schedule,items.reviews,items.address,items.full_name",
+            "fields": "items.point,items.rubrics,items.schedule,items.reviews,items.address,items.full_name,items.photos",
         }
         if intent.coordinates:
             params["point"] = f"{intent.coordinates.longitude},{intent.coordinates.latitude}"
@@ -203,6 +203,7 @@ class TwoGISClientHTTP:
         if reviews_count is None:
             reviews_count = self._as_int(item.get("review_count") or item.get("reviews_count"))
 
+        photos = self._photos(item)
         return PlaceCandidate(
             place_id=str(item.get("id") or item.get("uid") or item.get("external_id") or ""),
             name=str(item.get("name") or item.get("title") or "Unnamed place"),
@@ -219,8 +220,52 @@ class TwoGISClientHTTP:
             url=item.get("url") or item.get("link") or (f"https://2gis.kz/firm/{item.get('id')}" if item.get("id") else None),
             is_open_now=self._is_open_now(item),
             has_parking=self._has_parking(item),
+            photos=photos,
             raw=item,
         )
+
+    async def suggest(self, query: str, limit: int = 5) -> list[str]:
+        """Return autocomplete suggestions for a partial query."""
+        if not query or not query.strip():
+            return []
+        try:
+            params: dict[str, Any] = {
+                "q": query.strip(),
+                "page_size": limit,
+                "fields": "items.full_name",
+                "point": _ASTANA_DEFAULT_POINT,
+                "radius": _ASTANA_DEFAULT_RADIUS,
+            }
+            payload = await self._request_json("3.0/items", params)
+            items = payload.get("result", {}).get("items", []) or payload.get("items", [])
+            seen: set[str] = set()
+            suggestions: list[str] = []
+            for item in items:
+                name = str(item.get("name") or item.get("full_name") or "").strip()
+                if name and name not in seen:
+                    seen.add(name)
+                    suggestions.append(name)
+            return suggestions[:limit]
+        except Exception:
+            return []
+
+    async def get_popular(self, limit: int = 6) -> list[PlaceCandidate]:
+        """Return popular places in Astana by rating."""
+        try:
+            params: dict[str, Any] = {
+                "q": "кафе ресторан",
+                "page_size": limit,
+                "sort": "rating",
+                "fields": "items.point,items.rubrics,items.schedule,items.reviews,items.address,items.full_name,items.photos",
+                "point": _ASTANA_DEFAULT_POINT,
+                "radius": _ASTANA_DEFAULT_RADIUS,
+            }
+            payload = await self._request_json("3.0/items", params)
+            items = payload.get("result", {}).get("items", []) or payload.get("items", [])
+            return [self._item_to_candidate(item) for item in items]
+        except Exception:
+            return []
+
 
     def _address(self, item: dict[str, Any]) -> str | None:
         if item.get("address_name") and isinstance(item["address_name"], str):
@@ -263,6 +308,21 @@ class TwoGISClientHTTP:
     def _price_category(self, item: dict[str, Any]) -> str | None:
         value = item.get("price_level") or item.get("price_category")
         return None if value is None else str(value)
+
+    def _photos(self, item: dict[str, Any]) -> list[str]:
+        """Extract photo URLs from 2GIS item."""
+        photos_data = item.get("photos") or item.get("photo_preview") or []
+        urls: list[str] = []
+        if isinstance(photos_data, list):
+            for photo in photos_data[:6]:  # max 6 photos per place
+                if isinstance(photo, dict):
+                    url = photo.get("url") or photo.get("uri") or photo.get("preview_url")
+                    if url:
+                        urls.append(str(url))
+                elif isinstance(photo, str) and photo.startswith("http"):
+                    urls.append(photo)
+        return urls
+
 
     def _opening_hours(self, item: dict[str, Any]) -> str | None:
         hours = item.get("working_hours") or item.get("opening_hours")

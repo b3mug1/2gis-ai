@@ -210,6 +210,7 @@ class SearchService:
             opening_hours=place.opening_hours,
             phone=place.phone,
             url=place.url,
+            photos=place.photos,
         )
 
     def _is_category_mismatch(self, intent: SearchIntent, place: PlaceCandidate) -> bool:
@@ -306,6 +307,7 @@ class SearchService:
             opening_hours=recommendation.opening_hours,
             phone=recommendation.phone,
             url=recommendation.url,
+            photos=recommendation.photos,
         )
 
     def _intent_schema(self, intent: SearchIntent) -> SearchIntentSchema:

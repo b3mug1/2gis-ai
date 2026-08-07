@@ -2,16 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query, Request
 
-from cityguide_backend.api.dependencies import get_current_user, get_search_service
-from cityguide_backend.application.schemas import (
-    PlaceRecommendationSchema,
-    PopularResponse,
-    SearchRequest,
-    SearchResponse,
-    SuggestResponse,
-)
-from cityguide_backend.application.services.search import SearchService
-from cityguide_backend.domain.entities import UserProfile
+from cityguide_backend.application.schemas import PopularResponse, PlaceRecommendationSchema, SuggestResponse
 from cityguide_backend.infrastructure.external.twogis import TwoGISClientHTTP
 
 router = APIRouter(prefix="/search", tags=["search"])
@@ -19,15 +10,6 @@ router = APIRouter(prefix="/search", tags=["search"])
 
 def get_twogis_client(request: Request) -> TwoGISClientHTTP:
     return request.app.state.twogis_client
-
-
-@router.post("", response_model=SearchResponse)
-async def search_places(
-    payload: SearchRequest,
-    service: SearchService = Depends(get_search_service),
-    current_user: UserProfile = Depends(get_current_user),
-) -> SearchResponse:
-    return await service.search(payload, user_id=current_user.id)
 
 
 @router.get("/suggest", response_model=SuggestResponse)
