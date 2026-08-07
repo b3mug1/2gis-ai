@@ -1,17 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import { Providers } from "@/providers/Providers";
 
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
+const playfair = Playfair_Display({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-serif",
   display: "swap",
 });
 
 const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-jakarta",
   display: "swap",
 });
@@ -36,8 +36,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FAF7F2" },
-    { media: "(prefers-color-scheme: dark)", color: "#141A17" },
+    { media: "(prefers-color-scheme: light)", color: "#F4F8F7" },
+    { media: "(prefers-color-scheme: dark)", color: "#070B10" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -50,7 +50,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${jakarta.variable} font-sans antialiased bg-[hsl(var(--background))] text-[hsl(var(--foreground))]`}>
+      <body
+        className={`${playfair.variable} ${jakarta.variable} font-sans antialiased bg-[hsl(var(--background))] text-[hsl(var(--foreground))]`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>
