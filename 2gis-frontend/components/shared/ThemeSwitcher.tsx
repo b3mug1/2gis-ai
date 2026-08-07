@@ -1,10 +1,9 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/utils/cn";
-
 import { useLanguage } from "@/context/LanguageContext";
 
 export function ThemeSwitcher({ className }: { className?: string }) {
@@ -18,20 +17,19 @@ export function ThemeSwitcher({ className }: { className?: string }) {
   const themes = [
     { id: "light" as const, icon: Sun, label: t.theme.light },
     { id: "dark" as const, icon: Moon, label: t.theme.dark },
-    { id: "system" as const, icon: Monitor, label: t.theme.system },
   ];
 
   return (
-    <div className={cn("flex items-center gap-1 p-1 rounded-xl bg-[hsl(var(--muted))]", className)}>
+    <div className={cn("inline-flex items-center gap-1 p-1 rounded-full bg-card border border-[hsl(var(--border))] shadow-sm text-xs font-bold", className)}>
       {themes.map(({ id, icon: Icon, label }) => (
         <button
           key={id}
           onClick={() => setTheme(id)}
           aria-label={`${label} theme`}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all",
             theme === id
-              ? "bg-[hsl(var(--background))] text-foreground shadow-sm"
+              ? "bg-brand-400 text-black shadow-sm"
               : "text-muted-foreground hover:text-foreground"
           )}
         >

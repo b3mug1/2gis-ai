@@ -120,9 +120,8 @@ export default function HomePage() {
           </Link>
         </nav>
 
-        {/* Controls: Language Switcher + Theme Switcher + CTA */}
+        {/* Controls: Theme Switcher + CTA */}
         <div className="flex items-center gap-3">
-          <LanguageSwitcher />
           <ThemeSwitcher />
           <button
             onClick={() => router.push("/chat")}

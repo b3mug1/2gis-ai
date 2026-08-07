@@ -47,10 +47,10 @@ export function Sidebar() {
     <motion.aside
       animate={{ width: collapsed ? 76 : 256 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="relative hidden md:flex flex-col h-screen sticky top-0 border-r border-[hsl(var(--border))] bg-[hsl(var(--sidebar-bg))] shrink-0 overflow-hidden z-20 shadow-xl"
+      className="relative hidden md:flex flex-col h-screen sticky top-0 border-r border-[hsl(var(--border))] bg-[hsl(var(--sidebar-bg))] shrink-0 z-30 shadow-xl"
     >
       {/* Logo Area */}
-      <div className="flex items-center gap-3 px-5 h-20 border-b border-[hsl(var(--border))]">
+      <div className="flex items-center gap-3 px-5 h-20 border-b border-[hsl(var(--border))] overflow-hidden">
         <div className="w-10 h-10 rounded-2xl bg-brand-400 text-black flex items-center justify-center shrink-0 shadow-md shadow-brand-400/25">
           <MapPin className="w-5 h-5 stroke-[2.5]" />
         </div>
@@ -110,7 +110,7 @@ export function Sidebar() {
 
       {/* User Area at Bottom */}
       {user && (
-        <div className="border-t border-[hsl(var(--border))] p-4 space-y-2 bg-card/40">
+        <div className="border-t border-[hsl(var(--border))] p-4 space-y-2 bg-card/40 overflow-hidden">
           <div className="flex items-center gap-3 px-2 py-2 rounded-2xl">
             <div className="w-9 h-9 rounded-2xl bg-brand-400 text-black flex items-center justify-center text-xs font-extrabold shrink-0 shadow-md shadow-brand-400/20">
               {user.full_name.charAt(0).toUpperCase()}
@@ -149,13 +149,13 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* Collapse Toggle Button */}
+      {/* Collapse Toggle Button - Always Fully Visible */}
       <button
         onClick={() => setCollapsed((c) => !c)}
-        className="absolute -right-3 top-24 w-7 h-7 rounded-full bg-card border border-[hsl(var(--border))] flex items-center justify-center text-muted-foreground hover:text-brand-400 hover:border-brand-400 transition-all shadow-md z-30"
+        className="absolute -right-3.5 top-6 w-7 h-7 rounded-full bg-brand-400 text-black border-2 border-[hsl(var(--background))] flex items-center justify-center font-extrabold shadow-xl hover:scale-110 active:scale-95 transition-all z-50 cursor-pointer"
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
-        {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        {collapsed ? <ChevronRight className="w-4 h-4 stroke-[3]" /> : <ChevronLeft className="w-4 h-4 stroke-[3]" />}
       </button>
     </motion.aside>
   );
