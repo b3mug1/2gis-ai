@@ -79,7 +79,50 @@ class TwoGISClientHTTP:
         items = payload.get("result", {}).get("items", []) or payload.get("items", [])
         return [self._item_to_candidate(item) for item in items]
 
+    # Map of common Russian transliterations / typos → canonical search terms
+    _TRANSLITERATION_MAP: dict[str, str] = {
+        # Venues / exhibition
+        "экспо": "expo", "ekspo": "expo", "экспа": "expo",
+        # Food / restaurants
+        "суши": "суши", "суши": "суши", "сушы": "суши",
+        "роллы": "роллы", "ролы": "роллы", "ролл": "роллы",
+        "пицца": "пицца", "пица": "пицца", "pitsa": "пицца", "pitssa": "пицца",
+        "бургер": "бургер", "burgер": "бургер", "борger": "бургер",
+        "хинкали": "хинкали", "хинкале": "хинкали",
+        "шаурма": "шаурма", "шаурмa": "шаурма", "шаурмя": "шаурма", "shawarma": "шаурма",
+        "лагман": "лагман", "ламан": "лагман",
+        "плов": "плов", "плоф": "плов",
+        "манты": "манты", "манты": "манты",
+        "самса": "самса", "самсa": "самса",
+        "кофе": "кофе", "кафе": "кафе", "кофейня": "кофейня",
+        "ресторан": "ресторан", "рестаран": "ресторан", "рестаурант": "ресторан",
+        # Entertainment / services
+        "кинотеатр": "кинотеатр", "кино": "кинотеатр", "кинатеатр": "кинотеатр",
+        "парикмахер": "парикмахерская", "парикмахерскяа": "парикмахерская",
+        "аптека": "аптека", "аптека": "аптека",
+        "больница": "больница", "болница": "больница",
+        "гостиница": "гостиница", "гастиница": "гостиница", "отель": "отель",
+        "банк": "банк", "банкомат": "банкомат",
+        "супермаркет": "супермаркет", "супермаркет": "супермаркет",
+        "магазин": "магазин", "магaзин": "магазин",
+        "парк": "парк", "паркинг": "парковка",
+        "фитнес": "фитнес", "спортзал": "фитнес",
+        "салон": "салон красоты",
+    }
+
+    def _normalize_transliterations(self, query: str) -> str:
+        """Replace known transliterations/typos word-by-word."""
+        words = query.split()
+        normalized = []
+        for word in words:
+            key = word.lower().strip(".,!?\"'")
+            replacement = self._TRANSLITERATION_MAP.get(key)
+            normalized.append(replacement if replacement else word)
+        return " ".join(normalized)
+
     def _clean_query(self, query: str) -> str:
+        # First normalize known transliterations
+        query = self._normalize_transliterations(query)
         stop_words = {
             "best", "top", "good", "cheap", "near", "under", "kzt", "₸", "tenge",
             "самый", "самые", "лучший", "лучшие", "хороший", "дешевый", "дешевые", "недорогой",
@@ -93,13 +136,26 @@ class TwoGISClientHTTP:
         if not location_text or not location_text.strip():
             return None
         try:
+            # For short single-word location names (e.g. "аэропорт"), append city context to improve accuracy
+            query_text = location_text.strip()
+            if len(query_text.split()) <= 2 and "астана" not in query_text.lower() and "нур-султан" not in query_text.lower():
+                query_text = f"{query_text} Астана"
+
             params: dict[str, Any] = {
-                "q": location_text.strip(),
+                "q": query_text,
                 "page_size": 1,
                 "fields": "items.point",
+                # Search near Astana default point to bias results toward the city
+                "point": _ASTANA_DEFAULT_POINT,
+                "radius": 50000,
             }
             payload = await self._request_json("3.0/items", params)
             items = payload.get("result", {}).get("items", []) or payload.get("items", [])
+            if not items:
+                # Retry without the city context if no results
+                params2: dict[str, Any] = {"q": location_text.strip(), "page_size": 1, "fields": "items.point"}
+                payload = await self._request_json("3.0/items", params2)
+                items = payload.get("result", {}).get("items", []) or payload.get("items", [])
             if not items:
                 return None
             point = items[0].get("point") or {}
@@ -160,7 +216,7 @@ class TwoGISClientHTTP:
             price_category=self._price_category(item),
             opening_hours=self._opening_hours(item),
             phone=self._phone(item),
-            url=item.get("url"),
+            url=item.get("url") or item.get("link") or (f"https://2gis.kz/firm/{item.get('id')}" if item.get("id") else None),
             is_open_now=self._is_open_now(item),
             has_parking=self._has_parking(item),
             raw=item,
