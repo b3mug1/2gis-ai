@@ -9,16 +9,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
+
       - name: Install uv
-        run: pip install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: "3.13"
+
       - name: Sync dependencies
-        run: uv sync --dev
+        run: uv sync --all-extras --dev
+
       - name: Format check
         run: uv run ruff format --check
+
       - name: Lint
         run: uv run ruff check
+
       - name: Tests
-        run: uv run pytest
+        run: uv run pytest
