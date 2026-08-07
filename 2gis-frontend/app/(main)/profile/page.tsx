@@ -17,6 +17,7 @@ import { useHistory } from "@/hooks/useHistory";
 import { useStatistics } from "@/hooks/useStatistics";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { formatDate } from "@/utils/format";
+import { useLanguage } from "@/context/LanguageContext";
 
 function StatCard({ icon: Icon, label, value, color }: {
   icon: React.ElementType;
@@ -37,26 +38,33 @@ function StatCard({ icon: Icon, label, value, color }: {
 
 export default function ProfilePage() {
   const { user } = useAuth();
-  const { data: favorites, isLoading: favsLoading } = useFavorites();
   const { data: history, isLoading: histLoading } = useHistory();
+  const { data: favorites, isLoading: favsLoading } = useFavorites();
   const { data: stats } = useStatistics();
+  const { t } = useLanguage();
 
-  const totalSearches = stats?.reduce((sum, s) => sum + s.total_searches, 0) ?? history?.length ?? 0;
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Skeleton className="w-80 h-40 rounded-3xl" />
+      </div>
+    );
+  }
+
+  const totalSearches = history?.length ?? 0;
   const successRate = stats && stats.length > 0
     ? Math.round(
-        (stats.reduce((sum, s) => sum + s.successful_searches, 0) /
-          stats.reduce((sum, s) => sum + s.total_searches, 0)) *
+        (stats.reduce((sum, s) => sum + (s.successful_searches || 0), 0) /
+          (stats.reduce((sum, s) => sum + (s.total_searches || 0), 0) || 1)) *
           100
       )
     : null;
 
-  if (!user) return null;
-
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 relative">
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1 text-foreground">Профиль пользователя</h1>
-        <p className="text-muted-foreground text-xs sm:text-sm">Управление аккаунтом и аналитика ИИ-поисков</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1 text-foreground">{t.profile.title}</h1>
+        <p className="text-muted-foreground text-xs sm:text-sm">{t.profile.subtitle}</p>
       </motion.div>
 
       {/* Profile banner card */}
@@ -98,25 +106,25 @@ export default function ProfilePage() {
       >
         <StatCard
           icon={Search}
-          label="Всего запросов"
+          label={t.profile.totalQueries}
           value={totalSearches}
           color="from-brand-500 to-indigo-600"
         />
         <StatCard
           icon={Heart}
-          label="Сохраненные места"
+          label={t.profile.savedPlaces}
           value={favsLoading ? "…" : favorites?.length ?? 0}
           color="from-rose-500 to-pink-600"
         />
         <StatCard
           icon={TrendingUp}
-          label="Точность Match"
+          label={t.profile.matchScore}
           value={successRate != null ? `${successRate}%` : "98%"}
           color="from-emerald-500 to-teal-600"
         />
         <StatCard
           icon={Calendar}
-          label="Дней в сервисе"
+          label={t.profile.daysActive}
           value={stats?.length ?? "1"}
           color="from-amber-500 to-orange-600"
         />
@@ -131,7 +139,7 @@ export default function ProfilePage() {
       >
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="w-4 h-4 text-brand-500" />
-          <h3 className="font-bold text-base text-foreground">Недавняя активность</h3>
+          <h3 className="font-bold text-base text-foreground">{t.profile.recentActivity}</h3>
         </div>
         {histLoading ? (
           <div className="space-y-2">
@@ -140,7 +148,7 @@ export default function ProfilePage() {
             ))}
           </div>
         ) : (history?.length ?? 0) === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">Записи в истории пока отсутствуют.</p>
+          <p className="text-sm text-muted-foreground py-4 text-center">{t.profile.noActivity}</p>
         ) : (
           <div className="space-y-2">
             {history!.slice(0, 5).map((item) => (
@@ -161,4 +169,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

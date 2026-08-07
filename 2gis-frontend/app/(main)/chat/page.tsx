@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { ChatInput } from "@/components/chat/ChatInput";
+import { FilterPanel, SearchFilters } from "@/components/chat/FilterPanel";
 import { MapView } from "@/components/map/MapView";
 import { useSearch } from "@/hooks/useSearch";
 import type { ChatMessage, PlaceRecommendation } from "@/types/api";
@@ -12,13 +13,22 @@ import { Map, MessageSquare, RotateCcw } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { motion } from "framer-motion";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [places, setPlaces] = useState<PlaceRecommendation[]>([]);
   const [showMap, setShowMap] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<SearchFilters>({
+    open_now: false,
+    min_rating: 0,
+    price_category: null,
+  });
   const search = useSearch();
   const initialQuerySent = useRef(false);
+  const { language, t } = useLanguage();
 
   const handleSend = useCallback(
     async (text: string, coords?: { latitude: number; longitude: number }) => {
@@ -31,25 +41,38 @@ export default function ChatPage() {
       setMessages((prev) => [...prev, userMsg]);
 
       try {
-        const currentLocale = typeof window !== "undefined" ? (localStorage.getItem("app_language") || "ru") : "ru";
         const result = await search.mutateAsync({
           query: text,
           coordinates: coords,
-          locale: currentLocale,
+          locale: language,
         });
 
-        const all = [result.recommendation, ...result.alternatives];
+        let all = [result.recommendation, ...result.alternatives];
+
+        // Apply local filter overrides if active
+        if (filters.open_now) {
+          all = all.filter((p) => (p as unknown as { is_open_now?: boolean }).is_open_now !== false);
+        }
+        if (filters.min_rating > 0) {
+          all = all.filter((p) => (p.rating ?? 0) >= filters.min_rating);
+        }
+        if (filters.price_category) {
+          all = all.filter((p) => p.price_category === filters.price_category);
+        }
+
         setPlaces(all);
 
         const summary =
-          `Найдено мест по вашему запросу: **${all.length}**\n\n` +
-          `**Лучший выбор:** ${result.recommendation.name} — ${result.recommendation.reason}`;
+          all.length > 0
+            ? `${t.chat.foundPlaces} **${all.length}**\n\n` +
+              `**${t.chat.topPick}** ${all[0].name} — ${all[0].reason}`
+            : t.chat.errorMsg;
 
         const aiMsg: ChatMessage = {
           id: uuidv4(),
           role: "assistant",
           content: summary,
-          searchResponse: result,
+          searchResponse: { ...result, recommendation: all[0] || result.recommendation, alternatives: all.slice(1) },
           timestamp: new Date(),
           isStreaming: true,
         };
@@ -57,7 +80,7 @@ export default function ChatPage() {
       } catch (err: unknown) {
         const message =
           (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-          "К сожалению, по данному запросу ничего не найдено. Попробуйте сформулировать по-другому.";
+          t.chat.errorMsg;
 
         const errMsg: ChatMessage = {
           id: uuidv4(),
@@ -69,7 +92,7 @@ export default function ChatPage() {
         setMessages((prev) => [...prev, errMsg]);
       }
     },
-    [search]
+    [search, language, t, filters]
   );
 
   // Handle ?q= param from home page
@@ -94,7 +117,7 @@ export default function ChatPage() {
         <div className="flex items-center justify-between px-4 h-14 border-b border-[hsl(var(--border))] shrink-0">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-brand-500" />
-            <span className="text-sm font-bold text-foreground">ИИ Поиск</span>
+            <span className="text-sm font-bold text-foreground">{t.chat.title}</span>
           </div>
           <div className="flex items-center gap-2">
             {messages.length > 0 && (
@@ -103,7 +126,7 @@ export default function ChatPage() {
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2.5 py-1.5 rounded-lg hover:bg-muted transition-colors font-medium"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                Новый чат
+                {t.chat.newChat}
               </button>
             )}
             <button
@@ -116,7 +139,7 @@ export default function ChatPage() {
               )}
             >
               <Map className="w-3.5 h-3.5" />
-              Карта
+              {t.chat.map}
             </button>
           </div>
         </div>
@@ -126,11 +149,20 @@ export default function ChatPage() {
           isLoading={search.isPending}
           onPromptSelect={(p) => handleSend(p)}
         />
+        <FilterPanel
+          visible={showFilters}
+          filters={filters}
+          onChange={setFilters}
+          onClose={() => setShowFilters(false)}
+        />
         <ChatInput
           onSend={handleSend}
           isLoading={search.isPending}
+          onToggleFilters={() => setShowFilters((f) => !f)}
+          showFilters={showFilters}
         />
       </div>
+
 
       {/* Map panel */}
       <motion.div

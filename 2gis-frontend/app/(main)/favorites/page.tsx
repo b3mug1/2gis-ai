@@ -10,37 +10,28 @@ import { Rating } from "@/components/shared/Rating";
 import { PriceBadge } from "@/components/shared/PriceBadge";
 import { timeAgo } from "@/utils/format";
 import type { FavoriteResponse } from "@/types/api";
-import { cn } from "@/utils/cn";
+import { useLanguage } from "@/context/LanguageContext";
 
 type SortKey = "date_desc" | "date_asc" | "name_asc";
-
-function sortFavorites(favs: FavoriteResponse[], sort: SortKey): FavoriteResponse[] {
-  const arr = [...favs];
-  switch (sort) {
-    case "date_asc":
-      return arr.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    case "name_asc":
-      return arr.sort((a, b) => a.place_name.localeCompare(b.place_name));
-    default:
-      return arr.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }
-}
 
 export default function FavoritesPage() {
   const { data: favorites, isLoading } = useFavorites();
   const removeFav = useRemoveFavorite();
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("date_desc");
+  const { t } = useLanguage();
 
-  const filtered = sortFavorites(
-    (favorites ?? []).filter((f) =>
-      f.place_name.toLowerCase().includes(searchQuery.toLowerCase())
-    ),
-    sort
-  );
+  const filtered = (favorites ?? [])
+    .filter((f) => f.place_name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => {
+      if (sort === "date_desc") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (sort === "date_asc") return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      if (sort === "name_asc") return a.place_name.localeCompare(b.place_name);
+      return 0;
+    });
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 relative">
+    <div className="max-w-4xl mx-auto px-6 py-10 relative">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex items-center gap-3 mb-2">
@@ -48,9 +39,9 @@ export default function FavoritesPage() {
             <Heart className="w-5 h-5 fill-rose-500" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Избранное</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">{t.favorites.title}</h1>
             <p className="text-muted-foreground text-xs sm:text-sm">
-              Сохранено заведений в вашей коллекции: {favorites?.length ?? 0}
+              {t.favorites.savedCount} {favorites?.length ?? 0}
             </p>
           </div>
         </div>
@@ -63,7 +54,7 @@ export default function FavoritesPage() {
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Поиск по сохраненным местам..."
+            placeholder={t.favorites.searchPlaceholder}
             className="w-full pl-11 pr-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/60 backdrop-blur-md text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all text-foreground placeholder:text-muted-foreground"
           />
         </div>
@@ -72,9 +63,9 @@ export default function FavoritesPage() {
           onChange={(e) => setSort(e.target.value as SortKey)}
           className="px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/60 backdrop-blur-md text-sm outline-none cursor-pointer focus:border-brand-500 text-foreground"
         >
-          <option value="date_desc">Сначала новые</option>
-          <option value="date_asc">Сначала старые</option>
-          <option value="name_asc">По алфавиту А–Я</option>
+          <option value="date_desc">{t.favorites.newest}</option>
+          <option value="date_asc">{t.favorites.oldest}</option>
+          <option value="name_asc">{t.favorites.alphabetical}</option>
         </select>
       </div>
 
@@ -86,11 +77,11 @@ export default function FavoritesPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon="heart"
-          title={searchQuery ? "Ничего не найдено" : "Список избранного пуст"}
+          title={searchQuery ? t.history.noMatchTitle : t.favorites.emptyTitle}
           description={
             searchQuery
-              ? "Попробуйте изменить запрос"
-              : "Сохраняйте рестораны и кафе для быстрого доступа"
+              ? t.history.noMatchSub
+              : t.favorites.emptySub
           }
         />
       ) : (
@@ -129,7 +120,7 @@ export default function FavoritesPage() {
                     <button
                       onClick={() => removeFav.mutate(fav.id)}
                       className="p-2 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                      title="Удалить из избранного"
+                      title={t.placeCard.favRemoved}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -153,7 +144,7 @@ export default function FavoritesPage() {
                 <div className="flex items-center justify-between gap-2 pt-4 border-t border-[hsl(var(--border))] mt-auto">
                   <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                     <Clock className="w-3.5 h-3.5" />
-                    Сохранено {timeAgo(fav.created_at)}
+                    {t.favorites.savedAgo} {timeAgo(fav.created_at)}
                   </div>
 
                   {payload.url_2gis && (

@@ -11,6 +11,8 @@ import { useState } from "react";
 
 import { cn } from "@/utils/cn";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-3xl border border-[hsl(var(--border))] bg-card/70 backdrop-blur-sm overflow-hidden shadow-sm">
@@ -45,35 +47,19 @@ function SettingsRow({ icon: Icon, label, description, action }: {
 export default function SettingsPage() {
   const { logout } = useAuth();
   const router = useRouter();
+  const { language, setLanguage, t } = useLanguage();
   const [clearConfirm, setClearConfirm] = useState(false);
 
   async function handleLogout() {
     await logout();
-    toast.info("Вы вышли из системы");
+    toast.info(t.settings.signedOut);
     router.replace("/login");
   }
 
   function clearCache() {
     queryClient.clear();
-    toast.success("Кэш очищен");
+    toast.success(t.settings.cacheCleared);
     setClearConfirm(false);
-  }
-
-  const [language, setLanguage] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("app_language") || "ru";
-    }
-    return "ru";
-  });
-
-  function handleLanguageChange(newLang: string) {
-    setLanguage(newLang);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("app_language", newLang);
-    }
-    toast.success(
-      newLang === "ru" ? "Язык интерфейса: Русский" : "Interface language: English"
-    );
   }
 
   return (
@@ -84,8 +70,8 @@ export default function SettingsPage() {
             <Settings className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Настройки</h1>
-            <p className="text-muted-foreground text-xs sm:text-sm">Персонализация внешнего вида и локальное хранилище</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">{t.settings.title}</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">{t.settings.subtitle}</p>
           </div>
         </div>
       </motion.div>
@@ -93,11 +79,11 @@ export default function SettingsPage() {
       <div className="space-y-6">
         {/* Appearance */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <SettingsSection title="Внешний вид">
+          <SettingsSection title={t.settings.appearance}>
             <SettingsRow
               icon={Moon}
-              label="Визуальная тема"
-              description="Переключение между светлой и темной темами"
+              label={t.settings.visualTheme}
+              description={t.settings.visualThemeSub}
               action={<ThemeSwitcher />}
             />
           </SettingsSection>
@@ -105,16 +91,16 @@ export default function SettingsPage() {
 
         {/* Preferences */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <SettingsSection title="Локализация">
+          <SettingsSection title={t.settings.localization}>
             <SettingsRow
               icon={Globe}
-              label="Язык интерфейса"
-              description="Основной язык приложения и поиска ИИ"
+              label={t.settings.language}
+              description={t.settings.languageSub}
               action={
                 <div className="flex items-center p-1 rounded-2xl bg-muted/80 border border-[hsl(var(--border))] shadow-inner">
                   <button
                     type="button"
-                    onClick={() => handleLanguageChange("ru")}
+                    onClick={() => setLanguage("ru")}
                     className={cn(
                       "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200",
                       language === "ru"
@@ -126,7 +112,7 @@ export default function SettingsPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleLanguageChange("en")}
+                    onClick={() => setLanguage("en")}
                     className={cn(
                       "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200",
                       language === "en"
@@ -136,6 +122,18 @@ export default function SettingsPage() {
                   >
                     English
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setLanguage("kz")}
+                    className={cn(
+                      "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200",
+                      language === "kz"
+                        ? "bg-card text-brand-500 shadow-md border border-[hsl(var(--border))]"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Қазақша
+                  </button>
                 </div>
               }
             />
@@ -144,20 +142,20 @@ export default function SettingsPage() {
 
         {/* Data */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <SettingsSection title="Данные и хранилище">
+          <SettingsSection title={t.settings.dataStorage}>
             <SettingsRow
               icon={Trash2}
-              label="Очистить локальный кэш"
-              description="Сбрасывает сохраненные данные запросов и карточек мест"
+              label={t.settings.clearCache}
+              description={t.settings.clearCacheSub}
               action={
                 clearConfirm ? (
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setClearConfirm(false)} className="text-xs text-muted-foreground px-2 py-1">Отмена</button>
-                    <button onClick={clearCache} className="text-xs font-bold text-destructive bg-destructive/10 px-3 py-1.5 rounded-xl border border-destructive/20">Подтвердить</button>
+                    <button onClick={() => setClearConfirm(false)} className="text-xs text-muted-foreground px-2 py-1">{t.settings.cancel}</button>
+                    <button onClick={clearCache} className="text-xs font-bold text-destructive bg-destructive/10 px-3 py-1.5 rounded-xl border border-destructive/20">{t.settings.confirm}</button>
                   </div>
                 ) : (
                   <button onClick={() => setClearConfirm(true)} className="text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-3 py-1.5 rounded-xl transition-all">
-                    Очистить кэш
+                    {t.settings.clearCache}
                   </button>
                 )
               }
@@ -167,17 +165,17 @@ export default function SettingsPage() {
 
         {/* Account */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <SettingsSection title="Аккаунт">
+          <SettingsSection title={t.settings.account}>
             <SettingsRow
               icon={LogOut}
-              label="Выйти из системы"
-              description="Завершение текущей активной сессии"
+              label={t.settings.signOut}
+              description={t.settings.signOutSub}
               action={
                 <button
                   onClick={handleLogout}
                   className="text-xs font-bold text-destructive hover:bg-destructive/10 px-4 py-2 rounded-xl border border-destructive/20 transition-all"
                 >
-                  Выйти
+                  {t.settings.signOut}
                 </button>
               }
             />
@@ -185,7 +183,7 @@ export default function SettingsPage() {
         </motion.div>
 
         <p className="text-center text-xs text-muted-foreground pt-6">
-          City Guide AI · Интеграция 2GIS 3.0 API & Gemini ИИ
+          City Guide AI · 2GIS 3.0 API & Gemini AI
         </p>
       </div>
     </div>

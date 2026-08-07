@@ -10,10 +10,13 @@ import { timeAgo, formatDate } from "@/utils/format";
 import { useRouter } from "next/navigation";
 import { cn } from "@/utils/cn";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 export default function HistoryPage() {
   const { data: history, isLoading } = useHistory();
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const { t } = useLanguage();
 
   const filtered = (history ?? []).filter((item) =>
     item.query.toLowerCase().includes(searchQuery.toLowerCase())
@@ -40,9 +43,9 @@ export default function HistoryPage() {
             <History className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">История поисков</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">{t.history.title}</h1>
             <p className="text-muted-foreground text-xs sm:text-sm">
-              Сохранено записей: {history?.length ?? 0}
+              {t.history.savedCount} {history?.length ?? 0}
             </p>
           </div>
         </div>
@@ -54,7 +57,7 @@ export default function HistoryPage() {
         <input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Фильтр по прошлым запросам..."
+          placeholder={t.history.filterPlaceholder}
           className="w-full pl-11 pr-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/60 backdrop-blur-md text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all text-foreground placeholder:text-muted-foreground"
         />
       </div>
@@ -68,11 +71,11 @@ export default function HistoryPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon="history"
-          title={searchQuery ? "Ничего не найдено" : "История пуста"}
+          title={searchQuery ? t.history.noMatchTitle : t.history.noHistoryTitle}
           description={
             searchQuery
-              ? "Попробуйте изменить параметры фильтрации"
-              : "Ваши ИИ-запросы будут автоматически сохраняться здесь"
+              ? t.history.noMatchSub
+              : t.history.noHistorySub
           }
         />
       ) : (
@@ -118,7 +121,7 @@ export default function HistoryPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-xs font-medium text-brand-500">Повторить поиск</span>
+                        <span className="text-xs font-medium text-brand-500">{t.history.repeatSearch}</span>
                         <ArrowRight className="w-4 h-4 text-brand-500" />
                       </div>
                     </button>
