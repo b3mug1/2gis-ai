@@ -13,7 +13,7 @@ from cityguide_backend.domain.entities import Coordinates, PlaceCandidate, Place
 _ASTANA_DEFAULT_POINT = "71.4460,51.1801"
 _ASTANA_DEFAULT_RADIUS = 5000
 
-# Map Ollama-generated sort values → valid 2GIS catalog sort values
+# Map LLM-generated sort values → valid 2GIS catalog sort values
 _SORT_MAP: dict[str, str] = {
     "best_match": "relevance",
     "rating": "rating",

@@ -6,19 +6,19 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-7-FF4438?logo=redis&logoColor=white)](https://redis.io)
-[![Ollama](https://img.shields.io/badge/Ollama-local_LLM-000000?logo=ollama&logoColor=white)](https://ollama.com)
+[![Gemini AI](https://img.shields.io/badge/Google_Gemini-AI_LLM-4285F4?logo=google&logoColor=white)](https://ai.google.dev)
 [![Docker](https://img.shields.io/badge/Docker_ready-2496ED?logo=docker&logoColor=white)](./docker-compose.yml)
 
-An AI-powered city guide that understands natural language queries, extracts structured search intent via a local LLM (Ollama), queries the 2GIS catalog API, scores and ranks places, and returns detailed recommendations with review summaries.
+An AI-powered city guide that understands natural language queries, extracts structured search intent via Gemini AI, queries the 2GIS catalog API, scores and ranks places, and returns detailed recommendations with review summaries.
 
 ## Architecture
 
 The project is a full-stack monorepo with two main components:
 
-- **Backend** (`src/cityguide_backend`) — Python 3.13 / FastAPI async REST API with PostgreSQL, Redis caching, JWT authentication, and Ollama integration for intent extraction and review summarization.
+- **Backend** (`src/cityguide_backend`) — Python 3.13 / FastAPI async REST API with PostgreSQL, Redis caching, JWT authentication, and Gemini AI integration for intent extraction and review summarization.
 - **Frontend** (`2gis-frontend`) — Next.js 16 / TypeScript application with a chat-based search interface and an embedded 2GIS interactive map.
 
-The entire stack runs locally via Docker Compose with no external AI dependencies.
+The entire stack runs locally via Docker Compose with Gemini API integration.
 
 ## Tech Stack
 
@@ -33,7 +33,7 @@ The entire stack runs locally via Docker Compose with no external AI dependencie
 | Database | PostgreSQL 16 |
 | Cache | Redis 7 |
 | Auth | JWT (access + refresh tokens) |
-| AI / LLM | Ollama (local, configurable model) |
+| AI / LLM | Gemini AI (`google-genai`) |
 | Places API | 2GIS Catalog API |
 | HTTP client | httpx (async) |
 | Package manager | uv |
@@ -60,25 +60,20 @@ The entire stack runs locally via Docker Compose with no external AI dependencie
    cp .env.example .env
    ```
 
-2. Set your 2GIS API key in `.env`:
+2. Set your 2GIS API key and Gemini API key in `.env`:
 
    ```
-   TWOGIS_API_KEY=your_key_here
+   TWOGIS_API_KEY=your_twogis_key
+   GEMINI_API_KEY=your_gemini_key
    ```
 
-3. Set the Ollama model you want to use (must already be pulled in your local Ollama installation):
-
-   ```
-   OLLAMA_MODEL=qwen2:7b
-   ```
-
-4. Start the full stack:
+3. Start the full stack:
 
    ```bash
    docker compose up --build
    ```
 
-5. Open the application at [http://localhost:7000](http://localhost:7000).
+4. Open the application at [http://localhost:7000](http://localhost:7000).
 
 The backend API is available at [http://localhost:8001](http://localhost:8001).
 
@@ -90,8 +85,8 @@ The backend API is available at [http://localhost:8001](http://localhost:8001).
 | `REDIS_URL` | Redis connection string | `redis://redis:6379/0` |
 | `JWT_SECRET_KEY` | Secret key for signing JWT tokens | — |
 | `TWOGIS_API_KEY` | 2GIS Catalog API key | — |
-| `OLLAMA_BASE_URL` | Ollama server URL (inside Docker network) | `http://ollama:11434` |
-| `OLLAMA_MODEL` | Local model name to use for inference | `qwen2:7b` |
+| `GEMINI_API_KEY` | Google Gemini API Key | — |
+| `GEMINI_MODEL` | Gemini AI model name | `gemini-flash-lite-latest` |
 | `FRONTEND_ORIGINS` | Allowed CORS origins for the frontend | `http://localhost:7000` |
 
 ## API Endpoints
