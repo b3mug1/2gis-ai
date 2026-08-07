@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useHistory } from "@/hooks/useHistory";
 import { ThemeSwitcher } from "@/components/shared/ThemeSwitcher";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { discoverService } from "@/services/discoverService";
@@ -41,12 +42,12 @@ export default function HomePage() {
   const searchWrapRef = useRef<HTMLDivElement>(null);
 
   const CATEGORIES = [
-    { icon: UtensilsCrossed, label: "Рестораны", count: "240+ мест", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80" },
-    { icon: Coffee, label: "Кофейни", count: "180+ мест", image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80" },
-    { icon: Beer, label: "Бары & Лаундж", count: "95+ мест", image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=600&q=80" },
-    { icon: Pizza, label: "Пицца & Суши", count: "150+ мест", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80" },
-    { icon: Cake, label: "Кондитерские", count: "70+ мест", image: "https://images.unsplash.com/photo-1559553156-2e97137af16f?auto=format&fit=crop&w=600&q=80" },
-    { icon: Heart, label: "Эко & Веган", count: "45+ мест", image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80" },
+    { labelKey: t.home.catLabels.restaurants, count: "240+", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80" },
+    { labelKey: t.home.catLabels.cafes, count: "180+", image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80" },
+    { labelKey: t.home.catLabels.bars, count: "95+", image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=600&q=80" },
+    { labelKey: t.home.catLabels.fastfood, count: "150+", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80" },
+    { labelKey: t.home.catLabels.bakeries, count: "70+", image: "https://images.unsplash.com/photo-1559553156-2e97137af16f?auto=format&fit=crop&w=600&q=80" },
+    { labelKey: t.home.catLabels.healthy, count: "45+", image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80" },
   ];
 
   useEffect(() => {
@@ -106,31 +107,33 @@ export default function HomePage() {
         {/* Central Navigation Links */}
         <nav className="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-wider text-muted-foreground">
           <Link href="/" className="text-brand-400 hover:text-brand-300 transition-colors">
-            Главная
+            {t.home.navMain}
           </Link>
           <Link href="/chat" className="hover:text-foreground transition-colors">
-            ИИ Поиск
+            {t.home.navAI}
           </Link>
           <Link href="/history" className="hover:text-foreground transition-colors">
-            История
+            {t.home.navHistory}
           </Link>
           <Link href="/favorites" className="hover:text-foreground transition-colors">
-            Избранное
+            {t.home.navFav}
           </Link>
         </nav>
 
-        <div className="flex items-center gap-4">
+        {/* Controls: Language Switcher + Theme Switcher + CTA */}
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
           <ThemeSwitcher />
           <button
             onClick={() => router.push("/chat")}
-            className="btn-minimal btn-minimal-primary text-xs uppercase tracking-wider"
+            className="hidden sm:inline-flex btn-minimal btn-minimal-primary text-xs uppercase tracking-wider"
           >
-            Начать поиск
+            {t.home.navStart}
           </button>
         </div>
       </header>
 
-      {/* Hero Section (BreakPoint Booking Layout) */}
+      {/* Hero Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 sm:px-12 pt-8 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Column: Headlines & Search */}
@@ -142,15 +145,16 @@ export default function HomePage() {
           >
             <div className="inline-flex items-center gap-2 bg-brand-400/10 text-brand-400 border border-brand-400/20 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-4 h-4" />
-              ИИ-навигатор по заведениям Астаны
+              {t.home.badge}
             </div>
 
             <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight leading-[1.08] text-foreground">
-              Подберём <span className="text-brand-400">идеальное место</span> под ваш запрос
+              {t.home.heroTitle1}<span className="text-brand-400">{t.home.heroTitle2}</span>
+              {t.home.heroTitle3}
             </h1>
 
             <p className="text-muted-foreground text-base sm:text-lg max-w-xl leading-relaxed">
-              Задавайте вопросы на обычном языке. Умный ИИ подберет лучший вариант, покажет честные отзывы, рейтинг и построит удобный маршрут на карте 2GIS.
+              {t.home.heroSubtitle}
             </p>
 
             {/* Main Input Search */}
@@ -163,14 +167,14 @@ export default function HomePage() {
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                  placeholder="Суши возле Expo до 10 000 ₸..."
+                  placeholder={t.home.placeholder}
                   className="w-full bg-transparent text-sm sm:text-base px-4 py-3 outline-none placeholder:text-muted-foreground/60 text-foreground"
                 />
                 <button
                   onClick={() => handleSearch()}
                   className="btn-minimal btn-minimal-primary shrink-0 text-xs uppercase"
                 >
-                  <span>Найти</span>
+                  <span>{t.home.searchBtn}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -240,9 +244,9 @@ export default function HomePage() {
               transition={{ delay: 0.4 }}
               className="absolute -bottom-6 -left-6 bg-card/95 border border-[hsl(var(--border))] p-5 rounded-3xl shadow-2xl backdrop-blur-xl max-w-[220px]"
             >
-              <div className="text-3xl font-extrabold text-brand-400 mb-1">1 000+</div>
-              <div className="text-xs font-bold text-foreground">Заведений в Астане</div>
-              <p className="text-[11px] text-muted-foreground mt-1">Рестораны, кофейни, бары с точным рейтингом</p>
+              <div className="text-3xl font-extrabold text-brand-400 mb-1">{t.home.stats1Val}</div>
+              <div className="text-xs font-bold text-foreground">{t.home.stats1Label}</div>
+              <p className="text-[11px] text-muted-foreground mt-1">{t.home.stats1Sub}</p>
             </motion.div>
 
             {/* Floating Metric Card 2 */}
@@ -256,8 +260,8 @@ export default function HomePage() {
                 <Compass className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-extrabold text-foreground">ИИ Маршруты 2GIS</p>
-                <p className="text-[10px] text-muted-foreground">Пешком · Авто · Автобусы</p>
+                <p className="text-xs font-extrabold text-foreground">{t.home.stats2Title}</p>
+                <p className="text-[10px] text-muted-foreground">{t.home.stats2Sub}</p>
               </div>
             </motion.div>
           </motion.div>
@@ -269,19 +273,19 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm uppercase tracking-wider">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-black" />
-            <span>100% Умный локальный ИИ-поиск</span>
+            <span>{t.home.ribbonAI}</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-black" />
-            <span>Интеграция с каталогом 2GIS</span>
+            <span>{t.home.ribbon2GIS}</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-black" />
-            <span>Маршруты и точки пересадок</span>
+            <span>{t.home.ribbonRoutes}</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-black" />
-            <span>Честный анализ отзывов</span>
+            <span>{t.home.ribbonReviews}</span>
           </div>
         </div>
       </section>
@@ -290,12 +294,12 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-6 sm:px-12 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-6 space-y-6">
-            <span className="text-xs font-extrabold uppercase tracking-widest text-brand-400">О сервисе</span>
+            <span className="text-xs font-extrabold uppercase tracking-widest text-brand-400">{t.home.aboutTag}</span>
             <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground">
-              Новый подход к поиску заведений в вашем городе
+              {t.home.aboutTitle}
             </h2>
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-              City Guide AI избавляет от долгих поисков на картах. Вы просто формулируете желание своими словами — «где романтично поужинать до 15 000 тенге» или «тихое кафе для работы с ноутбуком», а наш алгоритм мгновенно подбирает идеальные места.
+              {t.home.aboutDesc}
             </p>
 
             <div className="pt-4 flex items-center gap-4">
@@ -303,7 +307,7 @@ export default function HomePage() {
                 onClick={() => router.push("/chat")}
                 className="btn-minimal btn-minimal-primary text-xs uppercase"
               >
-                Открыть чат с ИИ
+                {t.home.aboutBtn}
               </button>
             </div>
           </div>
@@ -327,18 +331,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Arched Category Grid (Talent Roster BreakPoint Style) */}
+      {/* Arched Category Grid */}
       <section className="max-w-7xl mx-auto px-6 sm:px-12 py-16 border-t border-[hsl(var(--border))]">
         <div className="flex items-center justify-between mb-10">
           <div>
-            <span className="text-xs font-extrabold uppercase tracking-widest text-brand-400">Категории</span>
-            <h2 className="text-3xl font-extrabold text-foreground mt-1">Популярные направления</h2>
+            <span className="text-xs font-extrabold uppercase tracking-widest text-brand-400">{t.home.catTag}</span>
+            <h2 className="text-3xl font-extrabold text-foreground mt-1">{t.home.catTitle}</h2>
           </div>
           <button
             onClick={() => router.push("/chat")}
             className="text-xs font-bold uppercase tracking-wider text-brand-400 hover:underline flex items-center gap-1"
           >
-            <span>Смотреть все</span>
+            <span>{t.home.viewAll}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -346,18 +350,18 @@ export default function HomePage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
           {CATEGORIES.map((cat) => (
             <motion.button
-              key={cat.label}
+              key={cat.labelKey}
               whileHover={{ y: -6 }}
-              onClick={() => handleSearch(cat.label + " Астана")}
+              onClick={() => handleSearch(cat.labelKey + " Астана")}
               className="group flex flex-col rounded-3xl border border-[hsl(var(--border))] bg-card overflow-hidden text-left shadow-lg hover:border-brand-400/60 transition-all"
             >
               <div className="arch-frame-sm h-40 w-full overflow-hidden relative">
-                <img src={cat.image} alt={cat.label} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <img src={cat.image} alt={cat.labelKey} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors" />
               </div>
               <div className="p-4 text-center">
                 <h3 className="font-extrabold text-sm text-foreground group-hover:text-brand-400 transition-colors">
-                  {cat.label}
+                  {cat.labelKey}
                 </h3>
                 <p className="text-[11px] font-semibold text-muted-foreground mt-0.5">{cat.count}</p>
               </div>
@@ -371,11 +375,11 @@ export default function HomePage() {
         <section className="max-w-7xl mx-auto px-6 sm:px-12 py-16 border-t border-[hsl(var(--border))]">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <span className="text-xs font-extrabold uppercase tracking-widest text-brand-400">Топ выбор</span>
-              <h2 className="text-3xl font-extrabold text-foreground mt-1">Популярно прямо сейчас</h2>
+              <span className="text-xs font-extrabold uppercase tracking-widest text-brand-400">{t.home.topPickTag}</span>
+              <h2 className="text-3xl font-extrabold text-foreground mt-1">{t.home.topPickTitle}</h2>
             </div>
             <Link href="/chat?q=популярные места Астана" className="text-xs font-bold uppercase tracking-wider text-brand-400 hover:underline">
-              Все рекомендации
+              {t.home.topPickAll}
             </Link>
           </div>
 
@@ -413,7 +417,7 @@ export default function HomePage() {
                 <div className="pt-4 mt-4 border-t border-[hsl(var(--border))] flex items-center justify-between text-xs">
                   <span className="font-semibold text-brand-400">{place.categories[0] || "Заведение"}</span>
                   <span className="font-bold text-foreground flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                    <span>Подобрать</span>
+                    <span>{t.home.searchBtn}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
@@ -429,10 +433,10 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xs uppercase tracking-wider font-extrabold text-muted-foreground flex items-center gap-2">
               <Clock className="w-4 h-4 text-brand-400" />
-              Ваши недавние поиски
+              {t.home.recentTitle}
             </h2>
             <Link href="/history" className="text-xs font-bold text-brand-400 hover:underline">
-              История
+              {t.home.recentHistory}
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
