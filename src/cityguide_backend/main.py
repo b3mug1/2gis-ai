@@ -8,6 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from cityguide_backend.api.routes.admin import router as admin_router
 from cityguide_backend.api.routes.auth import router as auth_router
 from cityguide_backend.api.routes.favorites import router as favorites_router
 from cityguide_backend.api.routes.health import router as health_router
@@ -87,6 +88,7 @@ def create_app() -> FastAPI:
     async def unexpected_handler(request: Request, exc: Exception):
         return JSONResponse(status_code=500, content={"error": "internal_server_error", "message": "An unexpected error occurred"})
 
+    app.include_router(admin_router)
     app.include_router(auth_router)
     app.include_router(search_router)
     app.include_router(history_router)

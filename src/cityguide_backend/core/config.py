@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     rate_limit_requests: int = 60
     rate_limit_window_seconds: int = 60
     search_max_candidates: int = 8
-    admin_email: str = "admin@cityguide.local"
+    admin_email: str = "admin@cityguide.com"
     admin_password: str = "ChangeMe123!"
 
 

@@ -94,3 +94,9 @@ async def get_current_user(request: Request, authorization: Annotated[str | None
     if not user_profile.is_active:
         raise AuthorizationError("User account is disabled")
     return user_profile
+
+
+async def get_admin_user(current_user: UserProfile = Depends(get_current_user)) -> UserProfile:
+    if current_user.role != UserRole.admin:
+        raise AuthorizationError("Admin access required")
+    return current_user
