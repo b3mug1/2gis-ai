@@ -43,7 +43,13 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
   const removeFav = useRemoveFavorite();
   const [copied, setCopied] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
+  const [initialBuildRoute, setInitialBuildRoute] = useState(false);
   const { t } = useLanguage();
+
+  function handleOpenMap(buildRoute = false) {
+    setInitialBuildRoute(buildRoute);
+    setMapOpen(true);
+  }
 
   const existingFav = favorites?.find((f) => f.place_id === place.place_id);
   const isFav = !!existingFav;
@@ -200,8 +206,8 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
         )}
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-[hsl(var(--border))]">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[hsl(var(--border))]">
+          <div className="flex flex-wrap items-center gap-2">
             {place.url && (
               <a
                 href={place.url}
@@ -214,13 +220,22 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
               </a>
             )}
             {hasMap && (
-              <button
-                onClick={() => setMapOpen(true)}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-500 hover:text-indigo-600 transition-colors bg-indigo-500/10 hover:bg-indigo-500/15 px-3 py-1.5 rounded-lg"
-              >
-                <Map className="w-3.5 h-3.5" />
-                {t.placeCard.showOnMap}
-              </button>
+              <>
+                <button
+                  onClick={() => handleOpenMap(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-gradient-to-r from-brand-500 to-indigo-600 hover:from-brand-600 hover:to-indigo-700 transition-all px-3 py-1.5 rounded-lg shadow-sm hover:scale-[1.02]"
+                >
+                  <Navigation className="w-3.5 h-3.5" />
+                  Маршрут
+                </button>
+                <button
+                  onClick={() => handleOpenMap(false)}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-500 hover:text-indigo-600 transition-colors bg-indigo-500/10 hover:bg-indigo-500/15 px-3 py-1.5 rounded-lg"
+                >
+                  <Map className="w-3.5 h-3.5" />
+                  {t.placeCard.showOnMap}
+                </button>
+              </>
             )}
           </div>
 
@@ -263,6 +278,7 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
           address={place.address}
           latitude={place.latitude}
           longitude={place.longitude}
+          initialBuildRoute={initialBuildRoute}
         />
       )}
     </>

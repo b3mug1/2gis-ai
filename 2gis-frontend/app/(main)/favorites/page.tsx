@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Search, Heart, Trash2, Clock, ExternalLink } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, Heart, Trash2, Clock, ExternalLink, ChevronDown, Check } from "lucide-react";
 import { useFavorites, useRemoveFavorite } from "@/hooks/useFavorites";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { CardSkeleton } from "@/components/shared/Skeleton";
@@ -11,15 +11,34 @@ import { PriceBadge } from "@/components/shared/PriceBadge";
 import { timeAgo } from "@/utils/format";
 import type { FavoriteResponse } from "@/types/api";
 import { useLanguage } from "@/context/LanguageContext";
+import { cn } from "@/utils/cn";
 
 type SortKey = "date_desc" | "date_asc" | "name_asc";
+
+const SORT_OPTIONS: { key: SortKey; labelKey: "newest" | "oldest" | "alphabetical" }[] = [
+  { key: "date_desc", labelKey: "newest" },
+  { key: "date_asc", labelKey: "oldest" },
+  { key: "name_asc", labelKey: "alphabetical" },
+];
 
 export default function FavoritesPage() {
   const { data: favorites, isLoading } = useFavorites();
   const removeFav = useRemoveFavorite();
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("date_desc");
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const filtered = (favorites ?? [])
     .filter((f) => f.place_name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -29,6 +48,8 @@ export default function FavoritesPage() {
       if (sort === "name_asc") return a.place_name.localeCompare(b.place_name);
       return 0;
     });
+
+  const activeSortLabel = t.favorites[SORT_OPTIONS.find((o) => o.key === sort)?.labelKey ?? "newest"];
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 relative">
@@ -58,15 +79,50 @@ export default function FavoritesPage() {
             className="w-full pl-11 pr-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/60 backdrop-blur-md text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all text-foreground placeholder:text-muted-foreground"
           />
         </div>
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as SortKey)}
-          className="px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card backdrop-blur-md text-sm outline-none cursor-pointer focus:border-brand-500 text-foreground"
-        >
-          <option value="date_desc" className="bg-card text-foreground">{t.favorites.newest}</option>
-          <option value="date_asc" className="bg-card text-foreground">{t.favorites.oldest}</option>
-          <option value="name_asc" className="bg-card text-foreground">{t.favorites.alphabetical}</option>
-        </select>
+
+        {/* Custom Glass Dropdown */}
+        <div className="relative shrink-0" ref={sortRef}>
+          <button
+            type="button"
+            onClick={() => setSortOpen((s) => !s)}
+            className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-card/80 backdrop-blur-md text-sm font-medium text-foreground hover:border-brand-500/50 transition-all min-w-[170px]"
+          >
+            <span>{activeSortLabel}</span>
+            <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform duration-200", sortOpen && "rotate-180")} />
+          </button>
+
+          <AnimatePresence>
+            {sortOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 top-full mt-2 z-50 w-48 rounded-2xl border border-[hsl(var(--border))] bg-card shadow-2xl p-1.5 overflow-hidden"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => {
+                      setSort(opt.key);
+                      setSortOpen(false);
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left",
+                      sort === opt.key
+                        ? "bg-brand-500/15 text-brand-500"
+                        : "text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <span>{t.favorites[opt.labelKey]}</span>
+                    {sort === opt.key && <Check className="w-3.5 h-3.5 text-brand-500 shrink-0" />}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Content */}
