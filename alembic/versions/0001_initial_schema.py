@@ -38,7 +38,12 @@ def upgrade() -> None:
     op.create_table(
         "refresh_tokens",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, nullable=False),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "user_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column("token_hash", sa.String(length=64), nullable=False),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
@@ -47,12 +52,19 @@ def upgrade() -> None:
         sa.UniqueConstraint("token_hash"),
     )
     op.create_index(op.f("ix_refresh_tokens_user_id"), "refresh_tokens", ["user_id"], unique=False)
-    op.create_index(op.f("ix_refresh_tokens_token_hash"), "refresh_tokens", ["token_hash"], unique=False)
+    op.create_index(
+        op.f("ix_refresh_tokens_token_hash"), "refresh_tokens", ["token_hash"], unique=False
+    )
 
     op.create_table(
         "search_sessions",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, nullable=False),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "user_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column("query", sa.Text(), nullable=False),
         sa.Column("intent", sa.JSON(), nullable=False),
         sa.Column("status", sa.String(length=30), nullable=False),
@@ -61,12 +73,19 @@ def upgrade() -> None:
         sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_search_sessions_user_id"), "search_sessions", ["user_id"], unique=False)
+    op.create_index(
+        op.f("ix_search_sessions_user_id"), "search_sessions", ["user_id"], unique=False
+    )
 
     op.create_table(
         "search_history",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, nullable=False),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "user_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column("query", sa.Text(), nullable=False),
         sa.Column("intent", sa.JSON(), nullable=False),
         sa.Column("result", sa.JSON(), nullable=False),
@@ -78,7 +97,12 @@ def upgrade() -> None:
     op.create_table(
         "favorite_places",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, nullable=False),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "user_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column("place_id", sa.String(length=128), nullable=False),
         sa.Column("place_name", sa.String(length=255), nullable=False),
         sa.Column("payload", sa.JSON(), nullable=False),
@@ -87,7 +111,9 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("user_id", "place_id", name="uq_favorite_places_user_place"),
     )
-    op.create_index(op.f("ix_favorite_places_user_id"), "favorite_places", ["user_id"], unique=False)
+    op.create_index(
+        op.f("ix_favorite_places_user_id"), "favorite_places", ["user_id"], unique=False
+    )
 
     op.create_table(
         "cached_ai_results",
@@ -99,13 +125,20 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("cache_key"),
     )
-    op.create_index(op.f("ix_cached_ai_results_cache_key"), "cached_ai_results", ["cache_key"], unique=False)
+    op.create_index(
+        op.f("ix_cached_ai_results_cache_key"), "cached_ai_results", ["cache_key"], unique=False
+    )
 
     op.create_table(
         "search_statistics",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, nullable=False),
         sa.Column("stat_date", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=True),
+        sa.Column(
+            "user_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=True,
+        ),
         sa.Column("total_searches", sa.Integer(), nullable=False),
         sa.Column("successful_searches", sa.Integer(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
@@ -113,12 +146,19 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("stat_date", "user_id", name="uq_search_statistics_date_user"),
     )
-    op.create_index(op.f("ix_search_statistics_user_id"), "search_statistics", ["user_id"], unique=False)
+    op.create_index(
+        op.f("ix_search_statistics_user_id"), "search_statistics", ["user_id"], unique=False
+    )
 
     op.create_table(
         "ai_usage_logs",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, nullable=False),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=True),
+        sa.Column(
+            "user_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=True,
+        ),
         sa.Column("operation", sa.String(length=100), nullable=False),
         sa.Column("model", sa.String(length=100), nullable=False),
         sa.Column("prompt_tokens", sa.Integer(), nullable=False),

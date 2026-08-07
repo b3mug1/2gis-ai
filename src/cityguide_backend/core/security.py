@@ -12,6 +12,7 @@ import bcrypt
 
 import bcrypt
 
+
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
@@ -32,9 +33,19 @@ def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
-def create_access_token(*, subject: str, secret_key: str, expires_delta: timedelta, extra_claims: dict[str, Any] | None = None) -> str:
+def create_access_token(
+    *,
+    subject: str,
+    secret_key: str,
+    expires_delta: timedelta,
+    extra_claims: dict[str, Any] | None = None,
+) -> str:
     now = datetime.now(timezone.utc)
-    payload: dict[str, Any] = {"sub": subject, "iat": int(now.timestamp()), "exp": int((now + expires_delta).timestamp())}
+    payload: dict[str, Any] = {
+        "sub": subject,
+        "iat": int(now.timestamp()),
+        "exp": int((now + expires_delta).timestamp()),
+    }
     if extra_claims:
         payload.update(extra_claims)
     return jwt.encode(payload, secret_key, algorithm="HS256")

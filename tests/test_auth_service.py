@@ -21,9 +21,13 @@ async def test_register_login_refresh_logout_flow() -> None:
         gemini_api_key="",
         twogis_api_key="",
     )
-    service = AuthService(session=session, users=users, refresh_tokens=refresh_tokens, settings=settings)
+    service = AuthService(
+        session=session, users=users, refresh_tokens=refresh_tokens, settings=settings
+    )
 
-    register = await service.register(RegisterRequest(email="user@example.com", password="Passw0rd123", full_name="Test User"))
+    register = await service.register(
+        RegisterRequest(email="user@example.com", password="Passw0rd123", full_name="Test User")
+    )
     assert register.user.email == "user@example.com"
     assert register.tokens.access_token
 
@@ -35,4 +39,6 @@ async def test_register_login_refresh_logout_flow() -> None:
     assert refreshed.tokens.refresh_token != login.tokens.refresh_token
 
     await service.logout(refreshed.tokens.refresh_token)
-    assert refresh_tokens.tokens[hash_token(refreshed.tokens.refresh_token)]["revoked_at"] is not None
+    assert (
+        refresh_tokens.tokens[hash_token(refreshed.tokens.refresh_token)]["revoked_at"] is not None
+    )

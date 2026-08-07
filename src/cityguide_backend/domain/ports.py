@@ -22,7 +22,9 @@ class UserRepository(Protocol):
 
     async def get_by_id(self, user_id: UUID) -> UserProfile | None: ...
 
-    async def create(self, *, email: str, password_hash: str, full_name: str, role: str) -> UserProfile: ...
+    async def create(
+        self, *, email: str, password_hash: str, full_name: str, role: str
+    ) -> UserProfile: ...
 
     async def update_last_login(self, user_id: UUID) -> None: ...
 
@@ -45,7 +47,9 @@ class RefreshTokenRepository(Protocol):
 
 
 class SearchHistoryRepository(Protocol):
-    async def create(self, *, user_id: UUID, query: str, intent: SearchIntent, result: SearchResult) -> None: ...
+    async def create(
+        self, *, user_id: UUID, query: str, intent: SearchIntent, result: SearchResult
+    ) -> None: ...
 
     async def list_for_user(self, user_id: UUID, limit: int = 50) -> list[dict[str, Any]]: ...
 
@@ -53,7 +57,9 @@ class SearchHistoryRepository(Protocol):
 class FavoritePlaceRepository(Protocol):
     async def list_for_user(self, user_id: UUID) -> list[dict[str, Any]]: ...
 
-    async def add(self, *, user_id: UUID, place: PlaceCandidate, note: str | None = None) -> dict[str, Any]: ...
+    async def add(
+        self, *, user_id: UUID, place: PlaceCandidate, note: str | None = None
+    ) -> dict[str, Any]: ...
 
     async def delete(self, favorite_id: UUID, user_id: UUID) -> None: ...
 
@@ -67,7 +73,9 @@ class CachedAIResultRepository(Protocol):
 
 
 class SearchSessionRepository(Protocol):
-    async def create(self, *, user_id: UUID, query: str, intent: SearchIntent, status: str) -> UUID: ...
+    async def create(
+        self, *, user_id: UUID, query: str, intent: SearchIntent, status: str
+    ) -> UUID: ...
 
     async def update_result(self, session_id: UUID, result: SearchResult, status: str) -> None: ...
 
@@ -75,13 +83,24 @@ class SearchSessionRepository(Protocol):
 
 
 class SearchStatisticsRepository(Protocol):
-    async def increment(self, *, user_id: UUID | None, total: int = 1, successful: int = 0) -> None: ...
+    async def increment(
+        self, *, user_id: UUID | None, total: int = 1, successful: int = 0
+    ) -> None: ...
 
     async def daily_summary(self, *, user_id: UUID | None = None) -> list[dict[str, Any]]: ...
 
 
 class AIUsageLogRepository(Protocol):
-    async def create(self, *, user_id: UUID | None, operation: str, model: str, prompt_tokens: int, completion_tokens: int, metadata: dict[str, Any]) -> None: ...
+    async def create(
+        self,
+        *,
+        user_id: UUID | None,
+        operation: str,
+        model: str,
+        prompt_tokens: int,
+        completion_tokens: int,
+        metadata: dict[str, Any],
+    ) -> None: ...
 
 
 class TwoGISClient(Protocol):
@@ -93,9 +112,13 @@ class TwoGISClient(Protocol):
 
 
 class AIClient(Protocol):
-    async def extract_intent(self, query: str, *, user_location: Coordinates | None = None) -> SearchIntent: ...
+    async def extract_intent(
+        self, query: str, *, user_location: Coordinates | None = None
+    ) -> SearchIntent: ...
 
-    async def summarize_reviews(self, intent: SearchIntent, place: PlaceCandidate) -> ReviewSummary: ...
+    async def summarize_reviews(
+        self, intent: SearchIntent, place: PlaceCandidate
+    ) -> ReviewSummary: ...
 
 
 class CacheBackend(Protocol):

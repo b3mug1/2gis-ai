@@ -8,7 +8,13 @@ import pytest
 from cityguide_backend.application.schemas import CoordinatesSchema, SearchRequest
 from cityguide_backend.application.services.search import SearchService
 from cityguide_backend.core.config import Settings
-from cityguide_backend.domain.entities import Coordinates, PlaceCandidate, PlaceReview, ReviewSummary, SearchIntent
+from cityguide_backend.domain.entities import (
+    Coordinates,
+    PlaceCandidate,
+    PlaceReview,
+    ReviewSummary,
+    SearchIntent,
+)
 from tests.fakes import (
     FakeSession,
     MemoryAIUsageLogRepository,
@@ -52,14 +58,54 @@ async def test_search_service_returns_ranked_recommendation() -> None:
         search_cache_ttl_seconds=900,
     )
     places = [
-        PlaceCandidate(place_id="1", name="Good Sushi", rating=4.9, distance_m=900, price_category="budget", is_open_now=True, has_parking=True, reviews=[PlaceReview(author="A", rating=5, text="great")]),
-        PlaceCandidate(place_id="2", name="Okay Sushi", rating=4.2, distance_m=300, price_category="premium", is_open_now=False, has_parking=False, reviews=[PlaceReview(author="B", rating=4, text="fine")]),
+        PlaceCandidate(
+            place_id="1",
+            name="Good Sushi",
+            rating=4.9,
+            distance_m=900,
+            price_category="budget",
+            is_open_now=True,
+            has_parking=True,
+            reviews=[PlaceReview(author="A", rating=5, text="great")],
+        ),
+        PlaceCandidate(
+            place_id="2",
+            name="Okay Sushi",
+            rating=4.2,
+            distance_m=300,
+            price_category="premium",
+            is_open_now=False,
+            has_parking=False,
+            reviews=[PlaceReview(author="B", rating=4, text="fine")],
+        ),
     ]
     ai_client = StaticAIClient(
-        intent=SearchIntent(query="sushi", location_text="Astana", coordinates=Coordinates(51.0, 71.0), radius_m=2000, budget_kzt=10000, open_now=True, requires_parking=True),
+        intent=SearchIntent(
+            query="sushi",
+            location_text="Astana",
+            coordinates=Coordinates(51.0, 71.0),
+            radius_m=2000,
+            budget_kzt=10000,
+            open_now=True,
+            requires_parking=True,
+        ),
         summaries={
-            "1": ReviewSummary(summary="great", pros=["fresh"], cons=["busy"], reason="matches budget and parking", confidence=0.9, sentiment_score=0.8),
-            "2": ReviewSummary(summary="fine", pros=["close"], cons=["expensive"], reason="less suitable", confidence=0.6, sentiment_score=0.1),
+            "1": ReviewSummary(
+                summary="great",
+                pros=["fresh"],
+                cons=["busy"],
+                reason="matches budget and parking",
+                confidence=0.9,
+                sentiment_score=0.8,
+            ),
+            "2": ReviewSummary(
+                summary="fine",
+                pros=["close"],
+                cons=["expensive"],
+                reason="less suitable",
+                confidence=0.6,
+                sentiment_score=0.1,
+            ),
         },
     )
     place_client = StaticTwoGISClient(places=places, reviews={"1": [], "2": []})
@@ -77,7 +123,12 @@ async def test_search_service_returns_ranked_recommendation() -> None:
         cached_ai_repo=MemoryCachedAIResultRepository(),
     )
 
-    response = await service.search(SearchRequest(query="Find sushi near me", coordinates=CoordinatesSchema(latitude=51.0, longitude=71.0)), user_id=uuid4())
+    response = await service.search(
+        SearchRequest(
+            query="Find sushi near me", coordinates=CoordinatesSchema(latitude=51.0, longitude=71.0)
+        ),
+        user_id=uuid4(),
+    )
 
     assert response.recommendation.name == "Good Sushi"
     assert response.recommendation.score > response.alternatives[0].score

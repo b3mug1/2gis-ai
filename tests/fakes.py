@@ -5,7 +5,16 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
 
-from cityguide_backend.domain.entities import Coordinates, PlaceCandidate, PlaceReview, ReviewSummary, SearchIntent, SearchResult, UserProfile, UserRole
+from cityguide_backend.domain.entities import (
+    Coordinates,
+    PlaceCandidate,
+    PlaceReview,
+    ReviewSummary,
+    SearchIntent,
+    SearchResult,
+    UserProfile,
+    UserRole,
+)
 
 
 class NoopTransaction:
@@ -51,7 +60,13 @@ class MemoryUserRepository:
         record = self.users.get(email.lower())
         if record is None:
             return None
-        return UserProfile(id=record["id"], email=record["email"], full_name=record["full_name"], role=UserRole(record["role"]), is_active=record["is_active"])
+        return UserProfile(
+            id=record["id"],
+            email=record["email"],
+            full_name=record["full_name"],
+            role=UserRole(record["role"]),
+            is_active=record["is_active"],
+        )
 
     async def get_auth_data_by_email(self, email: str) -> dict[str, Any] | None:
         return self.users.get(email.lower())
@@ -59,14 +74,35 @@ class MemoryUserRepository:
     async def get_by_id(self, user_id: UUID) -> UserProfile | None:
         for record in self.users.values():
             if record["id"] == user_id:
-                return UserProfile(id=record["id"], email=record["email"], full_name=record["full_name"], role=UserRole(record["role"]), is_active=record["is_active"])
+                return UserProfile(
+                    id=record["id"],
+                    email=record["email"],
+                    full_name=record["full_name"],
+                    role=UserRole(record["role"]),
+                    is_active=record["is_active"],
+                )
         return None
 
-    async def create(self, *, email: str, password_hash: str, full_name: str, role: str) -> UserProfile:
+    async def create(
+        self, *, email: str, password_hash: str, full_name: str, role: str
+    ) -> UserProfile:
         user_id = uuid4()
-        record = {"id": user_id, "email": email.lower(), "full_name": full_name, "role": role, "is_active": True, "password_hash": password_hash}
+        record = {
+            "id": user_id,
+            "email": email.lower(),
+            "full_name": full_name,
+            "role": role,
+            "is_active": True,
+            "password_hash": password_hash,
+        }
         self.users[email.lower()] = record
-        return UserProfile(id=user_id, email=email.lower(), full_name=full_name, role=UserRole(role), is_active=True)
+        return UserProfile(
+            id=user_id,
+            email=email.lower(),
+            full_name=full_name,
+            role=UserRole(role),
+            is_active=True,
+        )
 
     async def update_last_login(self, user_id: UUID) -> None:
         return None
@@ -76,8 +112,20 @@ class MemoryUserRepository:
 class MemoryRefreshTokenRepository:
     tokens: dict[str, dict[str, Any]] = field(default_factory=dict)
 
-    async def create(self, *, user_id: UUID, token_hash: str, expires_at: datetime, revoked_at: datetime | None = None) -> None:
-        self.tokens[token_hash] = {"user_id": user_id, "token_hash": token_hash, "expires_at": expires_at, "revoked_at": revoked_at}
+    async def create(
+        self,
+        *,
+        user_id: UUID,
+        token_hash: str,
+        expires_at: datetime,
+        revoked_at: datetime | None = None,
+    ) -> None:
+        self.tokens[token_hash] = {
+            "user_id": user_id,
+            "token_hash": token_hash,
+            "expires_at": expires_at,
+            "revoked_at": revoked_at,
+        }
 
     async def get_by_hash(self, token_hash: str) -> dict[str, Any] | None:
         return self.tokens.get(token_hash)
@@ -96,8 +144,12 @@ class MemoryRefreshTokenRepository:
 class MemorySearchHistoryRepository:
     entries: list[dict[str, Any]] = field(default_factory=list)
 
-    async def create(self, *, user_id: UUID, query: str, intent: SearchIntent, result: SearchResult) -> None:
-        self.entries.append({"user_id": user_id, "query": query, "intent": intent, "result": result})
+    async def create(
+        self, *, user_id: UUID, query: str, intent: SearchIntent, result: SearchResult
+    ) -> None:
+        self.entries.append(
+            {"user_id": user_id, "query": query, "intent": intent, "result": result}
+        )
 
     async def list_for_user(self, user_id: UUID, limit: int = 50) -> list[dict[str, Any]]:
         return [entry for entry in self.entries if entry["user_id"] == user_id][:limit]
@@ -110,13 +162,27 @@ class MemoryFavoritePlaceRepository:
     async def list_for_user(self, user_id: UUID) -> list[dict[str, Any]]:
         return [favorite for favorite in self.favorites if favorite["user_id"] == user_id]
 
-    async def add(self, *, user_id: UUID, place: PlaceCandidate, note: str | None = None) -> dict[str, Any]:
-        favorite = {"id": uuid4(), "user_id": user_id, "place_id": place.place_id, "place_name": place.name, "payload": {"address": place.address, "rating": place.rating}, "note": note, "created_at": datetime.now(timezone.utc)}
+    async def add(
+        self, *, user_id: UUID, place: PlaceCandidate, note: str | None = None
+    ) -> dict[str, Any]:
+        favorite = {
+            "id": uuid4(),
+            "user_id": user_id,
+            "place_id": place.place_id,
+            "place_name": place.name,
+            "payload": {"address": place.address, "rating": place.rating},
+            "note": note,
+            "created_at": datetime.now(timezone.utc),
+        }
         self.favorites.append(favorite)
         return favorite
 
     async def delete(self, favorite_id: UUID, user_id: UUID) -> None:
-        self.favorites = [favorite for favorite in self.favorites if not (favorite["id"] == favorite_id and favorite["user_id"] == user_id)]
+        self.favorites = [
+            favorite
+            for favorite in self.favorites
+            if not (favorite["id"] == favorite_id and favorite["user_id"] == user_id)
+        ]
 
 
 @dataclass
@@ -139,7 +205,13 @@ class MemorySearchSessionRepository:
 
     async def create(self, *, user_id: UUID, query: str, intent: SearchIntent, status: str) -> UUID:
         session_id = uuid4()
-        self.sessions[session_id] = {"user_id": user_id, "query": query, "intent": intent, "status": status, "result": None}
+        self.sessions[session_id] = {
+            "user_id": user_id,
+            "query": query,
+            "intent": intent,
+            "status": status,
+            "result": None,
+        }
         return session_id
 
     async def update_result(self, session_id: UUID, result: SearchResult, status: str) -> None:
@@ -158,15 +230,40 @@ class MemorySearchStatisticsRepository:
         self.increments.append({"user_id": user_id, "total": total, "successful": successful})
 
     async def daily_summary(self, *, user_id: UUID | None = None) -> list[dict[str, Any]]:
-        return [{"stat_date": datetime.now(timezone.utc), "user_id": user_id, "total_searches": 1, "successful_searches": 1}]
+        return [
+            {
+                "stat_date": datetime.now(timezone.utc),
+                "user_id": user_id,
+                "total_searches": 1,
+                "successful_searches": 1,
+            }
+        ]
 
 
 @dataclass
 class MemoryAIUsageLogRepository:
     logs: list[dict[str, Any]] = field(default_factory=list)
 
-    async def create(self, *, user_id: UUID | None, operation: str, model: str, prompt_tokens: int, completion_tokens: int, metadata: dict[str, Any]) -> None:
-        self.logs.append({"user_id": user_id, "operation": operation, "model": model, "prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens, "metadata": metadata})
+    async def create(
+        self,
+        *,
+        user_id: UUID | None,
+        operation: str,
+        model: str,
+        prompt_tokens: int,
+        completion_tokens: int,
+        metadata: dict[str, Any],
+    ) -> None:
+        self.logs.append(
+            {
+                "user_id": user_id,
+                "operation": operation,
+                "model": model,
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "metadata": metadata,
+            }
+        )
 
 
 @dataclass
@@ -174,7 +271,9 @@ class StaticAIClient:
     intent: SearchIntent
     summaries: dict[str, ReviewSummary]
 
-    async def extract_intent(self, query: str, *, user_location: Coordinates | None = None) -> SearchIntent:
+    async def extract_intent(
+        self, query: str, *, user_location: Coordinates | None = None
+    ) -> SearchIntent:
         return self.intent
 
     async def summarize_reviews(self, intent: SearchIntent, place: PlaceCandidate) -> ReviewSummary:

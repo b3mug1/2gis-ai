@@ -13,16 +13,27 @@ router = APIRouter(prefix="/favorites", tags=["favorites"])
 
 
 @router.get("", response_model=list[FavoriteResponse])
-async def list_favorites(service: FavoritesService = Depends(get_favorites_service), current_user: UserProfile = Depends(get_current_user)) -> list[FavoriteResponse]:
+async def list_favorites(
+    service: FavoritesService = Depends(get_favorites_service),
+    current_user: UserProfile = Depends(get_current_user),
+) -> list[FavoriteResponse]:
     return await service.list(current_user.id)
 
 
 @router.post("", response_model=FavoriteResponse)
-async def add_favorite(payload: FavoriteCreateRequest, service: FavoritesService = Depends(get_favorites_service), current_user: UserProfile = Depends(get_current_user)) -> FavoriteResponse:
+async def add_favorite(
+    payload: FavoriteCreateRequest,
+    service: FavoritesService = Depends(get_favorites_service),
+    current_user: UserProfile = Depends(get_current_user),
+) -> FavoriteResponse:
     return await service.add(current_user.id, payload)
 
 
 @router.delete("/{favorite_id}")
-async def delete_favorite(favorite_id: UUID = Path(...), service: FavoritesService = Depends(get_favorites_service), current_user: UserProfile = Depends(get_current_user)) -> dict[str, str]:
+async def delete_favorite(
+    favorite_id: UUID = Path(...),
+    service: FavoritesService = Depends(get_favorites_service),
+    current_user: UserProfile = Depends(get_current_user),
+) -> dict[str, str]:
     await service.delete(favorite_id, current_user.id)
     return {"message": "Deleted"}

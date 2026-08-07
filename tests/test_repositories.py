@@ -9,9 +9,20 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from unittest.mock import AsyncMock
 
-from cityguide_backend.domain.entities import Coordinates, PlaceCandidate, PlaceReview, ReviewSummary, SearchIntent, SearchResult, PlaceRecommendation
+from cityguide_backend.domain.entities import (
+    Coordinates,
+    PlaceCandidate,
+    PlaceReview,
+    ReviewSummary,
+    SearchIntent,
+    SearchResult,
+    PlaceRecommendation,
+)
 from cityguide_backend.infrastructure.db.models import SearchHistoryModel, UserModel
-from cityguide_backend.infrastructure.repositories import SqlAlchemySearchHistoryRepository, SqlAlchemyUserRepository
+from cityguide_backend.infrastructure.repositories import (
+    SqlAlchemySearchHistoryRepository,
+    SqlAlchemyUserRepository,
+)
 
 
 @pytest.mark.asyncio
@@ -20,7 +31,9 @@ async def test_user_repository_create_adds_lowercased_user() -> None:
     session.flush = AsyncMock()
     repo = SqlAlchemyUserRepository(session)
 
-    profile = await repo.create(email="USER@example.com", password_hash="hash", full_name="User", role="user")
+    profile = await repo.create(
+        email="USER@example.com", password_hash="hash", full_name="User", role="user"
+    )
 
     assert profile.email == "user@example.com"
     assert session.add.call_count == 1
@@ -36,7 +49,17 @@ async def test_search_history_repository_serializes_payloads() -> None:
     repo = SqlAlchemySearchHistoryRepository(session)
     intent = SearchIntent(query="sushi", location_text="Astana")
     result = SearchResult(
-        recommendation=PlaceRecommendation(place_id="1", name="Place", rating=4.9, walking_time=10, pros=["good"], cons=["busy"], reason="best", confidence=0.9, score=0.95),
+        recommendation=PlaceRecommendation(
+            place_id="1",
+            name="Place",
+            rating=4.9,
+            walking_time=10,
+            pros=["good"],
+            cons=["busy"],
+            reason="best",
+            confidence=0.9,
+            score=0.95,
+        ),
         alternatives=[],
         intent=intent,
         source="2gis+gemini",

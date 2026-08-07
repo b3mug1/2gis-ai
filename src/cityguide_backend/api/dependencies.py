@@ -48,7 +48,9 @@ def get_settings_dep() -> Settings:
     return get_settings()
 
 
-def get_auth_service(request: Request, session: AsyncSession = Depends(get_db_session)) -> AuthService:
+def get_auth_service(
+    request: Request, session: AsyncSession = Depends(get_db_session)
+) -> AuthService:
     return AuthService(
         session=session,
         users=SqlAlchemyUserRepository(session),
@@ -57,7 +59,9 @@ def get_auth_service(request: Request, session: AsyncSession = Depends(get_db_se
     )
 
 
-def get_search_service(request: Request, session: AsyncSession = Depends(get_db_session)) -> SearchService:
+def get_search_service(
+    request: Request, session: AsyncSession = Depends(get_db_session)
+) -> SearchService:
     return SearchService(
         session=session,
         settings=request.app.state.settings,
@@ -72,15 +76,25 @@ def get_search_service(request: Request, session: AsyncSession = Depends(get_db_
     )
 
 
-def get_favorites_service(request: Request, session: AsyncSession = Depends(get_db_session)) -> FavoritesService:
+def get_favorites_service(
+    request: Request, session: AsyncSession = Depends(get_db_session)
+) -> FavoritesService:
     return FavoritesService(session=session, repository=SqlAlchemyFavoritePlaceRepository(session))
 
 
-def get_statistics_service(request: Request, session: AsyncSession = Depends(get_db_session)) -> StatisticsService:
-    return StatisticsService(session=session, repository=SqlAlchemySearchStatisticsRepository(session))
+def get_statistics_service(
+    request: Request, session: AsyncSession = Depends(get_db_session)
+) -> StatisticsService:
+    return StatisticsService(
+        session=session, repository=SqlAlchemySearchStatisticsRepository(session)
+    )
 
 
-async def get_current_user(request: Request, authorization: Annotated[str | None, Header()] = None, session: AsyncSession = Depends(get_db_session)) -> UserProfile:
+async def get_current_user(
+    request: Request,
+    authorization: Annotated[str | None, Header()] = None,
+    session: AsyncSession = Depends(get_db_session),
+) -> UserProfile:
     if not authorization or not authorization.startswith("Bearer "):
         raise AuthenticationError("Missing bearer token")
     token = authorization.removeprefix("Bearer ").strip()

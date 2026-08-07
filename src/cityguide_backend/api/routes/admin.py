@@ -27,9 +27,9 @@ async def get_admin_summary(
 ) -> dict[str, Any]:
     # Filter out automated test accounts
     real_filter = (
-        ~UserModel.email.ilike("%example.com") &
-        ~UserModel.email.ilike("%test%") &
-        (UserModel.email != "admin@cityguide.local")
+        ~UserModel.email.ilike("%example.com")
+        & ~UserModel.email.ilike("%test%")
+        & (UserModel.email != "admin@cityguide.local")
     )
 
     # Real DB User count
@@ -115,11 +115,13 @@ async def get_all_users(
     _admin: UserProfile = Depends(get_admin_user),
 ) -> list[dict[str, Any]]:
     real_filter = (
-        ~UserModel.email.ilike("%example.com") &
-        ~UserModel.email.ilike("%test%") &
-        (UserModel.email != "admin@cityguide.local")
+        ~UserModel.email.ilike("%example.com")
+        & ~UserModel.email.ilike("%test%")
+        & (UserModel.email != "admin@cityguide.local")
     )
-    result = await session.execute(select(UserModel).where(real_filter).order_by(UserModel.created_at.desc()))
+    result = await session.execute(
+        select(UserModel).where(real_filter).order_by(UserModel.created_at.desc())
+    )
     users = result.scalars().all()
     return [
         {
@@ -148,23 +150,27 @@ async def run_system_diagnostics(
     try:
         await session.execute(select(1))
         ms = round((time.perf_counter() - t0) * 1000, 2)
-        test_results.append({
-            "id": 1,
-            "name": "PostgreSQL Connection & Query Execution",
-            "category": "Database",
-            "status": "passed",
-            "latency_ms": ms,
-            "details": f"Successfully executed 'SELECT 1' via asyncpg connection pool in {ms}ms.",
-        })
+        test_results.append(
+            {
+                "id": 1,
+                "name": "PostgreSQL Connection & Query Execution",
+                "category": "Database",
+                "status": "passed",
+                "latency_ms": ms,
+                "details": f"Successfully executed 'SELECT 1' via asyncpg connection pool in {ms}ms.",
+            }
+        )
     except Exception as exc:
-        test_results.append({
-            "id": 1,
-            "name": "PostgreSQL Connection & Query Execution",
-            "category": "Database",
-            "status": "failed",
-            "latency_ms": 0,
-            "details": f"Database error: {exc}",
-        })
+        test_results.append(
+            {
+                "id": 1,
+                "name": "PostgreSQL Connection & Query Execution",
+                "category": "Database",
+                "status": "failed",
+                "latency_ms": 0,
+                "details": f"Database error: {exc}",
+            }
+        )
 
     # Test 2: Redis In-Memory Cache Ping
     t0 = time.perf_counter()
@@ -180,37 +186,44 @@ async def run_system_diagnostics(
             else:
                 is_ok = True
             ms = round((time.perf_counter() - t0) * 1000, 2)
-            test_results.append({
-                "id": 2,
-                "name": "Redis In-Memory Cache Set/Get",
-                "category": "Cache",
-                "status": "passed" if is_ok else "failed",
-                "latency_ms": ms,
-                "details": f"Redis in-memory cache set & get verified in {ms}ms.",
-            })
+            test_results.append(
+                {
+                    "id": 2,
+                    "name": "Redis In-Memory Cache Set/Get",
+                    "category": "Cache",
+                    "status": "passed" if is_ok else "failed",
+                    "latency_ms": ms,
+                    "details": f"Redis in-memory cache set & get verified in {ms}ms.",
+                }
+            )
         else:
-            test_results.append({
+            test_results.append(
+                {
+                    "id": 2,
+                    "name": "Redis In-Memory Cache Set/Get",
+                    "category": "Cache",
+                    "status": "passed",
+                    "latency_ms": 1.2,
+                    "details": "InMemoryCache fallback active and healthy.",
+                }
+            )
+    except Exception as exc:
+        test_results.append(
+            {
                 "id": 2,
                 "name": "Redis In-Memory Cache Set/Get",
                 "category": "Cache",
-                "status": "passed",
-                "latency_ms": 1.2,
-                "details": "InMemoryCache fallback active and healthy.",
-            })
-    except Exception as exc:
-        test_results.append({
-            "id": 2,
-            "name": "Redis In-Memory Cache Set/Get",
-            "category": "Cache",
-            "status": "failed",
-            "latency_ms": 0,
-            "details": f"Redis error: {exc}",
-        })
+                "status": "failed",
+                "latency_ms": 0,
+                "details": f"Redis error: {exc}",
+            }
+        )
 
     # Test 3: JWT Token Signing & Decoding Security
     t0 = time.perf_counter()
     try:
         from datetime import timedelta
+
         secret = request.app.state.settings.jwt_secret_key
         token = create_access_token(
             subject=str(_admin.id),
@@ -219,46 +232,54 @@ async def run_system_diagnostics(
         )
         decoded = decode_jwt(token, secret)
         ms = round((time.perf_counter() - t0) * 1000, 2)
-        test_results.append({
-            "id": 3,
-            "name": "JWT Security Token Sign & Verify",
-            "category": "Security",
-            "status": "passed" if decoded.get("sub") == str(_admin.id) else "failed",
-            "latency_ms": ms,
-            "details": f"HS256 JWT signature verified in {ms}ms.",
-        })
+        test_results.append(
+            {
+                "id": 3,
+                "name": "JWT Security Token Sign & Verify",
+                "category": "Security",
+                "status": "passed" if decoded.get("sub") == str(_admin.id) else "failed",
+                "latency_ms": ms,
+                "details": f"HS256 JWT signature verified in {ms}ms.",
+            }
+        )
     except Exception as exc:
-        test_results.append({
-            "id": 3,
-            "name": "JWT Security Token Sign & Verify",
-            "category": "Security",
-            "status": "failed",
-            "latency_ms": 0,
-            "details": f"JWT Error: {exc}",
-        })
+        test_results.append(
+            {
+                "id": 3,
+                "name": "JWT Security Token Sign & Verify",
+                "category": "Security",
+                "status": "failed",
+                "latency_ms": 0,
+                "details": f"JWT Error: {exc}",
+            }
+        )
 
     # Test 4: Argon2 / Password Hashing Security
     t0 = time.perf_counter()
     try:
         h = hash_password("DiagnosticSecret123!")
         ms = round((time.perf_counter() - t0) * 1000, 2)
-        test_results.append({
-            "id": 4,
-            "name": "Password Hashing Security (Argon2/Bcrypt)",
-            "category": "Security",
-            "status": "passed" if len(h) > 20 else "failed",
-            "latency_ms": ms,
-            "details": f"Cryptographic salt & hash generated in {ms}ms.",
-        })
+        test_results.append(
+            {
+                "id": 4,
+                "name": "Password Hashing Security (Argon2/Bcrypt)",
+                "category": "Security",
+                "status": "passed" if len(h) > 20 else "failed",
+                "latency_ms": ms,
+                "details": f"Cryptographic salt & hash generated in {ms}ms.",
+            }
+        )
     except Exception as exc:
-        test_results.append({
-            "id": 4,
-            "name": "Password Hashing Security (Argon2/Bcrypt)",
-            "category": "Security",
-            "status": "failed",
-            "latency_ms": 0,
-            "details": f"Hash Error: {exc}",
-        })
+        test_results.append(
+            {
+                "id": 4,
+                "name": "Password Hashing Security (Argon2/Bcrypt)",
+                "category": "Security",
+                "status": "failed",
+                "latency_ms": 0,
+                "details": f"Hash Error: {exc}",
+            }
+        )
 
     # Test 5: Google Gemini LLM Client Configuration
     t0 = time.perf_counter()
@@ -266,112 +287,132 @@ async def run_system_diagnostics(
         key = request.app.state.settings.gemini_api_key
         model_name = request.app.state.settings.gemini_model
         ms = round((time.perf_counter() - t0) * 1000, 2)
-        test_results.append({
-            "id": 5,
-            "name": "Google Gemini AI API Key & Model Config",
-            "category": "AI Engine",
-            "status": "passed" if key else "failed",
-            "latency_ms": ms,
-            "details": f"Model '{model_name}' configured with key ({key[:6]}...).",
-        })
+        test_results.append(
+            {
+                "id": 5,
+                "name": "Google Gemini AI API Key & Model Config",
+                "category": "AI Engine",
+                "status": "passed" if key else "failed",
+                "latency_ms": ms,
+                "details": f"Model '{model_name}' configured with key ({key[:6]}...).",
+            }
+        )
     except Exception as exc:
-        test_results.append({
-            "id": 5,
-            "name": "Google Gemini AI API Key & Model Config",
-            "category": "AI Engine",
-            "status": "failed",
-            "latency_ms": 0,
-            "details": f"Gemini Error: {exc}",
-        })
+        test_results.append(
+            {
+                "id": 5,
+                "name": "Google Gemini AI API Key & Model Config",
+                "category": "AI Engine",
+                "status": "failed",
+                "latency_ms": 0,
+                "details": f"Gemini Error: {exc}",
+            }
+        )
 
     # Test 6: 2GIS Catalog API Client Connection
     t0 = time.perf_counter()
     try:
         tw_key = request.app.state.settings.twogis_api_key
         ms = round((time.perf_counter() - t0) * 1000, 2)
-        test_results.append({
-            "id": 6,
-            "name": "2GIS Catalog REST API Ping",
-            "category": "Maps & Data",
-            "status": "passed" if tw_key else "failed",
-            "latency_ms": ms,
-            "details": f"2GIS catalog API key verified ({tw_key[:8]}...).",
-        })
+        test_results.append(
+            {
+                "id": 6,
+                "name": "2GIS Catalog REST API Ping",
+                "category": "Maps & Data",
+                "status": "passed" if tw_key else "failed",
+                "latency_ms": ms,
+                "details": f"2GIS catalog API key verified ({tw_key[:8]}...).",
+            }
+        )
     except Exception as exc:
-        test_results.append({
-            "id": 6,
-            "name": "2GIS Catalog REST API Ping",
-            "category": "Maps & Data",
-            "status": "failed",
-            "latency_ms": 0,
-            "details": f"2GIS Error: {exc}",
-        })
+        test_results.append(
+            {
+                "id": 6,
+                "name": "2GIS Catalog REST API Ping",
+                "category": "Maps & Data",
+                "status": "failed",
+                "latency_ms": 0,
+                "details": f"2GIS Error: {exc}",
+            }
+        )
 
     # Test 7: OSRM Road Routing Engine Ping
     t0 = time.perf_counter()
     try:
         ms = round((time.perf_counter() - t0) * 1000, 2)
-        test_results.append({
-            "id": 7,
-            "name": "OSRM Turn-by-Turn Road Routing",
-            "category": "Maps & Data",
-            "status": "passed",
-            "latency_ms": ms,
-            "details": "OSRM GeoJSON road routing engine verified.",
-        })
+        test_results.append(
+            {
+                "id": 7,
+                "name": "OSRM Turn-by-Turn Road Routing",
+                "category": "Maps & Data",
+                "status": "passed",
+                "latency_ms": ms,
+                "details": "OSRM GeoJSON road routing engine verified.",
+            }
+        )
     except Exception as exc:
-        test_results.append({
-            "id": 7,
-            "name": "OSRM Turn-by-Turn Road Routing",
-            "category": "Maps & Data",
-            "status": "failed",
-            "latency_ms": 0,
-            "details": f"OSRM Error: {exc}",
-        })
+        test_results.append(
+            {
+                "id": 7,
+                "name": "OSRM Turn-by-Turn Road Routing",
+                "category": "Maps & Data",
+                "status": "failed",
+                "latency_ms": 0,
+                "details": f"OSRM Error: {exc}",
+            }
+        )
 
     # Test 8: Search Intent Parsing Pipeline
     t0 = time.perf_counter()
     try:
         ms = round((time.perf_counter() - t0) * 1000, 2)
-        test_results.append({
-            "id": 8,
-            "name": "AI Intent Parsing & Transliteration Pipeline",
-            "category": "AI Engine",
-            "status": "passed",
-            "latency_ms": ms,
-            "details": "Query pre-processing & normalization pipeline healthy.",
-        })
+        test_results.append(
+            {
+                "id": 8,
+                "name": "AI Intent Parsing & Transliteration Pipeline",
+                "category": "AI Engine",
+                "status": "passed",
+                "latency_ms": ms,
+                "details": "Query pre-processing & normalization pipeline healthy.",
+            }
+        )
     except Exception as exc:
-        test_results.append({
-            "id": 8,
-            "name": "AI Intent Parsing & Transliteration Pipeline",
-            "category": "AI Engine",
-            "status": "failed",
-            "latency_ms": 0,
-            "details": f"Pipeline Error: {exc}",
-        })
+        test_results.append(
+            {
+                "id": 8,
+                "name": "AI Intent Parsing & Transliteration Pipeline",
+                "category": "AI Engine",
+                "status": "failed",
+                "latency_ms": 0,
+                "details": f"Pipeline Error: {exc}",
+            }
+        )
 
     # Test 9: Bus Transit Transfer Waypoint Calculation
     t0 = time.perf_counter()
     try:
         ms = round((time.perf_counter() - t0) * 1000, 2)
-        test_results.append({
-            "id": 9,
-            "name": "Bus Transit Transfer & Walk Path Calculator",
-            "category": "Public Transit",
-            "status": "passed",
-            "latency_ms": ms,
-            "details": "Transfer waypoint interpolation algorithm verified.",
-        })
+        test_results.append(
+            {
+                "id": 9,
+                "name": "Bus Transit Transfer & Walk Path Calculator",
+                "category": "Public Transit",
+                "status": "passed",
+                "latency_ms": ms,
+                "details": "Transfer waypoint interpolation algorithm verified.",
+            }
+        )
     except Exception as exc:
-        test_results.append({
-            "id": 9,
-            "name": "Bus Transit Transfer & Walk Path Calculator",
-            "category": "Public Transit",
-            "status": "failed",
-            "latency_ms": 0,
-            "details": f"Transit Error: {exc}",
-        })
+        test_results.append(
+            {
+                "id": 9,
+                "name": "Bus Transit Transfer & Walk Path Calculator",
+                "category": "Public Transit",
+                "status": "failed",
+                "latency_ms": 0,
+                "details": f"Transit Error: {exc}",
+            }
+        )
 
     # Test 10: Database Search History Auditing & Aggregator
     t0 = time.perf_counter()
@@ -379,22 +420,26 @@ async def run_system_diagnostics(
         res = await session.execute(select(func.count(SearchHistoryModel.id)))
         cnt = res.scalar() or 0
         ms = round((time.perf_counter() - t0) * 1000, 2)
-        test_results.append({
-            "id": 10,
-            "name": "Search Audit & Daily Statistics Aggregator",
-            "category": "Analytics",
-            "status": "passed",
-            "latency_ms": ms,
-            "details": f"Analytics engine verified ({cnt} queries tracked in DB).",
-        })
+        test_results.append(
+            {
+                "id": 10,
+                "name": "Search Audit & Daily Statistics Aggregator",
+                "category": "Analytics",
+                "status": "passed",
+                "latency_ms": ms,
+                "details": f"Analytics engine verified ({cnt} queries tracked in DB).",
+            }
+        )
     except Exception as exc:
-        test_results.append({
-            "id": 10,
-            "name": "Search Audit & Daily Statistics Aggregator",
-            "category": "Analytics",
-            "status": "failed",
-            "latency_ms": 0,
-            "details": f"Audit Error: {exc}",
-        })
+        test_results.append(
+            {
+                "id": 10,
+                "name": "Search Audit & Daily Statistics Aggregator",
+                "category": "Analytics",
+                "status": "failed",
+                "latency_ms": 0,
+                "details": f"Audit Error: {exc}",
+            }
+        )
 
     return test_results
