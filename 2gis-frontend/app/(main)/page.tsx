@@ -6,23 +6,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Sparkles,
-  TrendingUp,
   Clock,
   ArrowRight,
   MapPin,
   UtensilsCrossed,
-  Coffee,
-  Beer,
-  Pizza,
-  Cake,
-  Heart,
   Star,
   Compass,
   CheckCircle2,
 } from "lucide-react";
 import { useHistory } from "@/hooks/useHistory";
 import { ThemeSwitcher } from "@/components/shared/ThemeSwitcher";
-import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { discoverService } from "@/services/discoverService";
@@ -88,25 +81,21 @@ export default function HomePage() {
   const recentSearches = history?.slice(0, 4) ?? [];
 
   return (
-    <div className="relative min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] selection:bg-brand-400 selection:text-black">
-      {/* Background Ambient Glowing Orbs */}
-      <div className="orb w-[650px] h-[650px] bg-brand-400/15 -top-60 -right-40 animate-pulse-subtle" />
-      <div className="orb w-[550px] h-[550px] bg-brand-500/10 -bottom-40 -left-40 animate-pulse-subtle" />
-
-      {/* Breakpoint Style Navigation Bar */}
-      <header className="relative z-20 flex items-center justify-between px-6 sm:px-12 h-24 max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-brand-400 flex items-center justify-center shadow-lg shadow-brand-400/30 text-black">
-            <MapPin className="w-6 h-6 stroke-[2.5]" />
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      {/* Header Navigation Bar */}
+      <header className="relative z-20 flex items-center justify-between px-6 sm:px-10 h-20 border-b border-[hsl(var(--border))] max-w-7xl mx-auto">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center">
+            <MapPin className="w-4 h-4" />
           </div>
-          <span className="font-extrabold text-xl tracking-tight text-foreground uppercase">
-            City Guide <span className="text-brand-400">AI</span>
+          <span className="font-bold text-lg tracking-tight text-foreground">
+            City Guide <span className="text-[hsl(var(--primary))] font-semibold">AI</span>
           </span>
         </div>
 
-        {/* Central Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          <Link href="/" className="text-brand-400 hover:text-brand-300 transition-colors">
+        {/* Central Nav Links */}
+        <nav className="hidden md:flex items-center gap-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <Link href="/" className="text-[hsl(var(--primary))] font-bold">
             {t.home.navMain}
           </Link>
           <Link href="/chat" className="hover:text-foreground transition-colors">
@@ -120,7 +109,7 @@ export default function HomePage() {
           </Link>
         </nav>
 
-        {/* Controls: Theme Switcher + CTA */}
+        {/* Controls */}
         <div className="flex items-center gap-3">
           <ThemeSwitcher />
           <button
@@ -133,33 +122,34 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 sm:px-12 pt-8 pb-16">
+      <section className="max-w-7xl mx-auto px-6 sm:px-10 pt-12 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Left Column: Headlines & Search */}
+          {/* Left Column */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="lg:col-span-7 space-y-8"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="lg:col-span-7 space-y-6"
           >
-            <div className="inline-flex items-center gap-2 bg-brand-400/10 text-brand-400 border border-brand-400/20 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-4 h-4" />
+            <div className="inline-flex items-center gap-2 bg-[hsl(var(--secondary))] text-[hsl(var(--primary))] border border-[hsl(var(--border))] px-3 py-1 rounded-md text-xs font-semibold uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5" />
               {t.home.badge}
             </div>
 
-            <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight leading-[1.08] text-foreground">
-              {t.home.heroTitle1}<span className="text-brand-400">{t.home.heroTitle2}</span>
+            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-[1.1] text-foreground">
+              {t.home.heroTitle1}
+              <span className="text-[hsl(var(--primary))]">{t.home.heroTitle2}</span>
               {t.home.heroTitle3}
             </h1>
 
-            <p className="text-muted-foreground text-base sm:text-lg max-w-xl leading-relaxed">
+            <p className="text-muted-foreground text-base max-w-xl leading-relaxed">
               {t.home.heroSubtitle}
             </p>
 
-            {/* Main Input Search */}
+            {/* Input Search */}
             <div className="relative max-w-xl" ref={searchWrapRef}>
-              <div className="relative flex items-center rounded-full border border-[hsl(var(--border))] bg-card/90 backdrop-blur-xl shadow-2xl focus-within:border-brand-400 transition-all p-2">
-                <Search className="ml-4 w-5 h-5 text-muted-foreground" />
+              <div className="relative flex items-center rounded-md border border-[hsl(var(--border))] bg-card shadow-xs focus-within:border-[hsl(var(--primary))] transition-all p-1.5">
+                <Search className="ml-3 w-4 h-4 text-muted-foreground shrink-0" />
                 <input
                   type="text"
                   value={query}
@@ -167,14 +157,14 @@ export default function HomePage() {
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                   placeholder={t.home.placeholder}
-                  className="w-full bg-transparent text-sm sm:text-base px-4 py-3 outline-none placeholder:text-muted-foreground/60 text-foreground"
+                  className="w-full bg-transparent text-sm px-3 py-2 outline-none placeholder:text-muted-foreground/60 text-foreground"
                 />
                 <button
                   onClick={() => handleSearch()}
                   className="btn-minimal btn-minimal-primary shrink-0 text-xs uppercase"
                 >
                   <span>{t.home.searchBtn}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
 
@@ -182,10 +172,10 @@ export default function HomePage() {
               <AnimatePresence>
                 {showSuggestions && suggestions.length > 0 && (
                   <motion.div
-                    initial={{ opacity: 0, y: -6 }}
+                    initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    className="absolute top-full left-0 right-0 mt-3 z-50 rounded-2xl border border-[hsl(var(--border))] bg-card shadow-2xl overflow-hidden"
+                    exit={{ opacity: 0, y: -4 }}
+                    className="absolute top-full left-0 right-0 mt-2 z-50 rounded-md border border-[hsl(var(--border))] bg-card shadow-lg overflow-hidden"
                   >
                     {suggestions.map((s, i) => (
                       <button
@@ -194,9 +184,9 @@ export default function HomePage() {
                           setQuery(s);
                           handleSearch(s);
                         }}
-                        className="w-full flex items-center gap-3 px-5 py-3.5 text-left text-sm text-foreground hover:bg-muted/80 transition-colors border-b border-[hsl(var(--border)/0.5)] last:border-0"
+                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-sm text-foreground hover:bg-[hsl(var(--muted))] transition-colors border-b border-[hsl(var(--border))] last:border-0"
                       >
-                        <Search className="w-4 h-4 text-brand-400 shrink-0" />
+                        <Search className="w-3.5 h-3.5 text-[hsl(var(--primary))] shrink-0" />
                         <span className="truncate">{s}</span>
                       </button>
                     ))}
@@ -206,12 +196,12 @@ export default function HomePage() {
             </div>
 
             {/* Popular Quick Tag Pills */}
-            <div className="flex flex-wrap gap-2 pt-2">
+            <div className="flex flex-wrap gap-2 pt-1">
               {t.home.popularPrompts.slice(0, 3).map((promptText) => (
                 <button
                   key={promptText}
                   onClick={() => handleSearch(promptText)}
-                  className="text-xs px-4 py-2 rounded-full border border-[hsl(var(--border))] bg-card/60 hover:bg-brand-400 hover:text-black hover:border-brand-400 transition-all font-semibold"
+                  className="text-xs px-3 py-1.5 rounded-md border border-[hsl(var(--border))] bg-card hover:bg-[hsl(var(--secondary))] hover:border-[hsl(var(--primary))] transition-all font-medium text-foreground"
                 >
                   {promptText}
                 </button>
@@ -219,89 +209,78 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          {/* Right Column: Hero Visual & Floating Metric Cards */}
+          {/* Right Column Visual */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
             className="lg:col-span-5 relative"
           >
-            {/* Main Arch Frame Hero Image */}
-            <div className="arch-frame relative w-full h-[450px] sm:h-[520px] bg-gradient-to-b from-brand-400/20 to-card border border-[hsl(var(--border))] shadow-2xl overflow-hidden">
+            <div className="relative w-full h-[400px] rounded-lg border border-[hsl(var(--border))] overflow-hidden bg-card">
               <img
                 src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80"
                 alt="Astana Food & Dining"
-                className="w-full h-full object-cover opacity-85 hover:scale-105 transition-transform duration-700"
+                className="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--background))] via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--background))] via-transparent to-transparent opacity-80" />
             </div>
 
             {/* Floating Metric Card 1 */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="absolute -bottom-6 -left-6 bg-card/95 border border-[hsl(var(--border))] p-5 rounded-3xl shadow-2xl backdrop-blur-xl max-w-[220px]"
-            >
-              <div className="text-3xl font-extrabold text-brand-400 mb-1">{t.home.stats1Val}</div>
-              <div className="text-xs font-bold text-foreground">{t.home.stats1Label}</div>
-              <p className="text-[11px] text-muted-foreground mt-1">{t.home.stats1Sub}</p>
-            </motion.div>
+            <div className="absolute -bottom-4 -left-4 bg-card border border-[hsl(var(--border))] p-4 rounded-md shadow-md max-w-[200px]">
+              <div className="text-2xl font-bold text-[hsl(var(--primary))] mb-0.5">{t.home.stats1Val}</div>
+              <div className="text-xs font-semibold text-foreground">{t.home.stats1Label}</div>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{t.home.stats1Sub}</p>
+            </div>
 
             {/* Floating Metric Card 2 */}
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="absolute -top-6 -right-4 bg-card/95 border border-[hsl(var(--border))] p-4 rounded-3xl shadow-2xl backdrop-blur-xl flex items-center gap-3"
-            >
-              <div className="w-10 h-10 rounded-2xl bg-brand-400 text-black flex items-center justify-center font-bold shrink-0">
-                <Compass className="w-5 h-5" />
+            <div className="absolute -top-4 -right-4 bg-card border border-[hsl(var(--border))] p-3.5 rounded-md shadow-md flex items-center gap-3">
+              <div className="w-8 h-8 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center font-bold shrink-0">
+                <Compass className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-extrabold text-foreground">{t.home.stats2Title}</p>
+                <p className="text-xs font-semibold text-foreground">{t.home.stats2Title}</p>
                 <p className="text-[10px] text-muted-foreground">{t.home.stats2Sub}</p>
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* BreakPoint Style Mint Accent Ribbon Bar */}
-      <section className="teal-ribbon my-12 py-5 px-6 sm:px-12">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm uppercase tracking-wider">
+      {/* Mint Accent Ribbon Bar */}
+      <section className="bg-[hsl(var(--secondary))] border-y border-[hsl(var(--border))] py-4 px-6 sm:px-10">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs font-medium text-foreground">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-black" />
+            <CheckCircle2 className="w-4 h-4 text-[hsl(var(--primary))]" />
             <span>{t.home.ribbonAI}</span>
           </div>
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-black" />
+            <CheckCircle2 className="w-4 h-4 text-[hsl(var(--primary))]" />
             <span>{t.home.ribbon2GIS}</span>
           </div>
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-black" />
+            <CheckCircle2 className="w-4 h-4 text-[hsl(var(--primary))]" />
             <span>{t.home.ribbonRoutes}</span>
           </div>
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-black" />
+            <CheckCircle2 className="w-4 h-4 text-[hsl(var(--primary))]" />
             <span>{t.home.ribbonReviews}</span>
           </div>
         </div>
       </section>
 
       {/* About Us / Capabilities Section */}
-      <section className="max-w-7xl mx-auto px-6 sm:px-12 py-16">
+      <section className="max-w-7xl mx-auto px-6 sm:px-10 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-6 space-y-6">
-            <span className="text-xs font-extrabold uppercase tracking-widest text-brand-400">{t.home.aboutTag}</span>
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground">
+          <div className="lg:col-span-6 space-y-4">
+            <span className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--primary))]">{t.home.aboutTag}</span>
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground">
               {t.home.aboutTitle}
             </h2>
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+            <p className="text-muted-foreground text-sm leading-relaxed">
               {t.home.aboutDesc}
             </p>
 
-            <div className="pt-4 flex items-center gap-4">
+            <div className="pt-2">
               <button
                 onClick={() => router.push("/chat")}
                 className="btn-minimal btn-minimal-primary text-xs uppercase"
@@ -312,115 +291,112 @@ export default function HomePage() {
           </div>
 
           <div className="lg:col-span-6 grid grid-cols-2 gap-4">
-            <div className="arch-frame h-64 bg-card border border-[hsl(var(--border))] overflow-hidden">
+            <div className="h-56 rounded-md border border-[hsl(var(--border))] overflow-hidden bg-card">
               <img
                 src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?auto=format&fit=crop&w=600&q=80"
                 alt="Dining Experience"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
               />
             </div>
-            <div className="arch-frame h-64 bg-card border border-[hsl(var(--border))] overflow-hidden mt-8">
+            <div className="h-56 rounded-md border border-[hsl(var(--border))] overflow-hidden bg-card mt-6">
               <img
                 src="https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=600&q=80"
                 alt="Coffee & Work"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
               />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Arched Category Grid */}
-      <section className="max-w-7xl mx-auto px-6 sm:px-12 py-16 border-t border-[hsl(var(--border))]">
-        <div className="flex items-center justify-between mb-10">
+      {/* Category Grid */}
+      <section className="max-w-7xl mx-auto px-6 sm:px-10 py-16 border-t border-[hsl(var(--border))]">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <span className="text-xs font-extrabold uppercase tracking-widest text-brand-400">{t.home.catTag}</span>
-            <h2 className="text-3xl font-extrabold text-foreground mt-1">{t.home.catTitle}</h2>
+            <span className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--primary))]">{t.home.catTag}</span>
+            <h2 className="text-2xl font-bold text-foreground mt-0.5">{t.home.catTitle}</h2>
           </div>
           <button
             onClick={() => router.push("/chat")}
-            className="text-xs font-bold uppercase tracking-wider text-brand-400 hover:underline flex items-center gap-1"
+            className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))] hover:underline flex items-center gap-1"
           >
             <span>{t.home.viewAll}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {CATEGORIES.map((cat) => (
-            <motion.button
+            <button
               key={cat.labelKey}
-              whileHover={{ y: -6 }}
               onClick={() => handleSearch(cat.labelKey + " Астана")}
-              className="group flex flex-col rounded-3xl border border-[hsl(var(--border))] bg-card overflow-hidden text-left shadow-lg hover:border-brand-400/60 transition-all"
+              className="group flex flex-col rounded-md border border-[hsl(var(--border))] bg-card overflow-hidden text-left hover:border-[hsl(var(--primary))] transition-all"
             >
-              <div className="arch-frame-sm h-40 w-full overflow-hidden relative">
-                <img src={cat.image} alt={cat.labelKey} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors" />
+              <div className="h-32 w-full overflow-hidden relative bg-muted">
+                <img src={cat.image} alt={cat.labelKey} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
-              <div className="p-4 text-center">
-                <h3 className="font-extrabold text-sm text-foreground group-hover:text-brand-400 transition-colors">
+              <div className="p-3 text-center">
+                <h3 className="font-semibold text-xs text-foreground group-hover:text-[hsl(var(--primary))] transition-colors">
                   {cat.labelKey}
                 </h3>
-                <p className="text-[11px] font-semibold text-muted-foreground mt-0.5">{cat.count}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{cat.count}</p>
               </div>
-            </motion.button>
+            </button>
           ))}
         </div>
       </section>
 
       {/* Popular Now Section */}
       {popularPlaces.length > 0 && (
-        <section className="max-w-7xl mx-auto px-6 sm:px-12 py-16 border-t border-[hsl(var(--border))]">
+        <section className="max-w-7xl mx-auto px-6 sm:px-10 py-16 border-t border-[hsl(var(--border))]">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <span className="text-xs font-extrabold uppercase tracking-widest text-brand-400">{t.home.topPickTag}</span>
-              <h2 className="text-3xl font-extrabold text-foreground mt-1">{t.home.topPickTitle}</h2>
+              <span className="text-xs font-bold uppercase tracking-wider text-[hsl(var(--primary))]">{t.home.topPickTag}</span>
+              <h2 className="text-2xl font-bold text-foreground mt-0.5">{t.home.topPickTitle}</h2>
             </div>
-            <Link href="/chat?q=популярные места Астана" className="text-xs font-bold uppercase tracking-wider text-brand-400 hover:underline">
+            <Link href="/chat?q=популярные места Астана" className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--primary))] hover:underline">
               {t.home.topPickAll}
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {popularPlaces.slice(0, 6).map((place) => (
-              <motion.div
+              <div
                 key={place.place_id}
-                whileHover={{ y: -4 }}
                 onClick={() => handleSearch(place.name)}
-                className="group cursor-pointer rounded-3xl border border-[hsl(var(--border))] bg-card p-5 shadow-xl hover:border-brand-400/50 transition-all flex flex-col justify-between"
+                className="group cursor-pointer rounded-md border border-[hsl(var(--border))] bg-card p-4 hover:border-[hsl(var(--primary))] transition-all flex flex-col justify-between"
               >
                 <div>
-                  <div className="h-44 rounded-2xl overflow-hidden mb-4 bg-muted relative">
+                  <div className="h-40 rounded-sm overflow-hidden mb-3 bg-muted relative">
                     {place.photos && place.photos[0] ? (
-                      <img src={place.photos[0]} alt={place.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={place.photos[0]} alt={place.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-brand-400/10">
-                        <UtensilsCrossed className="w-8 h-8 text-brand-400" />
+                      <div className="w-full h-full flex items-center justify-center bg-[hsl(var(--secondary))]">
+                        <UtensilsCrossed className="w-6 h-6 text-[hsl(var(--primary))]" />
                       </div>
                     )}
                     {place.rating && (
-                      <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-md text-amber-400 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                        <Star className="w-3.5 h-3.5 fill-amber-400" />
+                      <div className="absolute top-2.5 right-2.5 bg-background/90 text-foreground border border-[hsl(var(--border))] px-2 py-0.5 rounded-sm text-[11px] font-semibold flex items-center gap-1">
+                        <Star className="w-3 h-3 text-[hsl(var(--primary))] fill-[hsl(var(--primary))]" />
                         {place.rating.toFixed(1)}
                       </div>
                     )}
                   </div>
 
-                  <h3 className="font-extrabold text-lg text-foreground group-hover:text-brand-400 transition-colors">
+                  <h3 className="font-bold text-base text-foreground group-hover:text-[hsl(var(--primary))] transition-colors">
                     {place.name}
                   </h3>
-                  {place.address && <p className="text-xs text-muted-foreground mt-1 truncate">{place.address}</p>}
+                  {place.address && <p className="text-xs text-muted-foreground mt-0.5 truncate">{place.address}</p>}
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-[hsl(var(--border))] flex items-center justify-between text-xs">
-                  <span className="font-semibold text-brand-400">{place.categories[0] || "Заведение"}</span>
-                  <span className="font-bold text-foreground flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                <div className="pt-3 mt-3 border-t border-[hsl(var(--border))] flex items-center justify-between text-xs">
+                  <span className="font-medium text-[hsl(var(--primary))]">{place.categories[0] || "Заведение"}</span>
+                  <span className="font-semibold text-foreground flex items-center gap-1">
                     <span>{t.home.searchBtn}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-3 h-3" />
                   </span>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </section>
@@ -428,25 +404,25 @@ export default function HomePage() {
 
       {/* Recent Searches */}
       {recentSearches.length > 0 && (
-        <section className="max-w-7xl mx-auto px-6 sm:px-12 py-12 border-t border-[hsl(var(--border))]">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xs uppercase tracking-wider font-extrabold text-muted-foreground flex items-center gap-2">
-              <Clock className="w-4 h-4 text-brand-400" />
+        <section className="max-w-7xl mx-auto px-6 sm:px-10 py-12 border-t border-[hsl(var(--border))]">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
               {t.home.recentTitle}
             </h2>
-            <Link href="/history" className="text-xs font-bold text-brand-400 hover:underline">
+            <Link href="/history" className="text-xs font-semibold text-[hsl(var(--primary))] hover:underline">
               {t.home.recentHistory}
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
             {recentSearches.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleSearch(item.query)}
-                className="flex items-center justify-between p-4 rounded-2xl border border-[hsl(var(--border))] bg-card hover:border-brand-400 transition-all text-left group"
+                className="flex items-center justify-between p-3 rounded-md border border-[hsl(var(--border))] bg-card hover:border-[hsl(var(--primary))] transition-colors text-left group"
               >
-                <span className="text-xs font-bold text-foreground truncate">{item.query}</span>
-                <ArrowRight className="w-3.5 h-3.5 text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                <span className="text-xs font-medium text-foreground truncate">{item.query}</span>
+                <ArrowRight className="w-3.5 h-3.5 text-[hsl(var(--primary))] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
               </button>
             ))}
           </div>
