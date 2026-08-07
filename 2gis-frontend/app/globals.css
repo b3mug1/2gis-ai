@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Inter:wght@300..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300..800&family=Plus+Jakarta+Sans:wght@300..800&display=swap");
 @import "tailwindcss";
 @tailwind base;
 @tailwind components;
@@ -6,124 +6,86 @@
 
 @layer base {
   :root {
-    --background: 220 20% 98%;
-    --foreground: 224 71% 4%;
+    /* ⚡ Deep Obsidian & Mint Turquoise Theme */
+    --background: 174 20% 97%; /* Fresh Mint Light #F4F8F7 */
+    --foreground: 200 30% 10%; /* Obsidian Dark #0B1217 */
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 200 30% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-    --primary: 236 100% 64%;
-    --primary-foreground: 210 20% 98%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 9% 46%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 220 14% 96%;
-    --accent-foreground: 224 71% 4%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 236 100% 64%;
-    --radius: 1rem;
+    --popover-foreground: 200 30% 10%;
+    --primary: 170 75% 40%; /* Mint Turquoise #14B8A6 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 174 25% 92%;
+    --secondary-foreground: 200 30% 10%;
+    --muted: 174 20% 92%;
+    --muted-foreground: 200 12% 42%;
+    --accent: 170 75% 40%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 174 15% 88%;
+    --input: 174 15% 88%;
+    --ring: 170 75% 40%;
+    --radius: 1.5rem;
     --sidebar-bg: 0 0% 100%;
+    --glass-bg: rgba(244, 248, 247, 0.88);
+    --glass-border: rgba(20, 184, 166, 0.2);
+    --card-glow: rgba(45, 212, 191, 0.12);
+    --font-sans: var(--font-outfit), var(--font-jakarta), system-ui, sans-serif;
   }
 
   .dark {
-    --background: 224 25% 6%;
-    --foreground: 210 20% 98%;
-    --card: 224 25% 9%;
-    --card-foreground: 210 20% 98%;
-    --popover: 224 25% 9%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 236 100% 64%;
-    --primary-foreground: 210 20% 98%;
-    --secondary: 224 20% 14%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 224 20% 14%;
-    --muted-foreground: 217.9 10.6% 64.9%;
-    --accent: 224 20% 14%;
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 224 20% 16%;
-    --input: 224 20% 16%;
-    --ring: 236 100% 64%;
-    --sidebar-bg: 224 25% 8%;
+    /* Deep Obsidian Black (Breakpoint Booking Theme) */
+    --background: 215 35% 5%; /* Pitch Black #070B10 */
+    --foreground: 174 20% 96%; /* Pure Crisp White #F0F7F5 */
+    --card: 215 30% 9%; /* Deep Dark Obsidian #0E141C */
+    --card-foreground: 174 20% 96%;
+    --popover: 215 30% 9%;
+    --popover-foreground: 174 20% 96%;
+    --primary: 168 76% 50%; /* Vibrant Mint Cyan #2DD4BF */
+    --primary-foreground: 215 35% 5%;
+    --secondary: 215 25% 14%; /* Slate Obsidian #16202C */
+    --secondary-foreground: 174 20% 96%;
+    --muted: 215 25% 14%;
+    --muted-foreground: 215 15% 62%;
+    --accent: 168 76% 50%;
+    --accent-foreground: 215 35% 5%;
+    --destructive: 0 62% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 215 20% 17%; /* Dark Border #1D2836 */
+    --input: 215 20% 17%;
+    --ring: 168 76% 50%;
+    --sidebar-bg: 215 35% 4%;
+    --glass-bg: rgba(9, 13, 19, 0.92);
+    --glass-border: rgba(45, 212, 191, 0.15);
+    --card-glow: rgba(45, 212, 191, 0.18);
   }
 }
 
 @theme {
-  --color-brand-50: #f4f6ff;
-  --color-brand-100: #e8ecff;
-  --color-brand-200: #d1d9ff;
-  --color-brand-300: #a7b7ff;
-  --color-brand-400: #768aff;
-  --color-brand-500: #4f63ff;
-  --color-brand-600: #3b45f6;
-  --color-brand-700: #2d31e2;
-  --color-brand-800: #262ab7;
-  --color-brand-900: #232791;
+  /* Vibrant Mint Cyan & Teal Palette */
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf; /* Primary Mint Cyan */
+  --color-brand-500: #14b8a6; /* Teal Mint */
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
 
-  /* Radius tokens */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.875rem;
-  --radius-lg: 1.25rem;
-  --radius-xl: 1.75rem;
-  --radius-2xl: 2.25rem;
-}
+  /* Terracotta / Coral Accent Palette */
+  --color-terracotta-400: #2dd4bf;
+  --color-terracotta-500: #14b8a6;
+  --color-terracotta-600: #0d9488;
 
-:root {
-  --background: 220 20% 98%;
-  --foreground: 224 40% 10%;
-  --card: 0 0% 100%;
-  --card-foreground: 224 40% 10%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 224 40% 10%;
-  --primary: 238 100% 65%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 220 14% 94%;
-  --secondary-foreground: 224 40% 12%;
-  --muted: 220 14% 94%;
-  --muted-foreground: 220 10% 46%;
-  --accent: 220 14% 94%;
-  --accent-foreground: 224 40% 12%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 220 13% 90%;
-  --input: 220 13% 90%;
-  --ring: 238 100% 65%;
-  --radius: 1rem;
-  --sidebar-bg: 220 20% 97%;
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.8);
-  --card-glow: rgba(79, 99, 255, 0.06);
-}
-
-.dark {
-  --background: 224 35% 6%;
-  --foreground: 210 20% 98%;
-  --card: 224 30% 9%;
-  --card-foreground: 210 20% 98%;
-  --popover: 224 30% 9%;
-  --popover-foreground: 210 20% 98%;
-  --primary: 238 100% 67%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 224 25% 14%;
-  --secondary-foreground: 210 20% 98%;
-  --muted: 224 25% 14%;
-  --muted-foreground: 217 12% 64%;
-  --accent: 224 25% 14%;
-  --accent-foreground: 210 20% 98%;
-  --destructive: 0 62% 55%;
-  --destructive-foreground: 210 20% 98%;
-  --border: 224 20% 16%;
-  --input: 224 20% 16%;
-  --ring: 238 100% 67%;
-  --sidebar-bg: 224 35% 5%;
-  --glass-bg: rgba(13, 16, 26, 0.82);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --card-glow: rgba(79, 99, 255, 0.12);
+  /* Soft Organic Radius tokens */
+  --radius-sm: 0.75rem;
+  --radius-md: 1.125rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+  --radius-2xl: 2.5rem;
 }
 
 * {
@@ -144,10 +106,10 @@ body {
   line-height: 1.6;
 }
 
-/* ── Custom Sleek Scrollbar ─────────────────── */
+/* ── Custom Organic Scrollbar ─────────────────── */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -157,34 +119,42 @@ body {
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: hsl(var(--primary) / 0.4);
 }
 
-/* ── Minimalist Glassmorphism ──────────────── */
+/* ── Obsidian Glassmorphism ──────────────── */
 .glass {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(20px) saturate(190%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
 .glass-card {
-  background: hsl(var(--card) / 0.85);
-  border: 1px solid hsl(var(--border) / 0.7);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 4px 20px -2px var(--card-glow);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  background: hsl(var(--card) / 0.95);
+  border: 1px solid hsl(var(--border));
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px -6px var(--card-glow);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: var(--radius-lg);
 }
 
 .glass-card:hover {
-  border-color: hsl(var(--primary) / 0.4);
-  box-shadow: 0 10px 30px -4px var(--card-glow);
-  transform: translateY(-2px);
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 16px 40px -8px var(--card-glow);
+  transform: translateY(-3px);
 }
 
-/* ── Modern Gradient Text ──────────────────── */
+/* ── Mint & Cyan Glow Gradients ────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, hsl(238 100% 67%), hsl(275 80% 65%));
+  background: linear-gradient(135deg, #2dd4bf, #38bdf8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .gradient-text {
+  background: linear-gradient(135deg, #2dd4bf, #38bdf8);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -197,23 +167,41 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
-/* ── Ambient Background Glow Blobs ──────────── */
+/* ── Arch Shaped Frames (BreakPoint Booking Style) ── */
+.arch-frame {
+  border-radius: 120px 120px 24px 24px;
+  overflow: hidden;
+}
+
+.arch-frame-sm {
+  border-radius: 80px 80px 16px 16px;
+  overflow: hidden;
+}
+
+/* ── Mint Accent Ribbon Bar ─────────────────── */
+.teal-ribbon {
+  background: linear-gradient(90deg, #14b8a6, #2dd4bf);
+  color: #070b10;
+  font-weight: 700;
+}
+
+/* ── Ambient Radial Glow Blobs ──────────── */
 .orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
+  filter: blur(140px);
   pointer-events: none;
   will-change: transform;
 }
 
-/* ── Subtle Animations ──────────────────────── */
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(0.98); }
+/* ── Soft Tactile Animations ──────────────────────── */
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
-.animate-pulse-subtle {
-  animation: pulse-subtle 3s ease-in-out infinite;
+.animate-float-soft {
+  animation: float-soft 4s ease-in-out infinite;
 }
 
 @keyframes blink {
@@ -227,7 +215,7 @@ body {
   color: hsl(var(--primary));
 }
 
-/* ── Shimmer Loading Effect ─────────────────── */
+/* ── Shimmer Skeleton Effect ─────────────────── */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -241,31 +229,32 @@ body {
     hsl(var(--muted)) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1.6s infinite;
 }
 
-/* ── Minimalist Buttons & Elements ──────────── */
+/* ── Mint Turquoise Buttons ──────────── */
 .btn-minimal {
   display: inline-flex;
-  items-center: center;
+  align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: var(--radius-md);
-  font-weight: 500;
+  border-radius: 9999px;
+  font-weight: 700;
   font-size: 0.875rem;
-  padding: 0.625rem 1.25rem;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0.75rem 1.6rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-minimal-primary {
-  background: linear-gradient(135deg, #4f63ff, #7655ff);
-  color: white;
-  box-shadow: 0 4px 14px 0 rgba(79, 99, 255, 0.35);
+  background: #2dd4bf;
+  color: #070b10;
+  box-shadow: 0 4px 20px 0 rgba(45, 212, 191, 0.4);
 }
 
 .btn-minimal-primary:hover {
-  box-shadow: 0 6px 20px 0 rgba(79, 99, 255, 0.45);
-  transform: translateY(-1px);
+  background: #5eead4;
+  box-shadow: 0 8px 28px 0 rgba(45, 212, 191, 0.55);
+  transform: translateY(-2px);
 }
 
 .btn-minimal-secondary {
@@ -276,7 +265,7 @@ body {
 
 .btn-minimal-secondary:hover {
   background: hsl(var(--muted));
-  border-color: hsl(var(--muted-foreground) / 0.3);
+  border-color: hsl(var(--primary) / 0.4);
 }
 
 /* ── Chat Prose ────────────────────────────── */
@@ -296,17 +285,16 @@ body {
 .chat-prose code {
   background: hsl(var(--muted));
   padding: 0.15em 0.4em;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.85em;
   font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace;
 }
 .chat-prose pre {
   background: hsl(var(--muted));
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1rem;
   overflow-x: auto;
   margin-bottom: 0.75em;
   border: 1px solid hsl(var(--border));
 }
 .chat-prose pre code { background: none; padding: 0; }
-

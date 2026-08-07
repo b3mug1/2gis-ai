@@ -1,37 +1,43 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import { Providers } from "@/providers/Providers";
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-outfit",
+  display: "swap",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "City Guide AI — Find the perfect place in Astana",
+    default: "City Guide AI — Уютный городской гид",
     template: "%s | City Guide AI",
   },
   description:
-    "AI-powered city guide. Ask natural questions and get ranked recommendations for restaurants, cafes, and places in Astana.",
-  keywords: ["Astana", "city guide", "AI", "restaurants", "cafes", "places"],
+    "Интеллектуальный городской гид для поиска уютных кофеен, ресторанов, парков и интересных мест.",
+  keywords: ["Астана", "городской гид", "ИИ", "рестораны", "кофейни", "места"],
   authors: [{ name: "City Guide AI" }],
   robots: { index: true, follow: true },
   openGraph: {
-    title: "City Guide AI",
-    description: "AI-powered city guide for Astana",
+    title: "City Guide AI — Уютный городской гид",
+    description: "AI-помощник для поиска лучших мест в городе",
     type: "website",
-    locale: "en_US",
+    locale: "ru_RU",
   },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#080c18" },
+    { media: "(prefers-color-scheme: light)", color: "#FAF7F2" },
+    { media: "(prefers-color-scheme: dark)", color: "#141A17" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -43,8 +49,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html lang="ru" suppressHydrationWarning>
+      <body className={`${outfit.variable} ${jakarta.variable} font-sans antialiased bg-[hsl(var(--background))] text-[hsl(var(--foreground))]`}>
         <Providers>{children}</Providers>
       </body>
     </html>
