@@ -13,15 +13,15 @@ export function LanguageSwitcher() {
   ];
 
   return (
-    <div className="inline-flex items-center p-1 rounded-full bg-card border border-[hsl(var(--border))] shadow-sm text-xs font-bold">
-      <Globe className="w-3.5 h-3.5 ml-2 mr-1 text-brand-400 shrink-0" />
+    <div className="inline-flex items-center p-1 rounded-md bg-card border border-[hsl(var(--border))] text-xs font-semibold">
+      <Globe className="w-3.5 h-3.5 ml-1.5 mr-1 text-[hsl(var(--primary))] shrink-0" />
       {options.map((opt) => (
         <button
           key={opt.code}
           onClick={() => setLanguage(opt.code)}
-          className={`px-2.5 py-1 rounded-full transition-all ${
+          className={`px-2 py-1 rounded-md text-xs transition-colors ${
             language === opt.code
-              ? "bg-brand-400 text-black font-extrabold shadow-sm"
+              ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >

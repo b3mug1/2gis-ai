@@ -20,16 +20,16 @@ export function ThemeSwitcher({ className }: { className?: string }) {
   ];
 
   return (
-    <div className={cn("inline-flex items-center gap-1 p-1 rounded-full bg-card border border-[hsl(var(--border))] shadow-sm text-xs font-bold", className)}>
+    <div className={cn("inline-flex items-center gap-1 p-1 rounded-md bg-card border border-[hsl(var(--border))] text-xs font-semibold", className)}>
       {themes.map(({ id, icon: Icon, label }) => (
         <button
           key={id}
           onClick={() => setTheme(id)}
           aria-label={`${label} theme`}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all",
+            "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
             theme === id
-              ? "bg-brand-400 text-black shadow-sm"
+              ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-semibold"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
