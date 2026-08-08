@@ -50,13 +50,11 @@ export function AIMessage({ message }: AIMessageProps) {
 
   return (
     <div className="flex items-start gap-2.5 max-w-[88%] w-full">
-      {/* AI Avatar */}
       <div className="w-6 h-6 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center shrink-0 mt-0.5">
         <MapPin className="w-3.5 h-3.5" />
       </div>
 
       <div className="flex-1 min-w-0 space-y-2.5">
-        {/* Text bubble */}
         {displayed && (
           <div className="relative group">
             <div
@@ -93,7 +91,6 @@ export function AIMessage({ message }: AIMessageProps) {
               </ReactMarkdown>
             </div>
 
-            {/* Copy button */}
             {done && (
               <button
                 onClick={copyText}
@@ -106,7 +103,6 @@ export function AIMessage({ message }: AIMessageProps) {
           </div>
         )}
 
-        {/* Place results */}
         {done && message.searchResponse && (
           <SearchResults data={message.searchResponse} />
         )}

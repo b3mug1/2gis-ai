@@ -111,7 +111,6 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
             : "border-[hsl(var(--border))]"
         )}
       >
-        {/* Top Best Match Badge */}
         {isTop && (
           <div className="absolute top-3 right-3 flex items-center gap-1 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-[11px] font-semibold px-2.5 py-0.5 rounded-md shadow-xs">
             <Sparkles className="w-3 h-3" />
@@ -119,10 +118,8 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
           </div>
         )}
 
-        {/* Photo Carousel */}
         {photos.length > 0 && <PhotoCarousel photos={photos} name={place.name} />}
 
-        {/* Main Header Info */}
         <div className={cn("flex items-start justify-between gap-4 mb-2.5", isTop && photos.length === 0 ? "pr-24" : "")}>
           <div>
             <h3
@@ -145,12 +142,10 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
           </div>
         </div>
 
-        {/* AI Reasoning Pill */}
         <div className="p-2.5 rounded-md bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] text-xs text-muted-foreground leading-relaxed mb-3">
           <p className="line-clamp-2">{place.reason}</p>
         </div>
 
-        {/* Meta Specs (Distance, Address, Hours, Phone) */}
         <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground mb-3">
           {place.distance_m != null && (
             <span className="inline-flex items-center gap-1 font-medium text-foreground bg-[hsl(var(--secondary))] px-2 py-0.5 rounded">
@@ -186,7 +181,6 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
           )}
         </div>
 
-        {/* Highlights (Pros / Cons) */}
         {(place.pros.length > 0 || place.cons.length > 0) && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-3 pt-2 border-t border-[hsl(var(--border))]">
             {place.pros.slice(0, 2).map((pro, i) => (
@@ -204,7 +198,6 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
           </div>
         )}
 
-        {/* Footer Actions */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[hsl(var(--border))]">
           <div className="flex flex-wrap items-center gap-2">
             {place.url && (
@@ -239,7 +232,6 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* AI Match score badge */}
             <span className="text-[11px] font-medium text-muted-foreground bg-[hsl(var(--secondary))] px-2 py-0.5 rounded-md border border-[hsl(var(--border))]">
               {confidencePct}% {t.placeCard.match}
             </span>
@@ -268,7 +260,6 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
         </div>
       </motion.div>
 
-      {/* Map Modal */}
       {hasMap && (
         <MapModal
           open={mapOpen}

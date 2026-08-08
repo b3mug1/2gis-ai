@@ -21,12 +21,10 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
   const [isRecording, setIsRecording] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const { t, language } = useLanguage();
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SpeechRecognitionAPI = typeof window !== "undefined" ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition : null;
     setVoiceSupported(!!SpeechRecognitionAPI);
   }, []);
@@ -71,7 +69,6 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
       setIsRecording(false);
       return;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const win = window as any;
     const SpeechRecognitionAPI = win.SpeechRecognition || win.webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) return;
@@ -80,9 +77,7 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
     recognition.interimResults = true;
     recognition.lang = language === "ru" ? "ru-RU" : language === "kz" ? "kk-KZ" : "en-US";
     recognition.onstart = () => setIsRecording(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const transcript = Array.from(event.results as any[])
         .map((r: any) => r[0].transcript)
         .join("");
@@ -106,7 +101,6 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
         "focus-within:border-[hsl(var(--primary))]",
         isRecording && "border-destructive ring-1 ring-destructive"
       )}>
-        {/* Location button */}
         <button
           onClick={getLocation}
           title={coords ? "Location attached" : "Attach your location"}
@@ -124,7 +118,6 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
           )}
         </button>
 
-        {/* Voice button */}
         {voiceSupported && (
           <button
             onClick={toggleVoice}
@@ -151,7 +144,6 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
           disabled={isLoading || disabled}
         />
 
-        {/* Filters toggle */}
         {onToggleFilters && (
           <button
             onClick={onToggleFilters}

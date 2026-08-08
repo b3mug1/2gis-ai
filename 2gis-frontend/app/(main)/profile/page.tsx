@@ -68,7 +68,6 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8 relative space-y-6">
-      {/* Page Title */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
           {t.profile.title}
@@ -76,14 +75,12 @@ export default function ProfilePage() {
         <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t.profile.subtitle}</p>
       </motion.div>
 
-      {/* Main Profile Header Card */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="rounded-2xl border border-[hsl(var(--border))] bg-card p-6 sm:p-7 shadow-sm relative overflow-hidden"
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 relative z-10">
-          {/* Professional Sleek Avatar */}
           <div className="w-16 h-16 rounded-2xl bg-brand-400 text-black font-extrabold text-2xl flex items-center justify-center shrink-0 shadow-md shadow-brand-400/20">
             {user.full_name.charAt(0).toUpperCase()}
           </div>
@@ -124,7 +121,6 @@ export default function ProfilePage() {
         </div>
       </motion.div>
 
-      {/* Analytics Grid */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -149,7 +145,6 @@ export default function ProfilePage() {
         />
       </motion.div>
 
-      {/* Recent Activity Section */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}

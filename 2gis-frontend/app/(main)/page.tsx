@@ -82,7 +82,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
-      {/* Header Navigation Bar */}
       <header className="relative z-20 flex items-center justify-between px-6 sm:px-10 h-20 border-b border-[hsl(var(--border))] max-w-7xl mx-auto">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center">
@@ -93,7 +92,6 @@ export default function HomePage() {
           </span>
         </div>
 
-        {/* Central Nav Links */}
         <nav className="hidden md:flex items-center gap-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <Link href="/" className="text-[hsl(var(--primary))] font-bold">
             {t.home.navMain}
@@ -109,7 +107,6 @@ export default function HomePage() {
           </Link>
         </nav>
 
-        {/* Controls */}
         <div className="flex items-center gap-3">
           <ThemeSwitcher />
           <button
@@ -121,10 +118,8 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-6 sm:px-10 pt-12 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Left Column */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -146,7 +141,6 @@ export default function HomePage() {
               {t.home.heroSubtitle}
             </p>
 
-            {/* Input Search */}
             <div className="relative max-w-xl" ref={searchWrapRef}>
               <div className="relative flex items-center rounded-md border border-[hsl(var(--border))] bg-card shadow-xs focus-within:border-[hsl(var(--primary))] transition-all p-1.5">
                 <Search className="ml-3 w-4 h-4 text-muted-foreground shrink-0" />
@@ -168,7 +162,6 @@ export default function HomePage() {
                 </button>
               </div>
 
-              {/* Autocomplete */}
               <AnimatePresence>
                 {showSuggestions && suggestions.length > 0 && (
                   <motion.div
@@ -195,7 +188,6 @@ export default function HomePage() {
               </AnimatePresence>
             </div>
 
-            {/* Popular Quick Tag Pills */}
             <div className="flex flex-wrap gap-2 pt-1">
               {t.home.popularPrompts.slice(0, 3).map((promptText) => (
                 <button
@@ -209,7 +201,6 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          {/* Right Column Visual */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -225,14 +216,12 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--background))] via-transparent to-transparent opacity-80" />
             </div>
 
-            {/* Floating Metric Card 1 */}
             <div className="absolute -bottom-4 -left-4 bg-card border border-[hsl(var(--border))] p-4 rounded-md shadow-md max-w-[200px]">
               <div className="text-2xl font-bold text-[hsl(var(--primary))] mb-0.5">{t.home.stats1Val}</div>
               <div className="text-xs font-semibold text-foreground">{t.home.stats1Label}</div>
               <p className="text-[11px] text-muted-foreground mt-0.5">{t.home.stats1Sub}</p>
             </div>
 
-            {/* Floating Metric Card 2 */}
             <div className="absolute -top-4 -right-4 bg-card border border-[hsl(var(--border))] p-3.5 rounded-md shadow-md flex items-center gap-3">
               <div className="w-8 h-8 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center font-bold shrink-0">
                 <Compass className="w-4 h-4" />
@@ -246,7 +235,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Mint Accent Ribbon Bar */}
       <section className="bg-[hsl(var(--secondary))] border-y border-[hsl(var(--border))] py-4 px-6 sm:px-10">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs font-medium text-foreground">
           <div className="flex items-center gap-2">
@@ -268,7 +256,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* About Us / Capabilities Section */}
       <section className="max-w-7xl mx-auto px-6 sm:px-10 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-6 space-y-4">
@@ -309,7 +296,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Category Grid */}
       <section className="max-w-7xl mx-auto px-6 sm:px-10 py-16 border-t border-[hsl(var(--border))]">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -346,7 +332,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Popular Now Section */}
       {popularPlaces.length > 0 && (
         <section className="max-w-7xl mx-auto px-6 sm:px-10 py-16 border-t border-[hsl(var(--border))]">
           <div className="flex items-center justify-between mb-8">
@@ -402,7 +387,6 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Recent Searches */}
       {recentSearches.length > 0 && (
         <section className="max-w-7xl mx-auto px-6 sm:px-10 py-12 border-t border-[hsl(var(--border))]">
           <div className="flex items-center justify-between mb-4">

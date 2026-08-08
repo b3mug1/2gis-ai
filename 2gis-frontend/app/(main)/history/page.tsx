@@ -22,7 +22,6 @@ export default function HistoryPage() {
     item.query.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Group by date
   const groups = filtered.reduce<Record<string, typeof filtered>>((acc, item) => {
     const day = formatDate(item.created_at);
     acc[day] = acc[day] ?? [];
@@ -36,7 +35,6 @@ export default function HistoryPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 relative">
-      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
@@ -51,7 +49,6 @@ export default function HistoryPage() {
         </div>
       </motion.div>
 
-      {/* Filter bar */}
       <div className="relative mb-8">
         <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input

@@ -7,14 +7,12 @@ from uuid import UUID, uuid4
 
 from cityguide_backend.domain.entities import Coordinates, PlaceCandidate, PlaceReview, ReviewSummary, SearchIntent, SearchResult, UserProfile, UserRole
 
-
 class NoopTransaction:
     async def __aenter__(self):
         return self
 
-    async def __aexit__(self, exc_type, exc, tb):  # noqa: ANN001
+    async def __aexit__(self, exc_type, exc, tb):
         return False
-
 
 class FakeSession:
     def __init__(self) -> None:
@@ -31,17 +29,16 @@ class FakeSession:
     async def flush(self) -> None:
         self.flushed += 1
 
-    async def execute(self, statement):  # noqa: ANN001
+    async def execute(self, statement):
         self.executed.append(statement)
         raise AssertionError("FakeSession.execute should not be called in this test")
 
-    async def scalar(self, statement):  # noqa: ANN001
+    async def scalar(self, statement):
         self.executed.append(statement)
         return None
 
-    async def get(self, model, key):  # noqa: ANN001
+    async def get(self, model, key):
         return None
-
 
 @dataclass
 class MemoryUserRepository:
@@ -71,7 +68,6 @@ class MemoryUserRepository:
     async def update_last_login(self, user_id: UUID) -> None:
         return None
 
-
 @dataclass
 class MemoryRefreshTokenRepository:
     tokens: dict[str, dict[str, Any]] = field(default_factory=dict)
@@ -91,7 +87,6 @@ class MemoryRefreshTokenRepository:
             if token["user_id"] == user_id:
                 token["revoked_at"] = datetime.now(timezone.utc)
 
-
 @dataclass
 class MemorySearchHistoryRepository:
     entries: list[dict[str, Any]] = field(default_factory=list)
@@ -101,7 +96,6 @@ class MemorySearchHistoryRepository:
 
     async def list_for_user(self, user_id: UUID, limit: int = 50) -> list[dict[str, Any]]:
         return [entry for entry in self.entries if entry["user_id"] == user_id][:limit]
-
 
 @dataclass
 class MemoryFavoritePlaceRepository:
@@ -118,7 +112,6 @@ class MemoryFavoritePlaceRepository:
     async def delete(self, favorite_id: UUID, user_id: UUID) -> None:
         self.favorites = [favorite for favorite in self.favorites if not (favorite["id"] == favorite_id and favorite["user_id"] == user_id)]
 
-
 @dataclass
 class MemoryCachedAIResultRepository:
     cache: dict[str, dict[str, Any]] = field(default_factory=dict)
@@ -131,7 +124,6 @@ class MemoryCachedAIResultRepository:
 
     async def delete(self, cache_key: str) -> None:
         self.cache.pop(cache_key, None)
-
 
 @dataclass
 class MemorySearchSessionRepository:
@@ -149,7 +141,6 @@ class MemorySearchSessionRepository:
     async def cleanup_expired(self, before: datetime) -> int:
         return 0
 
-
 @dataclass
 class MemorySearchStatisticsRepository:
     increments: list[dict[str, Any]] = field(default_factory=list)
@@ -160,14 +151,12 @@ class MemorySearchStatisticsRepository:
     async def daily_summary(self, *, user_id: UUID | None = None) -> list[dict[str, Any]]:
         return [{"stat_date": datetime.now(timezone.utc), "user_id": user_id, "total_searches": 1, "successful_searches": 1}]
 
-
 @dataclass
 class MemoryAIUsageLogRepository:
     logs: list[dict[str, Any]] = field(default_factory=list)
 
     async def create(self, *, user_id: UUID | None, operation: str, model: str, prompt_tokens: int, completion_tokens: int, metadata: dict[str, Any]) -> None:
         self.logs.append({"user_id": user_id, "operation": operation, "model": model, "prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens, "metadata": metadata})
-
 
 @dataclass
 class StaticAIClient:
@@ -179,7 +168,6 @@ class StaticAIClient:
 
     async def summarize_reviews(self, intent: SearchIntent, place: PlaceCandidate) -> ReviewSummary:
         return self.summaries[place.place_id]
-
 
 @dataclass
 class StaticTwoGISClient:

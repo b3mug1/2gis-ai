@@ -7,7 +7,6 @@ export function useSearch() {
   return useMutation<SearchResponse, Error, SearchRequest>({
     mutationFn: searchService.search,
     onSuccess: () => {
-      // Invalidate history after a successful search
       queryClient.invalidateQueries({ queryKey: ["history"] });
     },
   });

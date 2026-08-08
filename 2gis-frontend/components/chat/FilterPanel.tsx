@@ -70,7 +70,6 @@ export function FilterPanel({ visible, filters, onChange, onClose }: FilterPanel
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Open Now Toggle */}
               <div className="flex items-center justify-between gap-3 p-2.5 rounded-md bg-[hsl(var(--secondary))] border border-[hsl(var(--border))]">
                 <span className="text-xs font-medium text-foreground">{t.filters.openNow}</span>
                 <button
@@ -89,7 +88,6 @@ export function FilterPanel({ visible, filters, onChange, onClose }: FilterPanel
                 </button>
               </div>
 
-              {/* Min Rating */}
               <div className="p-2.5 rounded-md bg-[hsl(var(--secondary))] border border-[hsl(var(--border))]">
                 <p className="text-xs font-medium text-foreground mb-1.5">{t.filters.minRating}</p>
                 <div className="flex items-center gap-1">
@@ -111,7 +109,6 @@ export function FilterPanel({ visible, filters, onChange, onClose }: FilterPanel
                 </div>
               </div>
 
-              {/* Price Category */}
               <div className="p-2.5 rounded-md bg-[hsl(var(--secondary))] border border-[hsl(var(--border))]">
                 <p className="text-xs font-medium text-foreground mb-1.5">{t.filters.priceRange}</p>
                 <div className="flex items-center gap-1">

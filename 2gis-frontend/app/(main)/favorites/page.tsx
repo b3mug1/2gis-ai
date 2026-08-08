@@ -52,7 +52,6 @@ export default function FavoritesPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 relative">
-      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <div className="flex items-center gap-3 mb-1.5">
           <div className="w-8 h-8 rounded-md bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] text-destructive flex items-center justify-center">
@@ -67,7 +66,6 @@ export default function FavoritesPage() {
         </div>
       </motion.div>
 
-      {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-2.5 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -79,7 +77,6 @@ export default function FavoritesPage() {
           />
         </div>
 
-        {/* Dropdown */}
         <div className="relative shrink-0" ref={sortRef}>
           <button
             type="button"
@@ -124,7 +121,6 @@ export default function FavoritesPage() {
         </div>
       </div>
 
-      {/* Content */}
       {isLoading ? (
         <div className="grid sm:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}

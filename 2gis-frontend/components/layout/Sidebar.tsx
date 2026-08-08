@@ -54,7 +54,6 @@ export function Sidebar() {
       transition={{ type: "spring", stiffness: 350, damping: 35 }}
       className="relative hidden md:flex flex-col h-screen sticky top-0 border-r border-[hsl(var(--border))] bg-[hsl(var(--sidebar-bg))] shrink-0 z-30"
     >
-      {/* Logo Area */}
       <div className="flex items-center gap-3 px-4 h-16 border-b border-[hsl(var(--border))] overflow-hidden">
         <div className="w-8 h-8 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center shrink-0">
           <MapPin className="w-4 h-4" />
@@ -74,7 +73,6 @@ export function Sidebar() {
         </AnimatePresence>
       </div>
 
-      {/* Nav links */}
       <nav className="flex-1 py-4 px-2.5 space-y-1 overflow-y-auto overflow-x-hidden">
         {navItems.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || (href !== "/" && pathname.startsWith(href));
@@ -116,7 +114,6 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* User Area at Bottom */}
       {user && (
         <div className="border-t border-[hsl(var(--border))] p-3 space-y-1.5 overflow-hidden">
           <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-md">
@@ -157,7 +154,6 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* Collapse Toggle Button */}
       <button
         onClick={() => setCollapsed((c) => !c)}
         className="absolute -right-3 top-5 w-6 h-6 rounded-md bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground flex items-center justify-center shadow-xs transition-colors z-50 cursor-pointer"

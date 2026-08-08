@@ -8,7 +8,6 @@ export const api = axios.create({
   timeout: 180_000,
 });
 
-// ── Token helpers ──────────────────────────────────────────────
 export const TOKEN_KEY = "cg_access_token";
 export const REFRESH_KEY = "cg_refresh_token";
 
@@ -29,7 +28,6 @@ export function clearTokens(): void {
   localStorage.removeItem(REFRESH_KEY);
 }
 
-// ── Request interceptor — attach JWT ──────────────────────────
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getAccessToken();
   if (token && config.headers) {
@@ -38,7 +36,6 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
-// ── Response interceptor — refresh on 401 ────────────────────
 let isRefreshing = false;
 type FailedQueueItem = {
   resolve: (value: string) => void;

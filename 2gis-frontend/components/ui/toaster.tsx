@@ -18,7 +18,6 @@ export type ToastData = {
   duration?: number;
 };
 
-// Simple global toast store
 let listeners: Array<(toasts: ToastData[]) => void> = [];
 let toastQueue: ToastData[] = [];
 

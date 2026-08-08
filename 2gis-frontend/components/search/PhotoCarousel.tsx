@@ -50,16 +50,13 @@ export function PhotoCarousel({ photos, name }: PhotoCarouselProps) {
           />
         </AnimatePresence>
 
-        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
 
-        {/* Photo count badge */}
         <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/50 text-white text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur-sm">
           <Images className="w-2.5 h-2.5" />
           {currentIndex + 1} / {photos.length}
         </div>
 
-        {/* Navigation arrows */}
         {photos.length > 1 && (
           <>
             <button
@@ -78,7 +75,6 @@ export function PhotoCarousel({ photos, name }: PhotoCarouselProps) {
         )}
       </div>
 
-      {/* Dot indicators */}
       {photos.length > 1 && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1">
           {photos.map((_, i) => (

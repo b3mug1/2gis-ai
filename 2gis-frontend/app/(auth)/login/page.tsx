@@ -36,7 +36,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6 relative overflow-hidden bg-background">
-      {/* Ambient background glows */}
       <div className="orb w-[500px] h-[500px] bg-brand-500/10 -top-40 -left-40 animate-pulse-subtle" />
       <div className="orb w-[400px] h-[400px] bg-purple-500/10 -bottom-20 -right-20 animate-pulse-subtle" />
 
@@ -46,7 +45,6 @@ export default function LoginPage() {
         transition={{ duration: 0.35 }}
         className="w-full max-w-md rounded-3xl border border-[hsl(var(--border)/0.8)] bg-card/80 backdrop-blur-2xl p-8 sm:p-10 relative z-10 shadow-2xl shadow-brand-500/5"
       >
-        {/* Logo & Header */}
         <div className="mb-8 text-center">
           <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center mb-4 shadow-lg shadow-brand-500/25">
             <MapPin className="w-6 h-6 text-white" />

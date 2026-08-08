@@ -20,7 +20,6 @@ from tests.fakes import (
     StaticTwoGISClient,
 )
 
-
 class InMemoryCache:
     def __init__(self) -> None:
         self.store: dict[str, dict[str, object]] = {}
@@ -36,7 +35,6 @@ class InMemoryCache:
 
     async def incr_window(self, key: str, ttl_seconds: int) -> int:
         return 1
-
 
 @pytest.mark.asyncio
 async def test_search_service_returns_ranked_recommendation() -> None:

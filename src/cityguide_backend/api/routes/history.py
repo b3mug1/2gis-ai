@@ -9,8 +9,7 @@ from cityguide_backend.infrastructure.repositories import SqlAlchemySearchHistor
 
 router = APIRouter(tags=["history"])
 
-
 @router.get("/history", response_model=list[SearchHistoryResponse])
-async def history(current_user: UserProfile = Depends(get_current_user), session=Depends(get_db_session)) -> list[SearchHistoryResponse]:  # noqa: ANN001
+async def history(current_user: UserProfile = Depends(get_current_user), session=Depends(get_db_session)) -> list[SearchHistoryResponse]:
     rows = await SqlAlchemySearchHistoryRepository(session).list_for_user(current_user.id)
     return [SearchHistoryResponse.model_validate(row) for row in rows]

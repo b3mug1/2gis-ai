@@ -8,7 +8,6 @@ from httpx import ASGITransport, AsyncClient
 from cityguide_backend.application.schemas import AuthResponse, AuthTokens, MessageResponse, UserResponse
 from cityguide_backend.main import app
 
-
 class FakeAuthService:
     async def register(self, payload):  # noqa: ANN001
         user = UserResponse(id=uuid4(), email=payload.email, full_name=payload.full_name, role="user", is_active=True)
@@ -27,7 +26,6 @@ class FakeAuthService:
 
     async def logout(self, refresh_token: str) -> None:
         return None
-
 
 class FakeSearchService:
     async def search(self, request, *, user_id, user_location=None):  # noqa: ANN001
@@ -74,7 +72,6 @@ class FakeSearchService:
             "source": "2gis+gemini",
             "generated_at": "2026-08-04T00:00:00+00:00",
         }
-
 
 @pytest.mark.asyncio
 async def test_search_endpoint_with_dependency_overrides() -> None:

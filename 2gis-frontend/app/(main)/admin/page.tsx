@@ -102,7 +102,6 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8 space-y-10 pb-20">
-      {/* Header Banner */}
       <div className="flex items-center justify-between flex-wrap gap-4 border-b border-[hsl(var(--border))] pb-6">
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-md">
@@ -134,7 +133,6 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* Real Live Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <motion.div
           whileHover={{ y: -3 }}
@@ -207,7 +205,6 @@ export default function AdminPage() {
         </motion.div>
       </div>
 
-      {/* 🧪 SYSTEM DIAGNOSTICS & 10 AUTOMATED TESTS SECTION */}
       <div className="space-y-4 border-t border-[hsl(var(--border))] pt-8">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
@@ -241,7 +238,6 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* Diagnostic Test Results Grid - ALL 10 TESTS DISPLAYED */}
         {runningTests ? (
           <div className="p-8 text-center bg-card rounded-2xl border border-[hsl(var(--border))] space-y-3">
             <RefreshCw className="w-8 h-8 text-brand-400 animate-spin mx-auto" />
@@ -306,7 +302,6 @@ export default function AdminPage() {
         )}
       </div>
 
-      {/* Services Infrastructure Health */}
       <div className="space-y-4 border-t border-[hsl(var(--border))] pt-8">
         <h2 className="text-xl font-extrabold text-foreground flex items-center gap-2">
           <Server className="w-5 h-5 text-brand-400" />
@@ -379,7 +374,6 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Real Registered Users Table */}
       <div className="space-y-4 border-t border-[hsl(var(--border))] pt-8">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-extrabold text-foreground flex items-center gap-2">

@@ -114,7 +114,6 @@ export function MapView({ places, center }: MapViewProps) {
           .addTo(map)
           .bindPopup(popup);
 
-        // Explicitly open popup on marker click
         marker.on("click", () => {
           marker.openPopup();
         });

@@ -33,7 +33,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // On mount: try to restore session from stored tokens
   useEffect(() => {
     const token = getAccessToken();
     if (!token) {
@@ -77,7 +76,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         await authService.logout({ refresh_token: refreshToken });
       } catch {
-        // ignore errors on logout
       }
     }
     clearTokens();

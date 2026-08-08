@@ -77,7 +77,6 @@ export default function SettingsPage() {
       </motion.div>
 
       <div className="space-y-6">
-        {/* Appearance */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <SettingsSection title={t.settings.appearance}>
             <SettingsRow
@@ -89,7 +88,6 @@ export default function SettingsPage() {
           </SettingsSection>
         </motion.div>
 
-        {/* Preferences */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <SettingsSection title={t.settings.localization}>
             <SettingsRow
@@ -140,7 +138,6 @@ export default function SettingsPage() {
           </SettingsSection>
         </motion.div>
 
-        {/* Data */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <SettingsSection title={t.settings.dataStorage}>
             <SettingsRow
@@ -163,7 +160,6 @@ export default function SettingsPage() {
           </SettingsSection>
         </motion.div>
 
-        {/* Account */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <SettingsSection title={t.settings.account}>
             <SettingsRow

@@ -8,7 +8,6 @@ from cityguide_backend.core.config import Settings
 from cityguide_backend.core.security import hash_password, hash_token
 from tests.fakes import FakeSession, MemoryRefreshTokenRepository, MemoryUserRepository
 
-
 @pytest.mark.asyncio
 async def test_register_login_refresh_logout_flow() -> None:
     session = FakeSession()

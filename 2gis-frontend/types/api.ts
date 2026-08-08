@@ -1,13 +1,8 @@
-// ============================================================
-// API Types — derived from OpenAPI spec at /openapi.yaml
-// ============================================================
 
 export interface Coordinates {
   latitude: number;
   longitude: number;
 }
-
-// ---------- Auth ----------
 
 export interface RegisterRequest {
   email: string;
@@ -51,8 +46,6 @@ export interface AuthResponse {
 export interface MessageResponse {
   message: string;
 }
-
-// ---------- Search ----------
 
 export interface SearchRequest {
   query: string;
@@ -111,8 +104,6 @@ export interface SearchResponse {
   generated_at: string;
 }
 
-// ---------- Favorites ----------
-
 export interface FavoriteCreateRequest {
   place_id: string;
   place_name: string;
@@ -129,8 +120,6 @@ export interface FavoriteResponse {
   created_at: string;
 }
 
-// ---------- History ----------
-
 export interface SearchHistoryResponse {
   id: string;
   query: string;
@@ -139,16 +128,12 @@ export interface SearchHistoryResponse {
   created_at: string;
 }
 
-// ---------- Statistics ----------
-
 export interface SearchStatisticsResponse {
   stat_date: string;
   user_id: string | null;
   total_searches: number;
   successful_searches: number;
 }
-
-// ---------- Health ----------
 
 export interface HealthResponse {
   status: string;
@@ -157,15 +142,11 @@ export interface HealthResponse {
   external_services: Record<string, string>;
 }
 
-// ---------- Error ----------
-
 export interface ErrorResponse {
   error: string;
   message: string;
   details?: Record<string, unknown> | null;
 }
-
-// ---------- UI State ----------
 
 export type MessageRole = "user" | "assistant";
 

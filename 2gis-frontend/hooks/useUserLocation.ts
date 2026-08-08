@@ -7,7 +7,7 @@ export interface UserLocation {
   lng: number;
 }
 
-const DEFAULT_LOCATION: UserLocation = { lat: 51.1801, lng: 71.4460 }; // Astana default
+const DEFAULT_LOCATION: UserLocation = { lat: 51.1801, lng: 71.4460 };
 
 export function useUserLocation() {
   const [location, setLocation] = useState<UserLocation | null>(null);

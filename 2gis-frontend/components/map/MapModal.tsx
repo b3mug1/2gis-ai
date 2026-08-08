@@ -40,7 +40,7 @@ interface RouteStep {
 }
 
 interface RouteData {
-  coordinates: [number, number][]; // [lat, lng]
+  coordinates: [number, number][];
   distanceKm: number;
   durationMinutes: number;
   steps: RouteStep[];
@@ -78,7 +78,6 @@ export function MapModal({
     }
   }, [initialBuildRoute, open]);
 
-  // Fetch actual turn-by-turn road route coordinates using OSRM Routing API with steps=true
   const fetchRealRoute = useCallback(
     async (startLat: number, startLng: number, endLat: number, endLng: number, mode: TransportMode) => {
       setRouteLoading(true);
@@ -98,10 +97,8 @@ export function MapModal({
             durMin = Math.max(5, Math.round((distKm / 20) * 60) + 7);
           }
 
-          // Parse OSRM turn-by-turn maneuver steps
           const parsedSteps: RouteStep[] = [];
           if (route.legs && route.legs.length > 0 && route.legs[0].steps) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             route.legs[0].steps.forEach((s: any) => {
               const street = s.name ? s.name : "дороге";
               let text = "";
@@ -154,7 +151,6 @@ export function MapModal({
     }
   }, [activeTab, userLocation, latitude, longitude, transportMode, fetchRealRoute]);
 
-  // Generate Bus Transit Waypoints & Step-by-step Timeline dynamically for selected venue
   const busTransitDetails = useMemo(() => {
     if (!userLocation || !latitude || !longitude || transportMode !== "bus" || !routeData || routeData.coordinates.length === 0) {
       return null;
@@ -168,17 +164,14 @@ export function MapModal({
     const iTrans2 = Math.min(total - 1, Math.floor(total * 0.54));
     const iStop2 = Math.min(total - 1, Math.floor(total * 0.88));
 
-    // Dynamic OSRM Street & Stop Names
     const firstStreet = routeData.steps.find((s) => s.streetName && s.streetName !== "дороге")?.streetName || "текущего местоположения";
     const midStreet = routeData.steps[Math.floor(routeData.steps.length / 2)]?.streetName || "проспекта";
     const lastStreet = address || routeData.steps[routeData.steps.length - 1]?.streetName || name;
 
-    // Dynamic Bus Route Numbers based on coordinates hash
     const seed = Math.abs(Math.floor((latitude || 0) * 10000 + (longitude || 0) * 10000));
     const bus1 = (seed % 42) + 1;
     const bus2 = ((seed + 15) % 42) + 1;
 
-    // Dynamic Distance & Duration Calculations
     const totalMeters = Math.round(routeData.distanceKm * 1000);
     const walk1Dist = Math.max(70, Math.round(totalMeters * 0.07));
     const walk2Dist = Math.max(50, Math.round(totalMeters * 0.04));
@@ -247,7 +240,6 @@ export function MapModal({
     return `https://2gis.kz/astana/geo/${longitude},${latitude}`;
   }, [userLocation, latitude, longitude, transportMode]);
 
-  // Leaflet Map Initialization and Layer Rendering
   useEffect(() => {
     if (!open || !latitude || !longitude) return;
 
@@ -258,7 +250,6 @@ export function MapModal({
       if (!isSubscribed) return;
 
       if (mapInstanceRef.current) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (mapInstanceRef.current as any).remove();
         mapInstanceRef.current = null;
       }
@@ -272,7 +263,6 @@ export function MapModal({
         maxZoom: 19,
       }).addTo(map);
 
-      // Target Destination Marker - Clean CSS Pin (Zero Emoji)
       const destIcon = L.divIcon({
         className: "custom-dest-pin",
         html: `<div style="background-color:#2d5a4c;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:12px;box-shadow:0 4px 14px rgba(45,90,76,0.6);border:3px solid white;">B</div>`,
@@ -288,7 +278,6 @@ export function MapModal({
       if (activeTab === "route" && userLocation) {
         const originCoords: [number, number] = [userLocation.lat, userLocation.lng];
 
-        // User Origin Marker - Clean CSS Pin (Zero Emoji)
         const userIcon = L.divIcon({
           className: "custom-user-pin",
           html: `<div style="background-color:#c86d51;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:11px;box-shadow:0 4px 14px rgba(200,109,81,0.6);border:3px solid white;">A</div>`,
@@ -315,7 +304,6 @@ export function MapModal({
             bus2Num,
           } = busTransitDetails;
 
-          // 1. Walk segment to Stop 1 (Dashed Green along OSRM roads)
           if (walk1Coords.length > 0) {
             L.polyline(walk1Coords, {
               color: "#10b981",
@@ -325,7 +313,6 @@ export function MapModal({
             }).addTo(map);
           }
 
-          // Stop 1 Marker
           const stop1Icon = L.divIcon({
             className: "bus-stop-pin",
             html: `<div style="background-color:#f59e0b;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:11px;box-shadow:0 2px 8px rgba(245,158,11,0.6);border:2px solid white;">BUS</div>`,
@@ -334,7 +321,6 @@ export function MapModal({
           });
           L.marker(stop1, { icon: stop1Icon }).addTo(map).bindPopup(`<strong>Остановка «${stop1Name}»</strong><br/>Автобус № ${bus1Num}`);
 
-          // 2. Bus Ride 1 (Solid Amber along OSRM roads)
           if (bus1Coords.length > 0) {
             L.polyline(bus1Coords, {
               color: "#f59e0b",
@@ -343,7 +329,6 @@ export function MapModal({
             }).addTo(map);
           }
 
-          // Transfer Point Marker
           const transferIcon = L.divIcon({
             className: "transfer-pin",
             html: `<div style="background-color:#d97757;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:11px;box-shadow:0 4px 12px rgba(217,119,87,0.7);border:3px solid white;">TR</div>`,
@@ -354,7 +339,6 @@ export function MapModal({
             .addTo(map)
             .bindPopup(`<strong>Точка пересадки («${transferName}»)</strong><br/>Перейти к платформе (Б) — Автобус № ${bus2Num}`);
 
-          // 3. Walk to Transfer Platform (Dashed Terracotta along OSRM roads)
           if (transferCoords.length > 0) {
             L.polyline(transferCoords, {
               color: "#d97757",
@@ -364,7 +348,6 @@ export function MapModal({
             }).addTo(map);
           }
 
-          // 4. Bus Ride 2 (Solid Terracotta along OSRM roads)
           if (bus2Coords.length > 0) {
             L.polyline(bus2Coords, {
               color: "#c86d51",
@@ -373,7 +356,6 @@ export function MapModal({
             }).addTo(map);
           }
 
-          // Stop 2 Marker
           const stop2Icon = L.divIcon({
             className: "bus-stop2-pin",
             html: `<div style="background-color:#c86d51;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:11px;box-shadow:0 2px 8px rgba(200,109,81,0.6);border:2px solid white;">BUS</div>`,
@@ -382,7 +364,6 @@ export function MapModal({
           });
           L.marker(stop2, { icon: stop2Icon }).addTo(map).bindPopup(`<strong>Остановка «${stop2Name}»</strong>`);
 
-          // 5. Walk segment to Destination (Dashed Emerald along OSRM roads)
           if (walk2Coords.length > 0) {
             L.polyline(walk2Coords, {
               color: "#10b981",
@@ -399,7 +380,6 @@ export function MapModal({
           ]);
           map.fitBounds(group.getBounds(), { padding: [50, 50] });
         } else if (routeData && routeData.coordinates.length > 0) {
-          // Car / Pedestrian Turn-by-Turn Road Route Polyline from OSRM GeoJSON
           const lineColor = transportMode === "pedestrian" ? "#10b981" : "#2d5a4c";
 
           const polyline = L.polyline(routeData.coordinates, {
@@ -427,7 +407,6 @@ export function MapModal({
     return () => {
       isSubscribed = false;
       if (mapInstanceRef.current) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (mapInstanceRef.current as any).remove();
         mapInstanceRef.current = null;
       }
@@ -446,10 +425,8 @@ export function MapModal({
           className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
           onClick={onClose}
         >
-          {/* Overlay */}
           <div className="absolute inset-0 bg-black/75 backdrop-blur-md" />
 
-          {/* Modal Container */}
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 12 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -458,7 +435,6 @@ export function MapModal({
             className="relative z-10 w-full max-w-2xl rounded-3xl overflow-hidden border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] shadow-2xl flex flex-col max-h-[92vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-2xl bg-brand-500 flex items-center justify-center shrink-0 text-white shadow-md shadow-brand-500/20">
@@ -470,7 +446,6 @@ export function MapModal({
                 </div>
               </div>
 
-              {/* Mode Tabs */}
               <div className="flex items-center gap-2">
                 <div className="bg-muted/80 p-1 rounded-2xl flex items-center gap-1 text-xs border border-[hsl(var(--border))]">
                   <button
@@ -505,7 +480,6 @@ export function MapModal({
               </div>
             </div>
 
-            {/* Route Mode Control Sub-bar */}
             {activeTab === "route" && (
               <div className="bg-muted/60 px-5 py-3 border-b border-[hsl(var(--border))] flex items-center justify-between flex-wrap gap-2 text-xs">
                 <div className="flex items-center gap-1.5">
@@ -556,7 +530,6 @@ export function MapModal({
               </div>
             )}
 
-            {/* Map Container */}
             <div ref={mapRef} className="w-full h-64 sm:h-72 shrink-0 relative">
               {routeLoading && activeTab === "route" && (
                 <div className="absolute inset-0 z-20 bg-background/60 backdrop-blur-sm flex items-center justify-center gap-2 text-xs font-bold text-foreground">
@@ -566,7 +539,6 @@ export function MapModal({
               )}
             </div>
 
-            {/* Detailed Turn-by-Turn Road Navigation List */}
             {activeTab === "route" && transportMode !== "bus" && routeData && routeData.steps.length > 0 && (
               <div className="bg-[hsl(var(--card))] border-t border-b border-[hsl(var(--border))] px-5 py-3 overflow-y-auto max-h-44 space-y-2">
                 <div className="flex items-center justify-between text-xs mb-1">
@@ -615,7 +587,6 @@ export function MapModal({
               </div>
             )}
 
-            {/* Detailed Transit Step-by-Step Itinerary Card */}
             {activeTab === "route" && transportMode === "bus" && busTransitDetails && (
               <div className="bg-[hsl(var(--card))] border-t border-b border-[hsl(var(--border))] px-5 py-3 overflow-y-auto max-h-48 space-y-2.5">
                 <div className="flex items-center justify-between text-xs mb-1">
@@ -650,7 +621,6 @@ export function MapModal({
               </div>
             )}
 
-            {/* Route Stats Footer */}
             {activeTab === "route" && (
               <div className="p-4 bg-[hsl(var(--card))] border-t border-[hsl(var(--border))] flex items-center justify-between flex-wrap gap-3 mt-auto">
                 <div>

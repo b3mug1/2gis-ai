@@ -23,7 +23,6 @@ _SORT_MAP: dict[str, str] = {
     "flamp_rating": "flamp_rating",
 }
 
-
 class TwoGISClientHTTP:
     def __init__(self, client: httpx.AsyncClient, settings: Settings) -> None:
         self._client = client
@@ -266,7 +265,6 @@ class TwoGISClientHTTP:
         except Exception:
             return []
 
-
     def _address(self, item: dict[str, Any]) -> str | None:
         if item.get("address_name") and isinstance(item["address_name"], str):
             return item["address_name"]
@@ -293,7 +291,6 @@ class TwoGISClientHTTP:
                     return ", ".join(parts)
             return address.get("formatted_address") or address.get("name")
         return None
-
 
     def _categories(self, item: dict[str, Any]) -> list[str]:
         categories = item.get("rubrics") or item.get("categories") or []
@@ -322,7 +319,6 @@ class TwoGISClientHTTP:
                 elif isinstance(photo, str) and photo.startswith("http"):
                     urls.append(photo)
         return urls
-
 
     def _opening_hours(self, item: dict[str, Any]) -> str | None:
         hours = item.get("working_hours") or item.get("opening_hours")

@@ -49,7 +49,6 @@ export default function ChatPage() {
 
         let all = [result.recommendation, ...result.alternatives];
 
-        // Apply local filter overrides if active
         if (filters.open_now) {
           all = all.filter((p) => (p as unknown as { is_open_now?: boolean }).is_open_now !== false);
         }
@@ -95,7 +94,6 @@ export default function ChatPage() {
     [search, language, t, filters]
   );
 
-  // Handle ?q= param from home page
   useEffect(() => {
     const q = searchParams.get("q");
     if (q && !initialQuerySent.current) {
@@ -111,9 +109,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
-      {/* Chat panel */}
       <div className="flex flex-col flex-1 min-w-0 h-full border-r border-[hsl(var(--border))]">
-        {/* Chat topbar */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-[hsl(var(--border))] shrink-0">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-[hsl(var(--primary))]" />
@@ -163,7 +159,6 @@ export default function ChatPage() {
         />
       </div>
 
-      {/* Map panel */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
