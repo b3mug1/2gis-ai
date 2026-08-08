@@ -23,7 +23,11 @@ from cityguide_backend.core.logging import configure_logging
 from cityguide_backend.core.rate_limiter import RateLimitMiddleware
 from cityguide_backend.core.security import hash_password
 from cityguide_backend.infrastructure.cache.redis import RedisCache
-from cityguide_backend.infrastructure.db.session import create_engine, create_session_factory, init_models
+from cityguide_backend.infrastructure.db.session import (
+    create_engine,
+    create_session_factory,
+    init_models,
+)
 from cityguide_backend.infrastructure.external.gemini import GeminiAIClient
 from cityguide_backend.infrastructure.external.twogis import TwoGISClientHTTP
 from cityguide_backend.infrastructure.repositories import SqlAlchemyUserRepository
@@ -46,7 +50,12 @@ async def lifespan(app: FastAPI):
         user_repo = SqlAlchemyUserRepository(session)
         existing = await user_repo.get_by_email(settings.admin_email)
         if existing is None:
-            await user_repo.create(email=settings.admin_email, password_hash=hash_password(settings.admin_password), full_name="System Admin", role="admin")
+            await user_repo.create(
+                email=settings.admin_email,
+                password_hash=hash_password(settings.admin_password),
+                full_name="System Admin",
+                role="admin",
+            )
             await session.commit()
     await app.state.background_jobs.start()
     yield
@@ -60,7 +69,9 @@ def create_app() -> FastAPI:
     settings = get_settings()
     app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
     app.state.settings = settings
-    allowed_origins = [origin.strip() for origin in settings.frontend_origins.split(",") if origin.strip()]
+    allowed_origins = [
+        origin.strip() for origin in settings.frontend_origins.split(",") if origin.strip()
+    ]
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
@@ -78,15 +89,27 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(AppError)
     async def app_error_handler(request: Request, exc: AppError):
-        return JSONResponse(status_code=exc.status_code, content={"error": exc.error_code, "message": exc.message})
+        return JSONResponse(
+            status_code=exc.status_code, content={"error": exc.error_code, "message": exc.message}
+        )
 
     @app.exception_handler(RequestValidationError)
     async def validation_handler(request: Request, exc: RequestValidationError):
-        return JSONResponse(status_code=422, content={"error": ValidationAppError.error_code, "message": "Validation failed", "details": exc.errors()})
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": ValidationAppError.error_code,
+                "message": "Validation failed",
+                "details": exc.errors(),
+            },
+        )
 
     @app.exception_handler(Exception)
     async def unexpected_handler(request: Request, exc: Exception):
-        return JSONResponse(status_code=500, content={"error": "internal_server_error", "message": "An unexpected error occurred"})
+        return JSONResponse(
+            status_code=500,
+            content={"error": "internal_server_error", "message": "An unexpected error occurred"},
+        )
 
     app.include_router(admin_router)
     app.include_router(auth_router)
@@ -106,4 +129,9 @@ def main() -> None:
     import uvicorn
 
     settings = get_settings()
-    uvicorn.run("cityguide_backend.main:app", host=settings.app_host, port=settings.app_port, reload=settings.app_env == "local")
+    uvicorn.run(
+        "cityguide_backend.main:app",
+        host=settings.app_host,
+        port=settings.app_port,
+        reload=settings.app_env == "local",
+    )

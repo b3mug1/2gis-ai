@@ -4,7 +4,12 @@ import time
 from collections.abc import AsyncIterator
 
 from sqlalchemy import event
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from cityguide_backend.core.config import Settings
 from cityguide_backend.infrastructure.db.base import Base

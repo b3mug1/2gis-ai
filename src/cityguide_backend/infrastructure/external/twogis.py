@@ -32,7 +32,12 @@ class TwoGISClientHTTP:
         # 2GIS Catalog API uses 'key' query param, not Bearer auth
         return {}
 
-    @retry(reraise=True, stop=stop_after_attempt(3), wait=wait_exponential(multiplier=0.5, min=0.5, max=3), retry=retry_if_exception_type((httpx.HTTPError, ExternalServiceError)))
+    @retry(
+        reraise=True,
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=0.5, min=0.5, max=3),
+        retry=retry_if_exception_type((httpx.HTTPError, ExternalServiceError)),
+    )
     async def _request_json(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
         # Always inject API key as query param (2GIS Catalog API requirement)
         if self._settings.twogis_api_key:
@@ -71,7 +76,14 @@ class TwoGISClientHTTP:
             params["radius"] = _ASTANA_DEFAULT_RADIUS
 
         # 2GIS API 'type' parameter accepts 'branch', 'building', 'adm_div', 'street', etc.
-        if intent.place_type and intent.place_type in {"branch", "building", "adm_div", "street", "station", "attraction"}:
+        if intent.place_type and intent.place_type in {
+            "branch",
+            "building",
+            "adm_div",
+            "street",
+            "station",
+            "attraction",
+        }:
             params["type"] = intent.place_type
 
         payload = await self._request_json("3.0/items", params)
@@ -81,31 +93,66 @@ class TwoGISClientHTTP:
     # Map of common Russian transliterations / typos → canonical search terms
     _TRANSLITERATION_MAP: dict[str, str] = {
         # Venues / exhibition
-        "экспо": "expo", "ekspo": "expo", "экспа": "expo",
+        "экспо": "expo",
+        "ekspo": "expo",
+        "экспа": "expo",
         # Food / restaurants
-        "суши": "суши", "суши": "суши", "сушы": "суши",
-        "роллы": "роллы", "ролы": "роллы", "ролл": "роллы",
-        "пицца": "пицца", "пица": "пицца", "pitsa": "пицца", "pitssa": "пицца",
-        "бургер": "бургер", "burgер": "бургер", "борger": "бургер",
-        "хинкали": "хинкали", "хинкале": "хинкали",
-        "шаурма": "шаурма", "шаурмa": "шаурма", "шаурмя": "шаурма", "shawarma": "шаурма",
-        "лагман": "лагман", "ламан": "лагман",
-        "плов": "плов", "плоф": "плов",
-        "манты": "манты", "манты": "манты",
-        "самса": "самса", "самсa": "самса",
-        "кофе": "кофе", "кафе": "кафе", "кофейня": "кофейня",
-        "ресторан": "ресторан", "рестаран": "ресторан", "рестаурант": "ресторан",
+        "суши": "суши",
+        "суши": "суши",
+        "сушы": "суши",
+        "роллы": "роллы",
+        "ролы": "роллы",
+        "ролл": "роллы",
+        "пицца": "пицца",
+        "пица": "пицца",
+        "pitsa": "пицца",
+        "pitssa": "пицца",
+        "бургер": "бургер",
+        "burgер": "бургер",
+        "борger": "бургер",
+        "хинкали": "хинкали",
+        "хинкале": "хинкали",
+        "шаурма": "шаурма",
+        "шаурмa": "шаурма",
+        "шаурмя": "шаурма",
+        "shawarma": "шаурма",
+        "лагман": "лагман",
+        "ламан": "лагман",
+        "плов": "плов",
+        "плоф": "плов",
+        "манты": "манты",
+        "манты": "манты",
+        "самса": "самса",
+        "самсa": "самса",
+        "кофе": "кофе",
+        "кафе": "кафе",
+        "кофейня": "кофейня",
+        "ресторан": "ресторан",
+        "рестаран": "ресторан",
+        "рестаурант": "ресторан",
         # Entertainment / services
-        "кинотеатр": "кинотеатр", "кино": "кинотеатр", "кинатеатр": "кинотеатр",
-        "парикмахер": "парикмахерская", "парикмахерскяа": "парикмахерская",
-        "аптека": "аптека", "аптека": "аптека",
-        "больница": "больница", "болница": "больница",
-        "гостиница": "гостиница", "гастиница": "гостиница", "отель": "отель",
-        "банк": "банк", "банкомат": "банкомат",
-        "супермаркет": "супермаркет", "супермаркет": "супермаркет",
-        "магазин": "магазин", "магaзин": "магазин",
-        "парк": "парк", "паркинг": "парковка",
-        "фитнес": "фитнес", "спортзал": "фитнес",
+        "кинотеатр": "кинотеатр",
+        "кино": "кинотеатр",
+        "кинатеатр": "кинотеатр",
+        "парикмахер": "парикмахерская",
+        "парикмахерскяа": "парикмахерская",
+        "аптека": "аптека",
+        "аптека": "аптека",
+        "больница": "больница",
+        "болница": "больница",
+        "гостиница": "гостиница",
+        "гастиница": "гостиница",
+        "отель": "отель",
+        "банк": "банк",
+        "банкомат": "банкомат",
+        "супермаркет": "супермаркет",
+        "супермаркет": "супермаркет",
+        "магазин": "магазин",
+        "магaзин": "магазин",
+        "парк": "парк",
+        "паркинг": "парковка",
+        "фитнес": "фитнес",
+        "спортзал": "фитнес",
         "салон": "салон красоты",
     }
 
@@ -123,9 +170,33 @@ class TwoGISClientHTTP:
         # First normalize known transliterations
         query = self._normalize_transliterations(query)
         stop_words = {
-            "best", "top", "good", "cheap", "near", "under", "kzt", "₸", "tenge",
-            "самый", "самые", "лучший", "лучшие", "хороший", "дешевый", "дешевые", "недорогой",
-            "возле", "около", "рядом", "до", "тенге", "рублей", "руб", "в", "in", "near"
+            "best",
+            "top",
+            "good",
+            "cheap",
+            "near",
+            "under",
+            "kzt",
+            "₸",
+            "tenge",
+            "самый",
+            "самые",
+            "лучший",
+            "лучшие",
+            "хороший",
+            "дешевый",
+            "дешевые",
+            "недорогой",
+            "возле",
+            "около",
+            "рядом",
+            "до",
+            "тенге",
+            "рублей",
+            "руб",
+            "в",
+            "in",
+            "near",
         }
         words = [w for w in query.split() if w.lower().strip(".,!?\"'") not in stop_words]
         cleaned = " ".join(words).strip()
@@ -137,7 +208,11 @@ class TwoGISClientHTTP:
         try:
             # For short single-word location names (e.g. "аэропорт"), append city context to improve accuracy
             query_text = location_text.strip()
-            if len(query_text.split()) <= 2 and "астана" not in query_text.lower() and "нур-султан" not in query_text.lower():
+            if (
+                len(query_text.split()) <= 2
+                and "астана" not in query_text.lower()
+                and "нур-султан" not in query_text.lower()
+            ):
                 query_text = f"{query_text} Астана"
 
             params: dict[str, Any] = {
@@ -152,7 +227,11 @@ class TwoGISClientHTTP:
             items = payload.get("result", {}).get("items", []) or payload.get("items", [])
             if not items:
                 # Retry without the city context if no results
-                params2: dict[str, Any] = {"q": location_text.strip(), "page_size": 1, "fields": "items.point"}
+                params2: dict[str, Any] = {
+                    "q": location_text.strip(),
+                    "page_size": 1,
+                    "fields": "items.point",
+                }
                 payload = await self._request_json("3.0/items", params2)
                 items = payload.get("result", {}).get("items", []) or payload.get("items", [])
             if not items:
@@ -177,7 +256,9 @@ class TwoGISClientHTTP:
         for item in items:
             reviews.append(
                 PlaceReview(
-                    author=item.get("author", {}).get("name") if isinstance(item.get("author"), dict) else item.get("author"),
+                    author=item.get("author", {}).get("name")
+                    if isinstance(item.get("author"), dict)
+                    else item.get("author"),
                     rating=self._as_float(item.get("rating")),
                     text=str(item.get("text") or item.get("comment") or "").strip(),
                 )
@@ -216,7 +297,9 @@ class TwoGISClientHTTP:
             price_category=self._price_category(item),
             opening_hours=self._opening_hours(item),
             phone=self._phone(item),
-            url=item.get("url") or item.get("link") or (f"https://2gis.kz/firm/{item.get('id')}" if item.get("id") else None),
+            url=item.get("url")
+            or item.get("link")
+            or (f"https://2gis.kz/firm/{item.get('id')}" if item.get("id") else None),
             is_open_now=self._is_open_now(item),
             has_parking=self._has_parking(item),
             photos=photos,

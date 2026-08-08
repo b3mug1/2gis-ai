@@ -13,9 +13,13 @@ class Settings(BaseSettings):
     app_host: str = "0.0.0.0"
     app_port: int = 8000
     log_level: str = "INFO"
-    frontend_origins: str = Field("http://localhost:7000,http://127.0.0.1:7000", alias="FRONTEND_ORIGINS")
+    frontend_origins: str = Field(
+        "http://localhost:7000,http://127.0.0.1:7000", alias="FRONTEND_ORIGINS"
+    )
 
-    database_url: str = Field("postgresql+asyncpg://cityguide:cityguide@localhost:5432/cityguide", alias="DATABASE_URL")
+    database_url: str = Field(
+        "postgresql+asyncpg://cityguide:cityguide@localhost:5432/cityguide", alias="DATABASE_URL"
+    )
     redis_url: str = Field("redis://localhost:6379/0", alias="REDIS_URL")
 
     jwt_secret_key: str = Field("change-me-in-production", alias="JWT_SECRET_KEY")

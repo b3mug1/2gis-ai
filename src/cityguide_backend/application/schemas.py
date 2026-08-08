@@ -126,7 +126,6 @@ class PopularResponse(BaseModel):
     places: list[PlaceRecommendationSchema]
 
 
-
 class SearchResponse(BaseModel):
     recommendation: PlaceRecommendationSchema
     alternatives: list[PlaceRecommendationSchema] = Field(default_factory=list)

@@ -19,8 +19,24 @@ from cityguide_backend.application.schemas import (
 )
 from cityguide_backend.core.config import Settings
 from cityguide_backend.core.exceptions import NoSearchResultsError
-from cityguide_backend.domain.entities import Coordinates, PlaceCandidate, PlaceRecommendation, ReviewSummary, SearchIntent, SearchResult
-from cityguide_backend.domain.ports import AIClient, AIUsageLogRepository, CachedAIResultRepository, CacheBackend, SearchHistoryRepository, SearchSessionRepository, SearchStatisticsRepository, TwoGISClient
+from cityguide_backend.domain.entities import (
+    Coordinates,
+    PlaceCandidate,
+    PlaceRecommendation,
+    ReviewSummary,
+    SearchIntent,
+    SearchResult,
+)
+from cityguide_backend.domain.ports import (
+    AIClient,
+    AIUsageLogRepository,
+    CachedAIResultRepository,
+    CacheBackend,
+    SearchHistoryRepository,
+    SearchSessionRepository,
+    SearchStatisticsRepository,
+    TwoGISClient,
+)
 
 
 @dataclass(slots=True)
@@ -54,7 +70,13 @@ class SearchService:
         self._ai_usage_repo = ai_usage_repo
         self._cached_ai_repo = cached_ai_repo
 
-    async def search(self, request: SearchRequest, *, user_id: UUID | None, user_location: Coordinates | None = None) -> SearchResponse:
+    async def search(
+        self,
+        request: SearchRequest,
+        *,
+        user_id: UUID | None,
+        user_location: Coordinates | None = None,
+    ) -> SearchResponse:
         cache_key = self._cache_key(request.query, request.coordinates, user_id)
         cached = await self._cache.get_json(cache_key)
         if cached is not None:
@@ -89,7 +111,12 @@ class SearchService:
                         source="cache",
                         generated_at=datetime.now(timezone.utc),
                     )
-                    await self._history_repo.create(user_id=user_id, query=request.query, intent=dummy_intent, result=dummy_result)
+                    await self._history_repo.create(
+                        user_id=user_id,
+                        query=request.query,
+                        intent=dummy_intent,
+                        result=dummy_result,
+                    )
                     await self._statistics_repo.increment(user_id=user_id, total=1, successful=1)
                     await self._session.commit()
                 except Exception:
@@ -98,7 +125,9 @@ class SearchService:
 
         intent = await self._ai_client.extract_intent(request.query, user_location=user_location)
         if request.coordinates is not None:
-            intent.coordinates = Coordinates(latitude=request.coordinates.latitude, longitude=request.coordinates.longitude)
+            intent.coordinates = Coordinates(
+                latitude=request.coordinates.latitude, longitude=request.coordinates.longitude
+            )
         elif intent.location_text:
             geocoded = await self._place_client.geocode_location(intent.location_text)
             if geocoded is not None:
@@ -108,7 +137,9 @@ class SearchService:
 
         session_id = None
         if user_id is not None:
-            session_id = await self._session_repo.create(user_id=user_id, query=request.query, intent=intent, status="processing")
+            session_id = await self._session_repo.create(
+                user_id=user_id, query=request.query, intent=intent, status="processing"
+            )
             await self._session.flush()
         places = await self._place_client.search_places(intent)
         if not places:
@@ -125,7 +156,9 @@ class SearchService:
                 raise NoSearchResultsError("No places found for this query")
 
         deduped = self._deduplicate_candidates(places)
-        enriched = await asyncio.gather(*[self._enrich_place(intent, place) for place in deduped[:10]])
+        enriched = await asyncio.gather(
+            *[self._enrich_place(intent, place) for place in deduped[:10]]
+        )
 
         # Filter out candidates that are category mismatches or have low confidence/score
         # Use lenient threshold (0.05) so location-based searches ("кафе рядом с X") always return results
@@ -133,10 +166,19 @@ class SearchService:
         if not relevant:
             # Fallback: broaden radius and search again with just the main keyword
             keyword = intent.query or "кафе"
-            fallback_intent = SearchIntent(query=keyword, coordinates=intent.coordinates, radius_m=min(intent.radius_m * 3, 10000))
+            fallback_intent = SearchIntent(
+                query=keyword,
+                coordinates=intent.coordinates,
+                radius_m=min(intent.radius_m * 3, 10000),
+            )
             fallback_places = await self._place_client.search_places(fallback_intent)
             if fallback_places:
-                enriched_fallback = await asyncio.gather(*[self._enrich_place(intent, place) for place in self._deduplicate_candidates(fallback_places)[:10]])
+                enriched_fallback = await asyncio.gather(
+                    *[
+                        self._enrich_place(intent, place)
+                        for place in self._deduplicate_candidates(fallback_places)[:10]
+                    ]
+                )
                 relevant = [p for p in enriched_fallback if p.confidence > 0.05 and p.score > 0.05]
 
         final_pool = relevant if relevant else enriched
@@ -145,7 +187,9 @@ class SearchService:
         alternatives = ranked[1:4]
         result = SearchResult(
             recommendation=self._recommendation_from_scored(recommendation),
-            alternatives=[self._recommendation_from_scored(candidate) for candidate in alternatives],
+            alternatives=[
+                self._recommendation_from_scored(candidate) for candidate in alternatives
+            ],
             intent=intent,
             source="2gis+gemini",
             generated_at=datetime.now(timezone.utc),
@@ -155,9 +199,18 @@ class SearchService:
         payload = response.model_dump(mode="json")
 
         if user_id is not None:
-            await self._history_repo.create(user_id=user_id, query=request.query, intent=intent, result=result)
+            await self._history_repo.create(
+                user_id=user_id, query=request.query, intent=intent, result=result
+            )
             await self._statistics_repo.increment(user_id=user_id, total=1, successful=1)
-            await self._ai_usage_repo.create(user_id=user_id, operation="search", model=self._settings.gemini_model, prompt_tokens=0, completion_tokens=0, metadata={"query": request.query})
+            await self._ai_usage_repo.create(
+                user_id=user_id,
+                operation="search",
+                model=self._settings.gemini_model,
+                prompt_tokens=0,
+                completion_tokens=0,
+                metadata={"query": request.query},
+            )
         await self._cache.set_json(cache_key, payload, self._settings.search_cache_ttl_seconds)
         await self._cached_ai_repo.set(cache_key, payload, self._settings.search_cache_ttl_seconds)
         if session_id is not None:
@@ -180,7 +233,9 @@ class SearchService:
             unique.append(place)
         return unique if len(unique) >= 2 else places
 
-    async def _enrich_place(self, intent: SearchIntent, place: PlaceCandidate) -> PlaceRecommendation:
+    async def _enrich_place(
+        self, intent: SearchIntent, place: PlaceCandidate
+    ) -> PlaceRecommendation:
         if not place.reviews:
             place.reviews = await self._place_client.get_reviews(place.place_id)
         summary = await self._ai_client.summarize_reviews(intent, place)
@@ -214,20 +269,77 @@ class SearchService:
         )
 
     def _is_category_mismatch(self, intent: SearchIntent, place: PlaceCandidate) -> bool:
-        full_req = (intent.query + " " + (intent.cuisine or "") + " " + (intent.place_type or "")).lower()
-        food_keywords = {"sushi", "суши", "роллы", "pizza", "пицца", "burger", "бургер", "food", "еда", "restaurant", "ресторан", "cafe", "кафе", "bar", "бар", "кухня", "coffee", "кофе"}
+        full_req = (
+            intent.query + " " + (intent.cuisine or "") + " " + (intent.place_type or "")
+        ).lower()
+        food_keywords = {
+            "sushi",
+            "суши",
+            "роллы",
+            "pizza",
+            "пицца",
+            "burger",
+            "бургер",
+            "food",
+            "еда",
+            "restaurant",
+            "ресторан",
+            "cafe",
+            "кафе",
+            "bar",
+            "бар",
+            "кухня",
+            "coffee",
+            "кофе",
+        }
         if any(kw in full_req for kw in food_keywords):
-            non_food_terms = {"одежда", "обувь", "мебель", "мебельный", "маркетинг", "авто", "автозапчасти", "строительство", "недвижимость", "агентство", "юридические", "аптека", "цех", "производство"}
-            food_terms = {"общепит", "ресторан", "кафе", "суши", "бар", "столовая", "доставка еды", "кофейня", "пекарня", "паб", "закусочная", "пиццерия", "бургерная", "быстрое питание", "fast food"}
+            non_food_terms = {
+                "одежда",
+                "обувь",
+                "мебель",
+                "мебельный",
+                "маркетинг",
+                "авто",
+                "автозапчасти",
+                "строительство",
+                "недвижимость",
+                "агентство",
+                "юридические",
+                "аптека",
+                "цех",
+                "производство",
+            }
+            food_terms = {
+                "общепит",
+                "ресторан",
+                "кафе",
+                "суши",
+                "бар",
+                "столовая",
+                "доставка еды",
+                "кофейня",
+                "пекарня",
+                "паб",
+                "закусочная",
+                "пиццерия",
+                "бургерная",
+                "быстрое питание",
+                "fast food",
+            }
             cats_lower = [c.lower() for c in place.categories]
             name_lower = place.name.lower()
             has_food_cat = any(any(ft in cat for ft in food_terms) for cat in cats_lower)
             if not has_food_cat:
-                if any(any(nft in cat for nft in non_food_terms) for cat in cats_lower) or any(nft in name_lower for nft in {"женской одежды", "мебельный цех", "агентство", "магазин одежды"}):
+                if any(any(nft in cat for nft in non_food_terms) for cat in cats_lower) or any(
+                    nft in name_lower
+                    for nft in {"женской одежды", "мебельный цех", "агентство", "магазин одежды"}
+                ):
                     return True
         return False
 
-    def _score_place(self, intent: SearchIntent, place: PlaceCandidate, summary: ReviewSummary) -> float:
+    def _score_place(
+        self, intent: SearchIntent, place: PlaceCandidate, summary: ReviewSummary
+    ) -> float:
         if summary.confidence < 0.1:
             return 0.0
         if self._is_category_mismatch(intent, place):
@@ -252,14 +364,27 @@ class SearchService:
         place_cats = " ".join([c.lower() for c in place.categories])
         place_name = place.name.lower()
         if "sushi" in query_terms or "суши" in query_terms or "ролл" in query_terms:
-            if "суши" in place_cats or "суши" in place_name or "sushi" in place_name or "японская" in place_cats:
+            if (
+                "суши" in place_cats
+                or "суши" in place_name
+                or "sushi" in place_name
+                or "японская" in place_cats
+            ):
                 relevance_bonus += 0.25
             elif "гриль" in place_cats or "шашлык" in place_name:
                 relevance_bonus -= 0.10
 
-        base = (rating / 5.0) * 0.35 + distance_score * 0.20 + budget_score * 0.15 + parking_score * 0.05 + quiet_score * 0.05 + open_score * 0.05 + review_score * 0.15 + relevance_bonus
+        base = (
+            (rating / 5.0) * 0.35
+            + distance_score * 0.20
+            + budget_score * 0.15
+            + parking_score * 0.05
+            + quiet_score * 0.05
+            + open_score * 0.05
+            + review_score * 0.15
+            + relevance_bonus
+        )
         return round(min(1.0, max(0.0, base * confidence_factor)), 4)
-
 
     def _price_rank(self, price_category: str) -> int:
         normalized = price_category.lower().strip()
@@ -275,7 +400,9 @@ class SearchService:
             return 3
         return 4
 
-    def _recommendation_from_scored(self, recommendation: PlaceRecommendation) -> PlaceRecommendation:
+    def _recommendation_from_scored(
+        self, recommendation: PlaceRecommendation
+    ) -> PlaceRecommendation:
         return recommendation
 
     def _to_response(self, result: SearchResult) -> SearchResponse:
@@ -314,7 +441,11 @@ class SearchService:
         return SearchIntentSchema(
             query=intent.query,
             location_text=intent.location_text,
-            coordinates=None if intent.coordinates is None else CoordinatesSchema(latitude=intent.coordinates.latitude, longitude=intent.coordinates.longitude),
+            coordinates=None
+            if intent.coordinates is None
+            else CoordinatesSchema(
+                latitude=intent.coordinates.latitude, longitude=intent.coordinates.longitude
+            ),
             radius_m=intent.radius_m,
             budget_kzt=intent.budget_kzt,
             party_size=intent.party_size,
@@ -332,10 +463,14 @@ class SearchService:
             romantic=intent.romantic,
         )
 
-    def _cache_key(self, query: str, coordinates: CoordinatesSchema | None, user_id: UUID | None) -> str:
+    def _cache_key(
+        self, query: str, coordinates: CoordinatesSchema | None, user_id: UUID | None
+    ) -> str:
         raw = {
             "query": query.lower().strip(),
-            "coordinates": None if coordinates is None else {"latitude": coordinates.latitude, "longitude": coordinates.longitude},
+            "coordinates": None
+            if coordinates is None
+            else {"latitude": coordinates.latitude, "longitude": coordinates.longitude},
             "user_id": None if user_id is None else str(user_id),
         }
         return f"search:{hashlib.sha256(str(raw).encode('utf-8')).hexdigest()}"

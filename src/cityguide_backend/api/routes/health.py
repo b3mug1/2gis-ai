@@ -26,4 +26,9 @@ async def health(request: Request) -> HealthResponse:
         "gemini": "configured" if request.app.state.settings.gemini_api_key else "missing_api_key",
     }
     status = "ok" if database_status == "ok" and redis_status == "ok" else "degraded"
-    return HealthResponse(status=status, database=database_status, redis=redis_status, external_services=external_services)
+    return HealthResponse(
+        status=status,
+        database=database_status,
+        redis=redis_status,
+        external_services=external_services,
+    )
