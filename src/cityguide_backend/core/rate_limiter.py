@@ -19,9 +19,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         scope = request.url.path
         if scope in {"/health", "/docs", "/openapi.json"}:
             return await call_next(request)
-        client_ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "anonymous")
+        client_ip = request.headers.get(
+            "x-forwarded-for", request.client.host if request.client else "anonymous"
+        )
         key = f"rate:{client_ip}:{scope}"
         current = await self._cache.incr_window(key, self._settings.rate_limit_window_seconds)
         if current > self._settings.rate_limit_requests:
-            return JSONResponse(status_code=RateLimitError.status_code, content={"error": RateLimitError.error_code, "message": "Too many requests"})
+            return JSONResponse(
+                status_code=RateLimitError.status_code,
+                content={"error": RateLimitError.error_code, "message": "Too many requests"},
+            )
         return await call_next(request)

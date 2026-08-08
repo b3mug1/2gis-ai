@@ -11,4 +11,10 @@ router = APIRouter(tags=["me"])
 
 @router.get("/me", response_model=UserResponse)
 async def me(current_user: UserProfile = Depends(get_current_user)) -> UserResponse:
-    return UserResponse(id=current_user.id, email=current_user.email, full_name=current_user.full_name, role=current_user.role.value, is_active=current_user.is_active)
+    return UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        full_name=current_user.full_name,
+        role=current_user.role.value,
+        is_active=current_user.is_active,
+    )
