@@ -83,39 +83,13 @@ class SearchService:
             response = SearchResponse.model_validate(cached)
             if user_id is not None:
                 try:
-                    dummy_intent = SearchIntent(query=request.query)
-                    rec = PlaceRecommendation(
-                        place_id=response.recommendation.place_id,
-                        name=response.recommendation.name,
-                        rating=response.recommendation.rating,
-                        walking_time=response.recommendation.walking_time,
-                        pros=response.recommendation.pros,
-                        cons=response.recommendation.cons,
-                        reason=response.recommendation.reason,
-                        confidence=response.recommendation.confidence,
-                        score=response.recommendation.score,
-                        address=response.recommendation.address,
-                        latitude=response.recommendation.latitude,
-                        longitude=response.recommendation.longitude,
-                        categories=response.recommendation.categories,
-                        distance_m=response.recommendation.distance_m,
-                        price_category=response.recommendation.price_category,
-                        opening_hours=response.recommendation.opening_hours,
-                        phone=response.recommendation.phone,
-                        url=response.recommendation.url,
-                    )
-                    dummy_result = SearchResult(
-                        recommendation=rec,
-                        alternatives=[],
-                        intent=dummy_intent,
-                        source="cache",
-                        generated_at=datetime.now(timezone.utc),
-                    )
+                    cached_intent = self._intent_from_schema(response.intent)
+                    cached_result = self._result_from_response(response)
                     await self._history_repo.create(
                         user_id=user_id,
                         query=request.query,
-                        intent=dummy_intent,
-                        result=dummy_result,
+                        intent=cached_intent,
+                        result=cached_result,
                     )
                     await self._statistics_repo.increment(user_id=user_id, total=1, successful=1)
                     await self._session.commit()
@@ -123,7 +97,9 @@ class SearchService:
                     pass
             return response
 
-        intent = await self._ai_client.extract_intent(request.query, user_location=user_location)
+        intent = await self._ai_client.extract_intent(
+            request.query, user_location=user_location, locale=request.locale
+        )
         if request.coordinates is not None:
             intent.coordinates = Coordinates(
                 latitude=request.coordinates.latitude, longitude=request.coordinates.longitude
@@ -157,7 +133,10 @@ class SearchService:
 
         deduped = self._deduplicate_candidates(places)
         enriched = await asyncio.gather(
-            *[self._enrich_place(intent, place) for place in deduped[:10]]
+            *[
+                self._enrich_place(intent, place, locale=request.locale)
+                for place in deduped[:10]
+            ]
         )
 
         # Filter out candidates that are category mismatches or have low confidence/score
@@ -175,7 +154,7 @@ class SearchService:
             if fallback_places:
                 enriched_fallback = await asyncio.gather(
                     *[
-                        self._enrich_place(intent, place)
+                        self._enrich_place(intent, place, locale=request.locale)
                         for place in self._deduplicate_candidates(fallback_places)[:10]
                     ]
                 )
@@ -234,11 +213,9 @@ class SearchService:
         return unique if len(unique) >= 2 else places
 
     async def _enrich_place(
-        self, intent: SearchIntent, place: PlaceCandidate
+        self, intent: SearchIntent, place: PlaceCandidate, *, locale: str = "en"
     ) -> PlaceRecommendation:
-        if not place.reviews:
-            place.reviews = await self._place_client.get_reviews(place.place_id)
-        summary = await self._ai_client.summarize_reviews(intent, place)
+        summary = await self._summarize_place(intent, place, locale=locale)
 
         # Filter synthetic / invalid dummy places without address or categories
         if not place.address and not place.categories and not place.rating:
@@ -266,6 +243,48 @@ class SearchService:
             phone=place.phone,
             url=place.url,
             photos=place.photos,
+        )
+
+    async def _summarize_place(
+        self, intent: SearchIntent, place: PlaceCandidate, *, locale: str
+    ) -> ReviewSummary:
+        try:
+            if not place.reviews:
+                place.reviews = await self._place_client.get_reviews(place.place_id)
+            return await self._ai_client.summarize_reviews(intent, place, locale=locale)
+        except Exception:
+            return self._fallback_review_summary(intent, place, locale=locale)
+
+    def _fallback_review_summary(
+        self, intent: SearchIntent, place: PlaceCandidate, *, locale: str
+    ) -> ReviewSummary:
+        normalized_locale = (locale or "en").lower()
+        if normalized_locale == "ru":
+            summary = f"Место «{place.name}» подходит под ваш запрос."
+            reason = f"Место «{place.name}» выглядит уместным вариантом по вашему запросу."
+            pros = ["Подходит по основным параметрам", "Есть базовые данные в каталоге"]
+            cons = ["AI-сводка временно недоступна"]
+        elif normalized_locale in {"kz", "kk"}:
+            summary = f"«{place.name}» сіздің сұранысыңызға сәйкес келеді."
+            reason = f"«{place.name}» сіздің сұранысыңызға сай келетін нұсқа сияқты."
+            pros = ["Негізгі параметрлерге сай", "Каталогта деректер бар"]
+            cons = ["AI талдауы уақытша қолжетімсіз"]
+        else:
+            summary = f'Place "{place.name}" matches your request.'
+            reason = f'"{place.name}" looks like a reasonable match for the current request.'
+            pros = ["Matches the main criteria", "Has basic catalog data"]
+            cons = ["AI review summary is temporarily unavailable"]
+
+        if intent.romantic or (intent.mood and "romantic" in intent.mood.lower()):
+            reason += " It also fits a date-style outing."
+
+        return ReviewSummary(
+            summary=summary,
+            pros=pros,
+            cons=cons,
+            reason=reason,
+            confidence=0.15,
+            sentiment_score=0.0,
         )
 
     def _is_category_mismatch(self, intent: SearchIntent, place: PlaceCandidate) -> bool:
@@ -405,6 +424,17 @@ class SearchService:
     ) -> PlaceRecommendation:
         return recommendation
 
+    def _result_from_response(self, response: SearchResponse) -> SearchResult:
+        return SearchResult(
+            recommendation=self._recommendation_from_schema(response.recommendation),
+            alternatives=[
+                self._recommendation_from_schema(item) for item in response.alternatives
+            ],
+            intent=self._intent_from_schema(response.intent),
+            source=response.source,
+            generated_at=response.generated_at,
+        )
+
     def _to_response(self, result: SearchResult) -> SearchResponse:
         return SearchResponse(
             recommendation=self._to_schema(result.recommendation),
@@ -435,6 +465,57 @@ class SearchService:
             phone=recommendation.phone,
             url=recommendation.url,
             photos=recommendation.photos,
+        )
+
+    def _recommendation_from_schema(
+        self, recommendation: PlaceRecommendationSchema
+    ) -> PlaceRecommendation:
+        return PlaceRecommendation(
+            place_id=recommendation.place_id,
+            name=recommendation.name,
+            rating=recommendation.rating,
+            walking_time=recommendation.walking_time,
+            pros=list(recommendation.pros),
+            cons=list(recommendation.cons),
+            reason=recommendation.reason,
+            confidence=recommendation.confidence,
+            score=recommendation.score,
+            address=recommendation.address,
+            latitude=recommendation.latitude,
+            longitude=recommendation.longitude,
+            categories=list(recommendation.categories),
+            distance_m=recommendation.distance_m,
+            price_category=recommendation.price_category,
+            opening_hours=recommendation.opening_hours,
+            phone=recommendation.phone,
+            url=recommendation.url,
+            photos=list(recommendation.photos),
+        )
+
+    def _intent_from_schema(self, intent: SearchIntentSchema) -> SearchIntent:
+        return SearchIntent(
+            query=intent.query,
+            location_text=intent.location_text,
+            coordinates=None
+            if intent.coordinates is None
+            else Coordinates(
+                latitude=intent.coordinates.latitude, longitude=intent.coordinates.longitude
+            ),
+            radius_m=intent.radius_m,
+            budget_kzt=intent.budget_kzt,
+            party_size=intent.party_size,
+            cuisine=intent.cuisine,
+            place_type=intent.place_type,
+            amenities=list(intent.amenities),
+            mood=intent.mood,
+            sort_by=intent.sort_by,
+            open_now=intent.open_now,
+            min_rating=intent.min_rating,
+            price_category=intent.price_category,
+            requires_parking=intent.requires_parking,
+            requires_quiet=intent.requires_quiet,
+            laptop_friendly=intent.laptop_friendly,
+            romantic=intent.romantic,
         )
 
     def _intent_schema(self, intent: SearchIntent) -> SearchIntentSchema:

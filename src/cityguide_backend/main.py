@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import os
 
 import httpx
 from fastapi import FastAPI, Request
@@ -129,9 +130,10 @@ def main() -> None:
     import uvicorn
 
     settings = get_settings()
+    reload_enabled = settings.app_env == "local" and os.getenv("UVICORN_RELOAD", "1") == "1"
     uvicorn.run(
         "cityguide_backend.main:app",
         host=settings.app_host,
         port=settings.app_port,
-        reload=settings.app_env == "local",
+        reload=reload_enabled,
     )

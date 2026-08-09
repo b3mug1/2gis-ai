@@ -113,11 +113,15 @@ class TwoGISClient(Protocol):
 
 class AIClient(Protocol):
     async def extract_intent(
-        self, query: str, *, user_location: Coordinates | None = None
+        self,
+        query: str,
+        *,
+        user_location: Coordinates | None = None,
+        locale: str = "en",
     ) -> SearchIntent: ...
 
     async def summarize_reviews(
-        self, intent: SearchIntent, place: PlaceCandidate
+        self, intent: SearchIntent, place: PlaceCandidate, *, locale: str = "en"
     ) -> ReviewSummary: ...
 
 

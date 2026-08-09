@@ -22,8 +22,13 @@ class GeminiAIClient:
         self._client = genai.Client(api_key=settings.gemini_api_key)
 
     async def extract_intent(
-        self, query: str, *, user_location: Coordinates | None = None
+        self,
+        query: str,
+        *,
+        user_location: Coordinates | None = None,
+        locale: str = "en",
     ) -> SearchIntent:
+        target_language = self._target_language(locale)
         loc = (
             None
             if user_location is None
@@ -31,23 +36,24 @@ class GeminiAIClient:
         )
         prompt = (
             f"Extract search intent from this query and return JSON only.\n"
+            f"Preferred user language: {target_language}\n"
             f'Query: "{query}"\n'
             f"User location: {loc}\n"
             f"IMPORTANT PRE-PROCESSING RULES:\n"
             f"- Users may write with typos, grammatical errors, or Russian transliterations of foreign words.\n"
             f"- Normalize and correct the query before extracting intent. Examples:\n"
-            f'  * "экспо" or "ekspо" or "ekspo" → "expo" or "EXPO" (venue/exhibition center)\n'
-            f'  * "пицца" or "пицца" or "pitsa" → "пицца"\n'
-            f'  * "суши" or "суши" or "sushi" → "суши"\n'
-            f'  * "кофейня" or "кафе" or "кофе" → "кофейня"\n'
-            f'  * "ресторан" or "рестаран" → "ресторан"\n'
-            f'  * "бургер" or "burger" → "бургер"\n'
-            f'  * "роллы" or "ролы" → "роллы"\n'
-            f'  * "хинкали" or "хинкали" → "хинкали"\n'
+            f'  * "экспо" or "ekspo" or "ekspo" -> "expo" or "EXPO" (venue/exhibition center)\n'
+            f'  * "пицца" or "pitsa" -> "пицца"\n'
+            f'  * "суши" or "sushi" -> "суши"\n'
+            f'  * "кофейня" or "кафе" or "кофе" -> "кофейня"\n'
+            f'  * "ресторан" or "рестаран" -> "ресторан"\n'
+            f'  * "бургер" or "burger" -> "бургер"\n'
+            f'  * "роллы" or "ролы" -> "роллы"\n'
+            f'  * "хинкали" -> "хинкали"\n'
             f"  Recognize ANY Russian phonetic spelling of foreign brand/venue names and normalize them.\n"
             f'CRITICAL INSTRUCTIONS FOR "query" FIELD:\n'
-            f'- The "query" field MUST contain ONLY the target search keywords in Russian or English suitable for map catalog search (e.g. "суши" for "best sushi near...", "пицца" for "cheap pizza").\n'
-            f'- NEVER include subjective adjectives ("best", "good", "cheap", "top"), price amounts, distance/location phrases ("near...", "under 10000") in the "query" field!\n'
+            f'- The "query" field MUST contain ONLY the target search keywords in Russian or English suitable for map catalog search.\n'
+            f'- NEVER include subjective adjectives, price amounts, or distance/location phrases in the "query" field.\n'
             f'- "cuisine": e.g. "sushi", "japanese", "italian", "burger", or null.\n'
             f'- "place_type": e.g. "restaurant", "cafe", "bar", "fast_food", or null.\n'
             f"Return JSON with these fields (use null for unknown):\n"
@@ -85,12 +91,13 @@ class GeminiAIClient:
             romantic=bool(data.get("romantic") or False),
         )
 
-    async def summarize_reviews(self, intent: SearchIntent, place: PlaceCandidate) -> ReviewSummary:
+    async def summarize_reviews(
+        self, intent: SearchIntent, place: PlaceCandidate, *, locale: str = "en"
+    ) -> ReviewSummary:
         top_reviews = [
             {"r": rv.rating, "t": rv.text[:200] if rv.text else ""} for rv in place.reviews[:3]
         ]
 
-        # Build rich intent context for Gemini
         user_wants = intent.query
         details = []
         if intent.romantic or (intent.mood and "romantic" in intent.mood.lower()):
@@ -103,6 +110,7 @@ class GeminiAIClient:
             details.append(f"cuisine: {intent.cuisine}")
 
         req_summary = f"{user_wants} ({', '.join(details)})" if details else user_wants
+        target_language = self._target_language(locale)
 
         prompt = (
             f'Analyze business "{place.name}" for user request: "{req_summary}".\n'
@@ -113,10 +121,10 @@ class GeminiAIClient:
             f"- Opening Hours: {place.opening_hours or 'N/A'}\n"
             f"Sample Reviews: {json.dumps(top_reviews, ensure_ascii=False)}\n\n"
             f"CRITICAL INSTRUCTIONS:\n"
-            f'1. LANGUAGE REQUIREMENT: ALL text fields ("reason", "summary", "pros", "cons") MUST BE WRITTEN STRICTLY IN RUSSIAN (на русском языке).\n'
-            f'2. "reason": Write a helpful, specific, natural 1-2 sentence recommendation in Russian explaining WHY this place fits "{req_summary}". Mention atmosphere, food style, rating, or date/group suitability.\n'
-            f'3. "pros": 2-3 specific positive highlights in Russian.\n'
-            f'4. "cons": 1-2 notes or drawbacks in Russian.\n'
+            f'1. LANGUAGE REQUIREMENT: ALL text fields ("reason", "summary", "pros", "cons") MUST BE WRITTEN STRICTLY IN {target_language}.\n'
+            f'2. "reason": Write a helpful, specific, natural 1-2 sentence recommendation in {target_language} explaining WHY this place fits "{req_summary}". Mention atmosphere, food style, rating, or date/group suitability.\n'
+            f'3. "pros": 2-3 specific positive highlights in {target_language}.\n'
+            f'4. "cons": 1-2 notes or drawbacks in {target_language}.\n'
             f'5. "confidence": Float 0.0 to 1.0. Set to 0.0 if this business is NOT a food/dining venue when user wants dining, or if it is synthetic/invalid.\n'
             f'6. "sentiment_score": Float -1.0 to 1.0.\n'
             f"7. JSON FORMATTING: Keep strings concise. Do NOT use inner double quotes inside JSON string values.\n\n"
@@ -125,17 +133,13 @@ class GeminiAIClient:
         try:
             data = await self._generate_json(prompt, operation="review_summarization")
         except Exception:
-            # Fallback ReviewSummary if LLM returned truncated JSON instead of throwing 422 error
             return ReviewSummary(
-                summary=f"Заведение «{place.name}» отвечает условиям поиска.",
-                pros=[
-                    f"Рейтинг {place.rating}/5" if place.rating else "Высокая популярность",
-                    "Доступное меню в категории",
-                ],
-                cons=[],
-                reason=f"Заведение «{place.name}» подходит под ваш запрос, имеет хороший рейтинг и соответствует бюджету.",
-                confidence=0.8,
-                sentiment_score=0.5,
+                summary=f'Place "{place.name}" matches your request.',
+                pros=["Matches the main criteria", "Has basic catalog data"],
+                cons=["AI review summary is temporarily unavailable"],
+                reason=f'"{place.name}" looks like a reasonable match for the current request.',
+                confidence=0.15,
+                sentiment_score=0.0,
             )
 
         return ReviewSummary(
@@ -144,7 +148,7 @@ class GeminiAIClient:
             cons=[str(item) for item in data.get("cons", []) if item],
             reason=str(
                 data.get("reason")
-                or f"Заведение «{place.name}» отлично подходит по вашему запросу."
+                or f'"{place.name}" looks like a reasonable match for the current request.'
             ),
             confidence=self._bounded_float(data.get("confidence"), 0.0, 1.0),
             sentiment_score=self._bounded_float(data.get("sentiment_score"), -1.0, 1.0),
@@ -173,7 +177,6 @@ class GeminiAIClient:
         except json.JSONDecodeError:
             pass
 
-        # Attempt JSON repair for truncated response strings
         repaired = self._repair_json(raw_text)
         if repaired is not None:
             return repaired
@@ -186,14 +189,12 @@ class GeminiAIClient:
         match = re.search(r"\{.*\}", raw_text, re.DOTALL)
         candidate = match.group() if match else raw_text
 
-        # Try replacing unescaped inner quotes inside strings
         sanitized = re.sub(r'(?<=\w)"(?=\w)', "'", candidate)
         try:
             return json.loads(sanitized)
         except json.JSONDecodeError:
             pass
 
-        # Try appending missing closing tokens for truncated JSON
         suffixes = ['"]}', '"]}', '"}]}', '"}}', '"]}', "}"]
         for suffix in suffixes:
             try:
@@ -215,3 +216,12 @@ class GeminiAIClient:
         except (TypeError, ValueError):
             number = lower
         return max(lower, min(upper, number))
+
+    def _target_language(self, locale: str) -> str:
+        normalized = (locale or "en").lower()
+        return {
+            "ru": "Russian",
+            "en": "English",
+            "kz": "Kazakh",
+            "kk": "Kazakh",
+        }.get(normalized, "English")
