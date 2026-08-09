@@ -27,7 +27,6 @@ import { cn } from "@/utils/cn";
 const APP_VERSION = "0.1.0";
 const NOTIFICATIONS_KEY = "settings_notifications_nearby";
 const LOW_LIGHT_KEY = "settings_low_light";
-const CACHE_CLEAR_CONFIRM_TEXT = "Очистить локальный кэш";
 
 function SettingsSection({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -119,10 +118,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     localStorage.setItem(LOW_LIGHT_KEY, lowLightEnabled ? "1" : "0");
-    document.documentElement.classList.toggle("low-light", lowLightEnabled);
-  }, [lowLightEnabled]);
-
-  useEffect(() => {
     document.documentElement.classList.toggle("low-light", lowLightEnabled);
   }, [lowLightEnabled]);
 
@@ -263,7 +258,7 @@ export default function SettingsPage() {
                     onClick={() => setClearConfirm(true)}
                     className="rounded-full border border-[hsl(var(--border))] px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-[hsl(var(--primary))] hover:text-foreground"
                   >
-                    {CACHE_CLEAR_CONFIRM_TEXT}
+                    {t.settings.clearCache}
                   </button>
                 )
               }
