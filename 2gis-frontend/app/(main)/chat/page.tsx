@@ -1,19 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
+import { motion } from "framer-motion";
+import { Map, MessageSquare, RotateCcw, Sparkles } from "lucide-react";
+import { cn } from "@/utils/cn";
+import { useSearch } from "@/hooks/useSearch";
+import { useLanguage } from "@/context/LanguageContext";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { FilterPanel, SearchFilters } from "@/components/chat/FilterPanel";
 import { MapView } from "@/components/map/MapView";
-import { useSearch } from "@/hooks/useSearch";
 import type { ChatMessage, PlaceRecommendation } from "@/types/api";
-import { Map, MessageSquare, RotateCcw } from "lucide-react";
-import { cn } from "@/utils/cn";
-import { motion } from "framer-motion";
-
-import { useLanguage } from "@/context/LanguageContext";
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
@@ -64,14 +63,18 @@ export default function ChatPage() {
         const summary =
           all.length > 0
             ? `${t.chat.foundPlaces} **${all.length}**\n\n` +
-              `**${t.chat.topPick}** ${all[0].name} — ${all[0].reason}`
+              `**${t.chat.topPick}** ${all[0].name} - ${all[0].reason}`
             : t.chat.errorMsg;
 
         const aiMsg: ChatMessage = {
           id: uuidv4(),
           role: "assistant",
           content: summary,
-          searchResponse: { ...result, recommendation: all[0] || result.recommendation, alternatives: all.slice(1) },
+          searchResponse: {
+            ...result,
+            recommendation: all[0] || result.recommendation,
+            alternatives: all.slice(1),
+          },
           timestamp: new Date(),
           isStreaming: true,
         };
@@ -91,7 +94,7 @@ export default function ChatPage() {
         setMessages((prev) => [...prev, errMsg]);
       }
     },
-    [search, language, t, filters]
+    [filters, language, search, t]
   );
 
   useEffect(() => {
@@ -100,7 +103,7 @@ export default function ChatPage() {
       initialQuerySent.current = true;
       handleSend(q);
     }
-  }, [searchParams, handleSend]);
+  }, [handleSend, searchParams]);
 
   function clearChat() {
     setMessages([]);
@@ -108,67 +111,98 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
-      <div className="flex flex-col flex-1 min-w-0 h-full border-r border-[hsl(var(--border))]">
-        <div className="flex items-center justify-between px-4 h-14 border-b border-[hsl(var(--border))] shrink-0">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-[hsl(var(--primary))]" />
-            <span className="text-sm font-semibold text-foreground">{t.chat.title}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {messages.length > 0 && (
-              <button
-                onClick={clearChat}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2.5 py-1.5 rounded-md hover:bg-[hsl(var(--muted))] transition-colors font-medium border border-transparent hover:border-[hsl(var(--border))]"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                {t.chat.newChat}
-              </button>
-            )}
-            <button
-              onClick={() => setShowMap((s) => !s)}
-              className={cn(
-                "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors xl:hidden border border-[hsl(var(--border))]",
-                showMap
-                  ? "bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]"
-                  : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))]"
+    <div className="premium-shell flex h-screen overflow-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <div className="flex min-w-0 flex-1 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--background))]">
+        <div
+          className="border-b border-[hsl(var(--border))] backdrop-blur-2xl"
+          style={{ backgroundColor: "hsl(var(--background) / 0.8)" }}
+        >
+          <div className="flex items-center justify-between gap-3 px-4 py-4 sm:px-6">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-[hsl(var(--primary))]" />
+                <span className="text-sm font-semibold tracking-tight text-foreground">{t.chat.title}</span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Search naturally. AI turns your request into a short, useful shortlist.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {messages.length > 0 && (
+                <button onClick={clearChat} className="btn-minimal btn-minimal-secondary text-xs">
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {t.chat.newChat}
+                </button>
               )}
-            >
-              <Map className="w-3.5 h-3.5" />
-              {t.chat.map}
-            </button>
+              <button
+                onClick={() => setShowMap((s) => !s)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-colors xl:hidden",
+                  showMap
+                    ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]"
+                    : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Map className="h-3.5 w-3.5" />
+                {t.chat.map}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 px-4 pb-4 sm:px-6">
+            <span className="premium-chip">
+              <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+              AI + 2GIS
+            </span>
+            <span className="premium-chip">Open now</span>
+            <span className="premium-chip">Budget-aware</span>
+            <span className="premium-chip">Quiet work spots</span>
           </div>
         </div>
 
-        <ChatWindow
-          messages={messages}
-          isLoading={search.isPending}
-          onPromptSelect={(p) => handleSend(p)}
-        />
-        <FilterPanel
-          visible={showFilters}
-          filters={filters}
-          onChange={setFilters}
-          onClose={() => setShowFilters(false)}
-        />
-        <ChatInput
-          onSend={handleSend}
-          isLoading={search.isPending}
-          onToggleFilters={() => setShowFilters((f) => !f)}
-          showFilters={showFilters}
-        />
+        <div className="flex min-h-0 flex-1 flex-col">
+          <FilterPanel
+            visible={showFilters}
+            filters={filters}
+            onChange={setFilters}
+            onClose={() => setShowFilters(false)}
+          />
+          <ChatWindow
+            messages={messages}
+            isLoading={search.isPending}
+            onPromptSelect={(p) => handleSend(p)}
+          />
+          <ChatInput
+            onSend={handleSend}
+            isLoading={search.isPending}
+            onToggleFilters={() => setShowFilters((f) => !f)}
+            showFilters={showFilters}
+          />
+        </div>
       </div>
 
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className={cn(
-          "hidden xl:block w-[420px] shrink-0 p-3",
-          showMap && "!block"
-        )}
+        className={cn("hidden xl:block w-[460px] shrink-0 p-4", showMap && "!block")}
       >
-        <div className="h-full rounded-md border border-[hsl(var(--border))] overflow-hidden">
-          <MapView places={places} />
+        <div className="surface-panel flex h-full flex-col overflow-hidden">
+          <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-4 py-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                Live map
+              </p>
+              <p className="mt-1 text-sm font-semibold text-foreground">Places update as you search</p>
+            </div>
+            <span className="premium-chip">
+              <Map className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+              Map
+            </span>
+          </div>
+          <div className="min-h-0 flex-1">
+            <MapView places={places} />
+          </div>
         </div>
       </motion.div>
     </div>
