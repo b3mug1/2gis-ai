@@ -2,19 +2,19 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Bot,
-  History,
-  Heart,
-  User,
-  Settings,
-  LogOut,
-  Home,
-  MapPin,
   ChevronLeft,
   ChevronRight,
+  Heart,
+  History,
+  Home,
+  LogOut,
+  MapPin,
+  Settings,
   ShieldCheck,
+  User,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/utils/cn";
@@ -39,7 +39,7 @@ export function Sidebar() {
   ];
 
   if (user?.role === "admin") {
-    navItems.push({ href: "/admin", icon: ShieldCheck, label: "Админ-панель" });
+    navItems.push({ href: "/admin", icon: ShieldCheck, label: "Admin" });
   }
 
   async function handleLogout() {
@@ -50,13 +50,13 @@ export function Sidebar() {
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 72 : 240 }}
-      transition={{ type: "spring", stiffness: 350, damping: 35 }}
-      className="relative hidden md:flex flex-col h-screen sticky top-0 border-r border-[hsl(var(--border))] bg-[hsl(var(--sidebar-bg))] shrink-0 z-30"
+      animate={{ width: collapsed ? 76 : 248 }}
+      transition={{ type: "spring", stiffness: 320, damping: 34 }}
+      className="relative z-30 hidden h-screen shrink-0 flex-col overflow-hidden border-r border-[hsl(var(--border))] bg-[hsl(var(--sidebar-bg))] md:flex sticky top-0"
     >
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-[hsl(var(--border))] overflow-hidden">
-        <div className="w-8 h-8 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center shrink-0">
-          <MapPin className="w-4 h-4" />
+      <div className="flex h-16 items-center gap-3 border-b border-[hsl(var(--border))] px-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm">
+          <MapPin className="h-4 w-4" />
         </div>
         <AnimatePresence>
           {!collapsed && (
@@ -64,16 +64,15 @@ export function Sidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="font-bold text-base text-foreground tracking-tight whitespace-nowrap"
+              className="whitespace-nowrap text-base font-semibold tracking-tight text-foreground"
             >
-              City Guide <span className="text-[hsl(var(--primary))] font-semibold">AI</span>
+              City Guide <span className="text-[hsl(var(--primary))]">AI</span>
             </motion.span>
           )}
         </AnimatePresence>
       </div>
 
-      <nav className="flex-1 py-4 px-2.5 space-y-1 overflow-y-auto overflow-x-hidden">
+      <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-3 py-4">
         {navItems.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || (href !== "/" && pathname.startsWith(href));
           return (
@@ -81,30 +80,22 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                "group relative flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-150",
+                "group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-[hsl(var(--secondary))] text-foreground font-semibold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))/0.5]"
+                  ? "bg-[hsl(var(--secondary))] text-foreground"
+                  : "text-muted-foreground hover:bg-[hsl(var(--muted))] hover:text-foreground"
               )}
             >
-              {active && (
-                <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-[hsl(var(--primary))] rounded-r" />
-              )}
+              {active && <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[hsl(var(--primary))]" />}
               <Icon
                 className={cn(
-                  "w-4 h-4 shrink-0 transition-colors",
+                  "h-4 w-4 shrink-0 transition-colors",
                   active ? "text-[hsl(var(--primary))]" : "text-muted-foreground group-hover:text-foreground"
                 )}
               />
               <AnimatePresence>
                 {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.1 }}
-                    className="whitespace-nowrap"
-                  >
+                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                     {label}
                   </motion.span>
                 )}
@@ -115,37 +106,29 @@ export function Sidebar() {
       </nav>
 
       {user && (
-        <div className="border-t border-[hsl(var(--border))] p-3 space-y-1.5 overflow-hidden">
-          <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-md">
-            <div className="w-7 h-7 rounded-md bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] text-foreground flex items-center justify-center text-xs font-bold shrink-0">
+        <div className="space-y-2 border-t border-[hsl(var(--border))] p-3">
+          <div className="flex items-center gap-3 rounded-2xl bg-[hsl(var(--card)/0.75)] px-3 py-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-xs font-bold text-foreground">
               {user.full_name.charAt(0).toUpperCase()}
             </div>
             <AnimatePresence>
               {!collapsed && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="min-w-0"
-                >
-                  <p className="text-xs font-semibold text-foreground truncate">{user.full_name}</p>
-                  <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-foreground">{user.full_name}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
+
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-md text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-[hsl(var(--muted))] transition-colors"
+            className="flex w-full items-center gap-2.5 rounded-2xl px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-[hsl(var(--muted))] hover:text-destructive"
           >
-            <LogOut className="w-3.5 h-3.5 shrink-0" />
+            <LogOut className="h-3.5 w-3.5 shrink-0" />
             <AnimatePresence>
               {!collapsed && (
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
+                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   {t.sidebar.logout}
                 </motion.span>
               )}
@@ -156,10 +139,20 @@ export function Sidebar() {
 
       <button
         onClick={() => setCollapsed((c) => !c)}
-        className="absolute -right-3 top-5 w-6 h-6 rounded-md bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground flex items-center justify-center shadow-xs transition-colors z-50 cursor-pointer"
+        className={cn(
+          "absolute -right-4 top-6 z-50 flex h-9 w-9 items-center justify-center rounded-full border border-[hsl(var(--border))]",
+          "bg-[hsl(var(--card)/0.95)] text-muted-foreground shadow-[0_12px_30px_-18px_hsl(0_0%_0%/0.45)] backdrop-blur-md",
+          "transition-all duration-200 hover:-translate-y-0.5 hover:border-[hsl(var(--primary))] hover:text-foreground"
+        )}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
-        {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+        <motion.span
+          animate={{ x: collapsed ? 1 : -1 }}
+          transition={{ type: "spring", stiffness: 500, damping: 35 }}
+          className="flex items-center justify-center"
+        >
+          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </motion.span>
       </button>
     </motion.aside>
   );
