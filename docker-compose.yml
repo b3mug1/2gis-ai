@@ -26,6 +26,8 @@ services:
   api:
     build: .
     env_file: .env
+    environment:
+      UVICORN_RELOAD: "0"
     volumes:
       - ./src:/app/src
     depends_on:
