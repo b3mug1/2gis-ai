@@ -1,46 +1,100 @@
 "use client";
 
+import { useEffect, useState, type ElementType, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Settings, Moon, Trash2, LogOut, ChevronRight, Bell, Globe } from "lucide-react";
+import {
+  Bell,
+  Bug,
+  FileText,
+  Globe,
+  LogOut,
+  Moon,
+  PencilLine,
+  Settings,
+  Sparkles,
+  ShieldCheck,
+  Trash2,
+  Wand2,
+} from "lucide-react";
 import { ThemeSwitcher } from "@/components/shared/ThemeSwitcher";
 import { useAuth } from "@/features/auth/AuthContext";
-import { useRouter } from "next/navigation";
 import { queryClient } from "@/lib/queryClient";
 import { toast } from "@/components/ui/toaster";
-import { useState } from "react";
-
+import { useLanguage } from "@/context/LanguageContext";
 import { cn } from "@/utils/cn";
 
-import { useLanguage } from "@/context/LanguageContext";
+const APP_VERSION = "0.1.0";
+const NOTIFICATIONS_KEY = "settings_notifications_nearby";
+const LOW_LIGHT_KEY = "settings_low_light";
+const CACHE_CLEAR_CONFIRM_TEXT = "Очистить локальный кэш";
 
-function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
+function SettingsSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-3xl border border-[hsl(var(--border))] bg-card/70 backdrop-blur-sm overflow-hidden shadow-sm">
-      <div className="px-6 py-3.5 border-b border-[hsl(var(--border))] bg-muted/40">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{title}</h2>
+    <section className="overflow-hidden rounded-[1.75rem] border border-[hsl(var(--border))] bg-[hsl(var(--card)/0.9)] shadow-[0_18px_50px_-38px_hsl(0_0%_0%/0.45)] backdrop-blur-xl">
+      <div className="border-b border-[hsl(var(--border))] px-5 py-4 sm:px-6">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">{title}</h2>
       </div>
       <div className="divide-y divide-[hsl(var(--border))]">{children}</div>
+    </section>
+  );
+}
+
+function SettingsRow({
+  icon: Icon,
+  label,
+  description,
+  action,
+}: {
+  icon: ElementType;
+  label: string;
+  description?: string;
+  action: ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-[hsl(var(--secondary)/0.45)] sm:px-6">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]">
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold tracking-tight text-foreground">{label}</p>
+        {description && <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{description}</p>}
+      </div>
+      <div className="shrink-0">{action}</div>
     </div>
   );
 }
 
-function SettingsRow({ icon: Icon, label, description, action }: {
-  icon: React.ElementType;
+function Toggle({
+  enabled,
+  onChange,
+  label,
+}: {
+  enabled: boolean;
+  onChange: (next: boolean) => void;
   label: string;
-  description?: string;
-  action: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-4 px-6 py-4.5 hover:bg-muted/20 transition-colors">
-      <div className="w-10 h-10 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center shrink-0">
-        <Icon className="w-5 h-5" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-foreground">{label}</p>
-        {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
-      </div>
-      {action}
-    </div>
+    <button
+      type="button"
+      onClick={() => onChange(!enabled)}
+      className={cn(
+        "relative inline-flex h-9 w-[72px] items-center rounded-full border px-1 transition-colors",
+        enabled
+          ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.12)]"
+          : "border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)]"
+      )}
+      aria-label={label}
+    >
+      <span
+        className={cn(
+          "inline-flex h-7 w-7 items-center justify-center rounded-full bg-[hsl(var(--card))] shadow-sm transition-transform",
+          enabled ? "translate-x-[34px]" : "translate-x-0"
+        )}
+      >
+        {enabled ? <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--primary))]" /> : <Moon className="h-3.5 w-3.5 text-muted-foreground" />}
+      </span>
+    </button>
   );
 }
 
@@ -49,6 +103,28 @@ export default function SettingsPage() {
   const router = useRouter();
   const { language, setLanguage, t } = useLanguage();
   const [clearConfirm, setClearConfirm] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(NOTIFICATIONS_KEY) === "1";
+  });
+  const [lowLightEnabled, setLowLightEnabled] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(LOW_LIGHT_KEY) === "1";
+  });
+  const [policyExpanded, setPolicyExpanded] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(NOTIFICATIONS_KEY, notificationsEnabled ? "1" : "0");
+  }, [notificationsEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem(LOW_LIGHT_KEY, lowLightEnabled ? "1" : "0");
+    document.documentElement.classList.toggle("low-light", lowLightEnabled);
+  }, [lowLightEnabled]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("low-light", lowLightEnabled);
+  }, [lowLightEnabled]);
 
   async function handleLogout() {
     await logout();
@@ -62,16 +138,21 @@ export default function SettingsPage() {
     setClearConfirm(false);
   }
 
+  function openMail(subject: string) {
+    const mailto = `mailto:support@cityguide.ai?subject=${encodeURIComponent(subject)}`;
+    window.location.href = mailto;
+  }
+
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10 relative">
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
-            <Settings className="w-5 h-5" />
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))] shadow-[0_16px_35px_-24px_hsl(0_0%_0%/0.45)]">
+            <Settings className="h-6 w-6" />
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">{t.settings.title}</h1>
-            <p className="text-muted-foreground text-xs sm:text-sm">{t.settings.subtitle}</p>
+          <div className="min-w-0">
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">{t.settings.title}</h1>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{t.settings.subtitle}</p>
           </div>
         </div>
       </motion.div>
@@ -85,6 +166,12 @@ export default function SettingsPage() {
               description={t.settings.visualThemeSub}
               action={<ThemeSwitcher />}
             />
+            <SettingsRow
+              icon={Wand2}
+              label="Режим для слабого освещения"
+              description="Снижает яркость поверхностей и делает интерфейс комфортнее в темноте"
+              action={<Toggle enabled={lowLightEnabled} onChange={setLowLightEnabled} label="Режим для слабого освещения" />}
+            />
           </SettingsSection>
         </motion.div>
 
@@ -95,14 +182,14 @@ export default function SettingsPage() {
               label={t.settings.language}
               description={t.settings.languageSub}
               action={
-                <div className="flex items-center p-1 rounded-2xl bg-muted/80 border border-[hsl(var(--border))] shadow-inner">
+                <div className="inline-flex items-center rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.35)] p-1 shadow-inner">
                   <button
                     type="button"
                     onClick={() => setLanguage("ru")}
                     className={cn(
-                      "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200",
+                      "rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors",
                       language === "ru"
-                        ? "bg-card text-brand-500 shadow-md border border-[hsl(var(--border))]"
+                        ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -112,9 +199,9 @@ export default function SettingsPage() {
                     type="button"
                     onClick={() => setLanguage("en")}
                     className={cn(
-                      "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200",
+                      "rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors",
                       language === "en"
-                        ? "bg-card text-brand-500 shadow-md border border-[hsl(var(--border))]"
+                        ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -124,9 +211,9 @@ export default function SettingsPage() {
                     type="button"
                     onClick={() => setLanguage("kz")}
                     className={cn(
-                      "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200",
+                      "rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors",
                       language === "kz"
-                        ? "bg-card text-brand-500 shadow-md border border-[hsl(var(--border))]"
+                        ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -139,6 +226,17 @@ export default function SettingsPage() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <SettingsSection title="Уведомления">
+            <SettingsRow
+              icon={Bell}
+              label="Уведомления о новых местах рядом"
+              description="Получайте мягкие подсказки, когда рядом появляются новые интересные места"
+              action={<Toggle enabled={notificationsEnabled} onChange={setNotificationsEnabled} label="Уведомления о новых местах рядом" />}
+            />
+          </SettingsSection>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <SettingsSection title={t.settings.dataStorage}>
             <SettingsRow
               icon={Trash2}
@@ -147,12 +245,25 @@ export default function SettingsPage() {
               action={
                 clearConfirm ? (
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setClearConfirm(false)} className="text-xs text-muted-foreground px-2 py-1">{t.settings.cancel}</button>
-                    <button onClick={clearCache} className="text-xs font-bold text-destructive bg-destructive/10 px-3 py-1.5 rounded-xl border border-destructive/20">{t.settings.confirm}</button>
+                    <button
+                      onClick={() => setClearConfirm(false)}
+                      className="rounded-full border border-[hsl(var(--border))] px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {t.settings.cancel}
+                    </button>
+                    <button
+                      onClick={clearCache}
+                      className="rounded-full border border-destructive/20 bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/15"
+                    >
+                      {t.settings.confirm}
+                    </button>
                   </div>
                 ) : (
-                  <button onClick={() => setClearConfirm(true)} className="text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-3 py-1.5 rounded-xl transition-all">
-                    {t.settings.clearCache}
+                  <button
+                    onClick={() => setClearConfirm(true)}
+                    className="rounded-full border border-[hsl(var(--border))] px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-[hsl(var(--primary))] hover:text-foreground"
+                  >
+                    {CACHE_CLEAR_CONFIRM_TEXT}
                   </button>
                 )
               }
@@ -160,8 +271,21 @@ export default function SettingsPage() {
           </SettingsSection>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <SettingsSection title={t.settings.account}>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <SettingsSection title="Аккаунт и безопасность">
+            <SettingsRow
+              icon={ShieldCheck}
+              label="Изменить пароль"
+              description="Откроет профиль, где можно обновить данные аккаунта"
+              action={
+                <button
+                  onClick={() => router.push("/profile")}
+                  className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+                >
+                  Изменить пароль
+                </button>
+              }
+            />
             <SettingsRow
               icon={LogOut}
               label={t.settings.signOut}
@@ -169,7 +293,7 @@ export default function SettingsPage() {
               action={
                 <button
                   onClick={handleLogout}
-                  className="text-xs font-bold text-destructive hover:bg-destructive/10 px-4 py-2 rounded-xl border border-destructive/20 transition-all"
+                  className="rounded-full border border-destructive/20 bg-destructive/10 px-4 py-2 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/15"
                 >
                   {t.settings.signOut}
                 </button>
@@ -178,11 +302,78 @@ export default function SettingsPage() {
           </SettingsSection>
         </motion.div>
 
-        <p className="text-center text-xs text-muted-foreground pt-6">
-          City Guide AI · 2GIS 3.0 API & Gemini AI
-        </p>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <SettingsSection title="Поддержка">
+            <SettingsRow
+              icon={PencilLine}
+              label="Отправить отзыв"
+              description="Расскажите, что стоит улучшить в продукте"
+              action={
+                <button
+                  onClick={() => openMail("Отзыв о City Guide AI")}
+                  className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+                >
+                  Открыть почту
+                </button>
+              }
+            />
+            <SettingsRow
+              icon={Bug}
+              label="Сообщить о проблеме"
+              description="Опишите баг, и мы быстрее его исправим"
+              action={
+                <button
+                  onClick={() => openMail("Проблема в City Guide AI")}
+                  className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+                >
+                  Открыть почту
+                </button>
+              }
+            />
+            <SettingsRow
+              icon={FileText}
+              label="Политика конфиденциальности"
+              description="Кратко о том, как мы работаем с данными"
+              action={
+                <button
+                  onClick={() => setPolicyExpanded((v) => !v)}
+                  className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+                >
+                  {policyExpanded ? "Скрыть" : "Открыть"}
+                </button>
+              }
+            />
+
+            {policyExpanded && (
+              <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--secondary)/0.35)] px-5 py-5 sm:px-6">
+                <div className="rounded-[1.5rem] border border-[hsl(var(--border))] bg-[hsl(var(--card)/0.95)] p-4 text-sm leading-6 text-muted-foreground">
+                  <p className="font-semibold text-foreground">Краткая политика</p>
+                  <p className="mt-2">
+                    Мы используем ваш запрос, язык интерфейса и локальные настройки, чтобы улучшать поиск и
+                    рекомендации. История и избранное хранятся локально и могут быть очищены в настройках.
+                    Геолокация применяется только для поиска рядом с вами.
+                  </p>
+                </div>
+              </div>
+            )}
+          </SettingsSection>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+          <SettingsSection title="О приложении">
+            <SettingsRow
+              icon={Sparkles}
+              label="Версия приложения"
+              description="Текущая сборка интерфейса и сервисов"
+              action={
+                <span className="inline-flex items-center rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--secondary)/0.45)] px-3 py-1.5 text-xs font-semibold text-foreground">
+                  v{APP_VERSION}
+                </span>
+              }
+            />
+          </SettingsSection>
+        </motion.div>
       </div>
     </div>
   );
 }
-

@@ -70,6 +70,7 @@ export function Sidebar() {
             </motion.span>
           )}
         </AnimatePresence>
+
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-3 py-4">
@@ -140,18 +141,19 @@ export function Sidebar() {
       <button
         onClick={() => setCollapsed((c) => !c)}
         className={cn(
-          "absolute -right-4 top-6 z-50 flex h-9 w-9 items-center justify-center rounded-full border border-[hsl(var(--border))]",
-          "bg-[hsl(var(--card)/0.95)] text-muted-foreground shadow-[0_12px_30px_-18px_hsl(0_0%_0%/0.45)] backdrop-blur-md",
-          "transition-all duration-200 hover:-translate-y-0.5 hover:border-[hsl(var(--primary))] hover:text-foreground"
+          "absolute -right-4 top-1/2 z-50 -translate-y-1/2 flex h-14 w-9 items-center justify-center",
+          "rounded-l-[1.25rem] rounded-r-full border border-[hsl(var(--border))]",
+          "bg-[hsl(var(--card)/0.96)] text-muted-foreground shadow-[0_16px_38px_-22px_hsl(0_0%_0%/0.5)] backdrop-blur-xl",
+          "transition-all duration-200 hover:-translate-y-1/2 hover:border-[hsl(var(--primary))] hover:text-foreground hover:shadow-[0_20px_44px_-24px_hsl(0_0%_0%/0.6)]"
         )}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         <motion.span
           animate={{ x: collapsed ? 1 : -1 }}
           transition={{ type: "spring", stiffness: 500, damping: 35 }}
-          className="flex items-center justify-center"
+          className="flex h-6 w-6 items-center justify-center rounded-full bg-[hsl(var(--secondary))]"
         >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
         </motion.span>
       </button>
     </motion.aside>
