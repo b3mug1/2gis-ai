@@ -28,6 +28,7 @@ class FakeSession:
         self.added: list[Any] = []
         self.executed: list[Any] = []
         self.flushed = 0
+        self.commits = 0
 
     def begin(self) -> NoopTransaction:
         return NoopTransaction()
@@ -37,6 +38,9 @@ class FakeSession:
 
     async def flush(self) -> None:
         self.flushed += 1
+
+    async def commit(self) -> None:
+        self.commits += 1
 
     async def execute(self, statement):
         self.executed.append(statement)
@@ -261,11 +265,17 @@ class StaticAIClient:
     summaries: dict[str, ReviewSummary]
 
     async def extract_intent(
-        self, query: str, *, user_location: Coordinates | None = None
+        self,
+        query: str,
+        *,
+        user_location: Coordinates | None = None,
+        locale: str = "en",
     ) -> SearchIntent:
         return self.intent
 
-    async def summarize_reviews(self, intent: SearchIntent, place: PlaceCandidate) -> ReviewSummary:
+    async def summarize_reviews(
+        self, intent: SearchIntent, place: PlaceCandidate, *, locale: str = "en"
+    ) -> ReviewSummary:
         return self.summaries[place.place_id]
 
 @dataclass
