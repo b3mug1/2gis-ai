@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { Copy, Check, MapPin } from "lucide-react";
+import { Check, Copy, Sparkles } from "lucide-react";
 import { cn } from "@/utils/cn";
 import type { ChatMessage } from "@/types/api";
 import { SearchResults } from "@/components/search/SearchResults";
@@ -19,17 +19,14 @@ function useStreamText(fullText: string, isStreaming: boolean) {
   const [displayed, setDisplayed] = useState(isStreaming ? "" : fullText);
 
   useEffect(() => {
-    if (!isStreaming) {
-      setDisplayed(fullText);
-      return;
-    }
-    setDisplayed("");
+    if (!isStreaming) return;
     let i = 0;
     const interval = setInterval(() => {
       i += 3;
       setDisplayed(fullText.slice(0, i));
       if (i >= fullText.length) clearInterval(interval);
     }, 18);
+
     return () => clearInterval(interval);
   }, [fullText, isStreaming]);
 
@@ -49,25 +46,25 @@ export function AIMessage({ message }: AIMessageProps) {
   }
 
   return (
-    <div className="flex items-start gap-2.5 max-w-[88%] w-full">
-      <div className="w-6 h-6 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center shrink-0 mt-0.5">
-        <MapPin className="w-3.5 h-3.5" />
+    <div className="flex w-full max-w-[88%] items-start gap-3">
+      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm">
+        <Sparkles className="h-4 w-4" />
       </div>
 
-      <div className="flex-1 min-w-0 space-y-2.5">
+      <div className="min-w-0 flex-1 space-y-2.5">
         {displayed && (
-          <div className="relative group">
+          <div className="group relative">
             <div
               className={cn(
-                "bg-[hsl(var(--secondary))] border border-[hsl(var(--border))] rounded-md px-4 py-3",
-                "chat-prose text-foreground",
+                "rounded-[1.25rem] border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-4 py-3 text-foreground",
+                "chat-prose",
                 !done && message.isStreaming && "typing-cursor"
               )}
             >
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  code({ node, className, children, ...props }) {
+                  code({ className, children, ...props }) {
                     const match = /language-(\w+)/.exec(className || "");
                     const isBlock = match != null;
                     return isBlock ? (
@@ -94,22 +91,18 @@ export function AIMessage({ message }: AIMessageProps) {
             {done && (
               <button
                 onClick={copyText}
-                className="absolute top-2 right-2 p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity bg-[hsl(var(--background))] border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground"
+                className="absolute right-2 top-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-1 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground"
                 aria-label="Copy response"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-[hsl(var(--primary))]" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <Check className="h-3.5 w-3.5 text-[hsl(var(--primary))]" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
             )}
           </div>
         )}
 
-        {done && message.searchResponse && (
-          <SearchResults data={message.searchResponse} />
-        )}
+        {done && message.searchResponse && <SearchResults data={message.searchResponse} />}
 
-        <span className="text-[10px] text-muted-foreground px-0.5 block">
-          {timeAgo(message.timestamp.toISOString())}
-        </span>
+        <span className="block px-0.5 text-[10px] text-muted-foreground">{timeAgo(message.timestamp.toISOString())}</span>
       </div>
     </div>
   );

@@ -11,9 +11,11 @@ export function SuggestedPrompts({ onSelect }: SuggestedPromptsProps) {
   const { t } = useLanguage();
 
   return (
-    <div className="px-4 py-2">
-      <p className="text-[11px] text-muted-foreground mb-2.5 font-semibold uppercase tracking-wider">{t.chat.tryAsking}</p>
-      <div className="flex flex-wrap gap-1.5 justify-center max-w-lg">
+    <div className="w-full max-w-2xl rounded-[1.5rem] border border-[hsl(var(--border))] bg-[hsl(var(--card)/0.9)] px-4 py-4 shadow-[0_18px_50px_-36px_hsl(0_0%_0%/0.45)] backdrop-blur-xl">
+      <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+        {t.chat.tryAsking}
+      </p>
+      <div className="flex flex-wrap justify-center gap-2">
         {t.chat.prompts.map((promptText, i) => (
           <motion.button
             key={promptText}
@@ -21,7 +23,7 @@ export function SuggestedPrompts({ onSelect }: SuggestedPromptsProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.03 }}
             onClick={() => onSelect(promptText)}
-            className="text-xs px-3 py-1.5 rounded-md border border-[hsl(var(--border))] bg-card hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))] transition-colors font-medium text-foreground text-left"
+            className="premium-chip text-left transition-transform hover:-translate-y-0.5 hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
           >
             {promptText}
           </motion.button>

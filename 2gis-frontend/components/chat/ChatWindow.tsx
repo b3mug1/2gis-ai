@@ -29,20 +29,20 @@ export function ChatWindow({ messages, isLoading, onPromptSelect }: ChatWindowPr
   return (
     <div className="flex-1 overflow-y-auto">
       {isEmpty && !isLoading ? (
-        <div className="flex flex-col items-center justify-center h-full min-h-[400px] px-6 text-center">
+        <div className="flex h-full min-h-[420px] flex-col items-center justify-center px-4 text-center sm:px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2 }}
-            className="w-12 h-12 rounded-md bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center mb-4"
+            className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-[0_20px_40px_-24px_hsl(0_0%_0%/0.45)]"
           >
-            <MapPin className="w-6 h-6" />
+            <MapPin className="h-6 w-6" />
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="text-lg font-bold mb-1.5 text-foreground"
+            className="text-2xl font-semibold tracking-tight mb-2 text-foreground"
           >
             {t.chat.emptyTitle}
           </motion.h2>
@@ -50,14 +50,14 @@ export function ChatWindow({ messages, isLoading, onPromptSelect }: ChatWindowPr
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-xs text-muted-foreground mb-6 max-w-sm"
+            className="mb-6 max-w-xl text-sm leading-6 text-muted-foreground"
           >
             {t.chat.emptySub}
           </motion.p>
           <SuggestedPrompts onSelect={onPromptSelect} />
         </div>
       ) : (
-        <div className="py-4 px-4 space-y-4">
+        <div className="space-y-4 px-4 py-5 sm:px-6">
           <AnimatePresence initial={false}>
             {messages.map((msg) => (
               <MessageBubble key={msg.id} message={msg} />

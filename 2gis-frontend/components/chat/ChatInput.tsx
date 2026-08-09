@@ -1,10 +1,33 @@
 "use client";
 
-import { useRef, useState, useEffect, KeyboardEvent } from "react";
+import { useRef, useState, KeyboardEvent } from "react";
 import { Send, Loader2, MapPin, Mic, MicOff, SlidersHorizontal } from "lucide-react";
-import { cn } from "@/utils/cn";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/utils/cn";
 import { useLanguage } from "@/context/LanguageContext";
+
+type SpeechRecognitionResultLike = { transcript: string };
+type SpeechRecognitionResultEventLike = {
+  results: ArrayLike<{
+    0: SpeechRecognitionResultLike;
+  }>;
+};
+
+interface SpeechRecognitionLike {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionResultEventLike) => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
+interface SpeechRecognitionConstructorLike {
+  new (): SpeechRecognitionLike;
+}
 
 interface ChatInputProps {
   onSend: (message: string, coords?: { latitude: number; longitude: number }) => void;
@@ -19,21 +42,24 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
   const [locating, setLocating] = useState(false);
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [voiceSupported, setVoiceSupported] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const { t, language } = useLanguage();
 
-  useEffect(() => {
-    const SpeechRecognitionAPI = typeof window !== "undefined" ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition : null;
-    setVoiceSupported(!!SpeechRecognitionAPI);
-  }, []);
+  const voiceSupported = (() => {
+    if (typeof window === "undefined") return false;
+    const win = window as Window & {
+      SpeechRecognition?: SpeechRecognitionConstructorLike;
+      webkitSpeechRecognition?: SpeechRecognitionConstructorLike;
+    };
+    return !!(win.SpeechRecognition || win.webkitSpeechRecognition);
+  })();
 
   function autoResize() {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 140) + "px";
+    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
   }
 
   function handleSend() {
@@ -69,24 +95,27 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
       setIsRecording(false);
       return;
     }
-    const win = window as any;
+
+    const win = window as Window & {
+      SpeechRecognition?: SpeechRecognitionConstructorLike;
+      webkitSpeechRecognition?: SpeechRecognitionConstructorLike;
+    };
     const SpeechRecognitionAPI = win.SpeechRecognition || win.webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) return;
+
     const recognition = new SpeechRecognitionAPI();
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = language === "ru" ? "ru-RU" : language === "kz" ? "kk-KZ" : "en-US";
     recognition.onstart = () => setIsRecording(true);
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results as any[])
-        .map((r: any) => r[0].transcript)
+    recognition.onresult = (event: SpeechRecognitionResultEventLike) => {
+      const transcript = Array.from(event.results)
+        .map((r) => r[0].transcript)
         .join("");
       setValue(transcript);
       setTimeout(() => autoResize(), 0);
     };
-    recognition.onend = () => {
-      setIsRecording(false);
-    };
+    recognition.onend = () => setIsRecording(false);
     recognition.onerror = () => setIsRecording(false);
     recognition.start();
     recognitionRef.current = recognition;
@@ -95,27 +124,28 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
   const canSend = value.trim().length > 0 && !isLoading && !disabled;
 
   return (
-    <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--background))] px-4 py-3">
-      <div className={cn(
-        "flex items-end gap-2 rounded-md border border-[hsl(var(--border))] bg-card px-3 py-2 transition-colors",
-        "focus-within:border-[hsl(var(--primary))]",
-        isRecording && "border-destructive ring-1 ring-destructive"
-      )}>
+    <div
+      className="border-t border-[hsl(var(--border))] px-4 py-4 backdrop-blur-2xl sm:px-6"
+      style={{ backgroundColor: "hsl(var(--background) / 0.9)" }}
+    >
+      <div
+        className={cn(
+          "premium-input-shell flex items-end gap-2 px-3 py-3 transition-colors",
+          "focus-within:border-[hsl(var(--primary))]",
+          isRecording && "border-destructive ring-1 ring-destructive"
+        )}
+      >
         <button
           onClick={getLocation}
           title={coords ? "Location attached" : "Attach your location"}
           className={cn(
-            "shrink-0 p-1.5 rounded-md transition-colors mb-0.5",
+            "mb-0.5 shrink-0 rounded-full p-2 transition-colors",
             coords
-              ? "text-[hsl(var(--primary))] bg-[hsl(var(--secondary))]"
-              : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))]"
+              ? "bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]"
+              : "text-muted-foreground hover:bg-[hsl(var(--muted))] hover:text-foreground"
           )}
         >
-          {locating ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <MapPin className="w-4 h-4" />
-          )}
+          {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
         </button>
 
         {voiceSupported && (
@@ -123,24 +153,27 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
             onClick={toggleVoice}
             title={isRecording ? t.chat.voiceStop : t.chat.voiceStart}
             className={cn(
-              "shrink-0 p-1.5 rounded-md transition-all mb-0.5",
+              "mb-0.5 shrink-0 rounded-full p-2 transition-all",
               isRecording
-                ? "text-destructive bg-destructive/10 animate-pulse"
-                : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))]"
+                ? "bg-destructive/10 text-destructive animate-pulse"
+                : "text-muted-foreground hover:bg-[hsl(var(--muted))] hover:text-foreground"
             )}
           >
-            {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
           </button>
         )}
 
         <textarea
           ref={textareaRef}
           value={value}
-          onChange={(e) => { setValue(e.target.value); autoResize(); }}
+          onChange={(e) => {
+            setValue(e.target.value);
+            autoResize();
+          }}
           onKeyDown={handleKey}
           placeholder={isRecording ? "..." : t.chat.placeholder}
           rows={1}
-          className="flex-1 bg-transparent text-sm resize-none outline-none placeholder:text-muted-foreground py-1 max-h-[140px] leading-relaxed text-foreground"
+          className="max-h-[160px] flex-1 resize-none bg-transparent py-1 text-sm leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
           disabled={isLoading || disabled}
         />
 
@@ -149,13 +182,13 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
             onClick={onToggleFilters}
             title={t.filters.title}
             className={cn(
-              "shrink-0 p-1.5 rounded-md transition-colors mb-0.5",
+              "mb-0.5 shrink-0 rounded-full p-2 transition-colors",
               showFilters
-                ? "text-[hsl(var(--primary))] bg-[hsl(var(--secondary))]"
-                : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))]"
+                ? "bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]"
+                : "text-muted-foreground hover:bg-[hsl(var(--muted))] hover:text-foreground"
             )}
           >
-            <SlidersHorizontal className="w-4 h-4" />
+            <SlidersHorizontal className="h-4 w-4" />
           </button>
         )}
 
@@ -163,26 +196,22 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
           onClick={handleSend}
           disabled={!canSend}
           className={cn(
-            "shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors mb-0.5",
+            "mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all",
             canSend
-              ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 cursor-pointer"
-              : "bg-[hsl(var(--muted))] text-muted-foreground cursor-not-allowed"
+              ? "cursor-pointer bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-[0_18px_40px_-28px_hsl(0_0%_0%/0.45)] hover:-translate-y-0.5 hover:opacity-95"
+              : "cursor-not-allowed bg-[hsl(var(--muted))] text-muted-foreground"
           )}
           aria-label="Send"
         >
-          {isLoading ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Send className="w-3.5 h-3.5" />
-          )}
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </button>
       </div>
 
-      <div className="flex items-center justify-between mt-1.5 px-1">
+      <div className="mt-2 flex items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-2">
           {coords && (
-            <p className="text-[10px] text-[hsl(var(--primary))] flex items-center gap-1 font-medium">
-              <MapPin className="w-2.5 h-2.5" />
+            <p className="flex items-center gap-1 text-[10px] font-medium text-[hsl(var(--primary))]">
+              <MapPin className="h-2.5 w-2.5" />
               {t.chat.locationAttached}
             </p>
           )}
@@ -192,9 +221,9 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="text-[10px] text-destructive flex items-center gap-1 font-medium"
+                className="flex items-center gap-1 text-[10px] font-medium text-destructive"
               >
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
                 {t.chat.voiceStop}
               </motion.p>
             )}
