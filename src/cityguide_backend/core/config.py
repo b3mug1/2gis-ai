@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     admin_email: str = "admin@cityguide.com"
     admin_password: str = "ChangeMe123!"
 
+    google_client_id: str = Field("", alias="GOOGLE_CLIENT_ID")
+    google_client_secret: str = Field("", alias="GOOGLE_CLIENT_SECRET")
+    github_client_id: str = Field("", alias="GITHUB_CLIENT_ID")
+    github_client_secret: str = Field("", alias="GITHUB_CLIENT_SECRET")
+
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()

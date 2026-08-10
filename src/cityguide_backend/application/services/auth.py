@@ -12,8 +12,14 @@ from cityguide_backend.application.schemas import (
     RegisterRequest,
     UserResponse,
 )
+from cityguide_backend.application.services.oauth_provider import OAuthProviderService
 from cityguide_backend.core.config import Settings
-from cityguide_backend.core.exceptions import AuthenticationError, ConflictError, NotFoundError
+from cityguide_backend.core.exceptions import (
+    AuthenticationError,
+    ConflictError,
+    NotFoundError,
+    ValidationAppError,
+)
 from cityguide_backend.core.security import (
     create_access_token,
     create_refresh_token_raw,
@@ -61,7 +67,7 @@ class AuthService:
     async def login(self, request: LoginRequest) -> AuthResult:
         async with self._session.begin():
             existing = await self._users.get_auth_data_by_email(request.email)
-            if existing is None:
+            if existing is None or not existing.get("password_hash"):
                 raise AuthenticationError("Invalid credentials")
             if not existing.get("is_active", True):
                 raise AuthenticationError("Invalid credentials")
@@ -73,6 +79,56 @@ class AuthService:
             await self._users.update_last_login(existing["id"])
             tokens = await self._issue_tokens(existing["id"])
         return AuthResult(user=self._to_user_response(user_profile), tokens=tokens)
+
+    def get_oauth_url(self, provider: str, redirect_uri: str) -> str:
+        provider_name = provider.lower()
+        oauth_service = OAuthProviderService(self._settings)
+        if provider_name == "google":
+            return oauth_service.get_google_auth_url(redirect_uri)
+        elif provider_name == "github":
+            return oauth_service.get_github_auth_url(redirect_uri)
+        else:
+            raise ValidationAppError(f"Unsupported OAuth provider: {provider}")
+
+    async def oauth_login(self, provider: str, code: str, redirect_uri: str) -> AuthResult:
+        provider_name = provider.lower()
+        oauth_service = OAuthProviderService(self._settings)
+        if provider_name == "google":
+            oauth_user = await oauth_service.fetch_google_user(code, redirect_uri)
+        elif provider_name == "github":
+            oauth_user = await oauth_service.fetch_github_user(code, redirect_uri)
+        else:
+            raise ValidationAppError(f"Unsupported OAuth provider: {provider}")
+
+        oauth_id = oauth_user["oauth_id"]
+        email = oauth_user["email"]
+        full_name = oauth_user["full_name"]
+
+        async with self._session.begin():
+            user_profile = await self._users.get_by_oauth(provider_name, oauth_id)
+            if user_profile is None:
+                existing = await self._users.get_by_email(email)
+                if existing is not None:
+                    await self._users.link_oauth(existing.id, provider_name, oauth_id)
+                    user_profile = existing
+                else:
+                    user_profile = await self._users.create(
+                        email=email,
+                        password_hash=None,
+                        full_name=full_name,
+                        role=UserRole.user.value,
+                        oauth_provider=provider_name,
+                        oauth_id=oauth_id,
+                    )
+
+            if not user_profile.is_active:
+                raise AuthenticationError("Account is inactive")
+
+            await self._users.update_last_login(user_profile.id)
+            tokens = await self._issue_tokens(user_profile.id)
+
+        return AuthResult(user=self._to_user_response(user_profile), tokens=tokens)
+
 
     async def refresh(self, refresh_token: str) -> AuthTokens:
         token_hash = hash_token(refresh_token)

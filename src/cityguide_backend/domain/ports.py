@@ -22,9 +22,20 @@ class UserRepository(Protocol):
 
     async def get_by_id(self, user_id: UUID) -> UserProfile | None: ...
 
+    async def get_by_oauth(self, provider: str, oauth_id: str) -> UserProfile | None: ...
+
     async def create(
-        self, *, email: str, password_hash: str, full_name: str, role: str
+        self,
+        *,
+        email: str,
+        password_hash: str | None = None,
+        full_name: str,
+        role: str,
+        oauth_provider: str | None = None,
+        oauth_id: str | None = None,
     ) -> UserProfile: ...
+
+    async def link_oauth(self, user_id: UUID, oauth_provider: str, oauth_id: str) -> None: ...
 
     async def update_last_login(self, user_id: UUID) -> None: ...
 

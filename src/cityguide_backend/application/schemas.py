@@ -30,6 +30,16 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class OAuthLoginRequest(BaseModel):
+    code: str
+    redirect_uri: str
+
+
+class OAuthUrlResponse(BaseModel):
+    url: str
+
+
+
 class AuthTokens(BaseModel):
     access_token: str
     refresh_token: str

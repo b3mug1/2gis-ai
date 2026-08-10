@@ -149,15 +149,42 @@ class SqlAlchemyUserRepository(UserRepository):
         model = await self._session.get(UserModel, user_id)
         return None if model is None else _to_profile(model)
 
+    async def get_by_oauth(self, provider: str, oauth_id: str) -> UserProfile | None:
+        model = await self._session.scalar(
+            select(UserModel).where(
+                UserModel.oauth_provider == provider, UserModel.oauth_id == oauth_id
+            )
+        )
+        return None if model is None else _to_profile(model)
+
     async def create(
-        self, *, email: str, password_hash: str, full_name: str, role: str
+        self,
+        *,
+        email: str,
+        password_hash: str | None = None,
+        full_name: str,
+        role: str,
+        oauth_provider: str | None = None,
+        oauth_id: str | None = None,
     ) -> UserProfile:
         model = UserModel(
-            email=email.lower(), password_hash=password_hash, full_name=full_name.strip(), role=role
+            email=email.lower(),
+            password_hash=password_hash,
+            full_name=full_name.strip(),
+            role=role,
+            oauth_provider=oauth_provider,
+            oauth_id=oauth_id,
         )
         self._session.add(model)
         await self._session.flush()
         return _to_profile(model)
+
+    async def link_oauth(self, user_id: uuid.UUID, oauth_provider: str, oauth_id: str) -> None:
+        await self._session.execute(
+            update(UserModel)
+            .where(UserModel.id == user_id)
+            .values(oauth_provider=oauth_provider, oauth_id=oauth_id)
+        )
 
     async def update_last_login(self, user_id: uuid.UUID) -> None:
         await self._session.execute(
@@ -165,6 +192,7 @@ class SqlAlchemyUserRepository(UserRepository):
             .where(UserModel.id == user_id)
             .values(last_login_at=datetime.now(timezone.utc))
         )
+
 
 
 class SqlAlchemyRefreshTokenRepository(RefreshTokenRepository):
