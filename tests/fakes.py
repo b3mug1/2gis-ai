@@ -84,8 +84,27 @@ class MemoryUserRepository:
                 )
         return None
 
+    async def get_by_oauth(self, provider: str, oauth_id: str) -> UserProfile | None:
+        for record in self.users.values():
+            if record.get("oauth_provider") == provider and record.get("oauth_id") == oauth_id:
+                return UserProfile(
+                    id=record["id"],
+                    email=record["email"],
+                    full_name=record["full_name"],
+                    role=UserRole(record["role"]),
+                    is_active=record["is_active"],
+                )
+        return None
+
     async def create(
-        self, *, email: str, password_hash: str, full_name: str, role: str
+        self,
+        *,
+        email: str,
+        password_hash: str | None = None,
+        full_name: str,
+        role: str,
+        oauth_provider: str | None = None,
+        oauth_id: str | None = None,
     ) -> UserProfile:
         user_id = uuid4()
         record = {
@@ -95,6 +114,8 @@ class MemoryUserRepository:
             "role": role,
             "is_active": True,
             "password_hash": password_hash,
+            "oauth_provider": oauth_provider,
+            "oauth_id": oauth_id,
         }
         self.users[email.lower()] = record
         return UserProfile(
@@ -104,6 +125,13 @@ class MemoryUserRepository:
             role=UserRole(role),
             is_active=True,
         )
+
+    async def link_oauth(self, user_id: UUID, oauth_provider: str, oauth_id: str) -> None:
+        for record in self.users.values():
+            if record["id"] == user_id:
+                record["oauth_provider"] = oauth_provider
+                record["oauth_id"] = oauth_id
+                break
 
     async def update_last_login(self, user_id: UUID) -> None:
         return None

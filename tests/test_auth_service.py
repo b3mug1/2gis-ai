@@ -41,3 +41,29 @@ async def test_register_login_refresh_logout_flow() -> None:
     assert (
         refresh_tokens.tokens[hash_token(refreshed.tokens.refresh_token)]["revoked_at"] is not None
     )
+
+
+@pytest.mark.asyncio
+async def test_get_oauth_url() -> None:
+    session = FakeSession()
+    users = MemoryUserRepository()
+    refresh_tokens = MemoryRefreshTokenRepository()
+    settings = Settings.model_construct(
+        database_url="sqlite+aiosqlite:///:memory:",
+        redis_url="redis://localhost:6379/0",
+        jwt_secret_key="secret",
+        google_client_id="google-id-123",
+        github_client_id="github-id-456",
+    )
+    service = AuthService(
+        session=session, users=users, refresh_tokens=refresh_tokens, settings=settings
+    )
+
+    google_url = service.get_oauth_url("google", "http://localhost:7000/callback/google")
+    assert "google-id-123" in google_url
+    assert "accounts.google.com" in google_url
+
+    github_url = service.get_oauth_url("github", "http://localhost:7000/callback/github")
+    assert "github-id-456" in github_url
+    assert "github.com" in github_url
+
