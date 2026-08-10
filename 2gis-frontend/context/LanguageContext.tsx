@@ -169,6 +169,10 @@ export const translations = {
       signIn: "Войти",
       noAccount: "Ещё нет аккаунта?",
       createAccount: "Создать аккаунт",
+      googleSignIn: "Войти через Google",
+      githubSignIn: "Войти через GitHub",
+      orEmail: "Или через электронную почту",
+      authenticating: "Авторизация...",
     },
     register: {
       title: "Регистрация",
@@ -358,6 +362,10 @@ export const translations = {
       signIn: "Sign in",
       noAccount: "Don't have an account?",
       createAccount: "Create account",
+      googleSignIn: "Sign in with Google",
+      githubSignIn: "Sign in with GitHub",
+      orEmail: "Or with email",
+      authenticating: "Authenticating...",
     },
     register: {
       title: "Create Account",
@@ -547,6 +555,10 @@ export const translations = {
       signIn: "Кіру",
       noAccount: "Аккаунтыңыз жоқ па?",
       createAccount: "Аккаунт жасау",
+      googleSignIn: "Google арқылы кіру",
+      githubSignIn: "GitHub арқылы кіру",
+      orEmail: "Немесе пошта арқылы",
+      authenticating: "Авторизациялануда...",
     },
     register: {
       title: "Тіркелу",

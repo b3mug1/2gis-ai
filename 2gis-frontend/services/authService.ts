@@ -4,6 +4,8 @@ import type {
   LoginRequest,
   LogoutRequest,
   MessageResponse,
+  OAuthLoginRequest,
+  OAuthUrlResponse,
   RefreshRequest,
   RegisterRequest,
   UserResponse,
@@ -19,6 +21,22 @@ export const authService = {
     const res = await api.post<AuthResponse>("/auth/login", data);
     return res.data;
   },
+
+  getOAuthUrl: async (provider: string, redirectUri: string): Promise<OAuthUrlResponse> => {
+    const res = await api.get<OAuthUrlResponse>(`/auth/oauth/${provider}/url`, {
+      params: { redirect_uri: redirectUri },
+    });
+    return res.data;
+  },
+
+  oauthLogin: async (
+    provider: string,
+    data: OAuthLoginRequest
+  ): Promise<AuthResponse> => {
+    const res = await api.post<AuthResponse>(`/auth/oauth/${provider}`, data);
+    return res.data;
+  },
+
 
   refresh: async (data: RefreshRequest): Promise<AuthResponse> => {
     const res = await api.post<AuthResponse>("/auth/refresh", data);

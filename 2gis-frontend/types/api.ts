@@ -15,7 +15,17 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface OAuthLoginRequest {
+  code: string;
+  redirect_uri: string;
+}
+
+export interface OAuthUrlResponse {
+  url: string;
+}
+
 export interface RefreshRequest {
+
   refresh_token: string;
 }
 

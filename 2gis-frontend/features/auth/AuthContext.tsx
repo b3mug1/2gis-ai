@@ -24,8 +24,10 @@ interface AuthContextValue {
   isLoading: boolean;
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
+  oauthLogin: (provider: string, code: string, redirectUri: string) => Promise<void>;
   logout: () => Promise<void>;
 }
+
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -70,6 +72,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [handleAuthResponse]
   );
 
+  const oauthLogin = useCallback(
+    async (provider: string, code: string, redirectUri: string) => {
+      const res = await authService.oauthLogin(provider, { code, redirect_uri: redirectUri });
+      handleAuthResponse(res);
+    },
+    [handleAuthResponse]
+  );
+
   const logout = useCallback(async () => {
     const refreshToken = getRefreshToken();
     if (refreshToken) {
@@ -90,10 +100,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoading,
       login,
       register,
+      oauthLogin,
       logout,
     }),
-    [user, isLoading, login, register, logout]
+    [user, isLoading, login, register, oauthLogin, logout]
   );
+
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
