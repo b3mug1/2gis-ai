@@ -40,7 +40,8 @@ export default function OAuthCallbackPage() {
       return;
     }
 
-    const redirectUri = `${window.location.origin}/callback/${provider}`;
+    const redirectUri = `${window.location.origin}${window.location.pathname}`;
+
 
     oauthLogin(provider, code, redirectUri)
       .then(() => {
