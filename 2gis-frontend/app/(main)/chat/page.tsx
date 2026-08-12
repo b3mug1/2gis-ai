@@ -13,7 +13,7 @@ import { FilterPanel, SearchFilters } from "@/components/chat/FilterPanel";
 import { MapView } from "@/components/map/MapView";
 import { PlaceComparisonModal } from "@/components/compare/PlaceComparisonModal";
 import { searchService } from "@/services/searchService";
-import type { ChatMessage, ComparePlacesResponse, PlaceRecommendation } from "@/types/api";
+import type { ChatMessage, ComparePlacesResponse, PlaceRecommendation, SearchResponse } from "@/types/api";
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
@@ -95,31 +95,28 @@ export default function ChatPage() {
       setMessages((prev) => [...prev, userMsg, aiMsg]);
 
       try {
-        let currentText = "";
-        const result = await searchService.searchStream(
-          {
+        // Show progressive status messages while the regular search is running
+        const statusMessages = ["Анализируем запрос...", "Поиск в каталоге 2GIS...", "Генерируем рекомендации..."];
+        let statusIdx = 0;
+        const statusInterval = setInterval(() => {
+          statusIdx = (statusIdx + 1) % statusMessages.length;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === aiMsgId ? { ...m, content: statusMessages[statusIdx] } : m))
+          );
+        }, 1500);
+
+        let result: SearchResponse;
+        try {
+          result = await searchService.search({
             query: text,
             coordinates: coords,
             locale: language,
             travel_mode: filters.travel_mode || undefined,
             max_travel_time_min: filters.max_travel_time_min || undefined,
-          },
-          (evt) => {
-            if (evt.event === "status") {
-              const msgText = typeof evt.data === "object" ? evt.data.message : evt.data;
-              currentText = `${msgText}`;
-              setMessages((prev) =>
-                prev.map((m) => (m.id === aiMsgId ? { ...m, content: currentText } : m))
-              );
-            } else if (evt.event === "chunk") {
-              const chunkStr = typeof evt.data === "object" ? evt.data.text : evt.data;
-              currentText += chunkStr;
-              setMessages((prev) =>
-                prev.map((m) => (m.id === aiMsgId ? { ...m, content: currentText } : m))
-              );
-            }
-          }
-        );
+          });
+        } finally {
+          clearInterval(statusInterval);
+        }
 
         let all = [result.recommendation, ...result.alternatives];
 
