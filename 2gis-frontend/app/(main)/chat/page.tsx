@@ -107,13 +107,12 @@ export default function ChatPage() {
           (evt) => {
             if (evt.event === "status") {
               const msgText = typeof evt.data === "object" ? evt.data.message : evt.data;
-              currentText = `✨ ${msgText}`;
+              currentText = `${msgText}`;
               setMessages((prev) =>
                 prev.map((m) => (m.id === aiMsgId ? { ...m, content: currentText } : m))
               );
             } else if (evt.event === "chunk") {
               const chunkStr = typeof evt.data === "object" ? evt.data.text : evt.data;
-              if (currentText.startsWith("✨ ")) currentText = "";
               currentText += chunkStr;
               setMessages((prev) =>
                 prev.map((m) => (m.id === aiMsgId ? { ...m, content: currentText } : m))
@@ -240,8 +239,8 @@ export default function ChatPage() {
               <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
               AI + 2GIS SSE Stream
             </span>
-            <span className="premium-chip">🚶 Пешком / 🚗 Авто</span>
-            <span className="premium-chip">⚖️ AI Сравнение</span>
+            <span className="premium-chip">Пешком / Авто</span>
+            <span className="premium-chip">AI Сравнение</span>
           </div>
         </div>
 

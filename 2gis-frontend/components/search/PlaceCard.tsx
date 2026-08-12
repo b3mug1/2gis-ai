@@ -152,12 +152,12 @@ export function PlaceCard({ place, isTop = false, index = 0, isCompared = false,
                 {formatDistance(place.distance_m)}
                 {place.walking_time && (
                   <span className="text-muted-foreground">
-                    • 🚶 {place.walking_time} {t.placeCard.walk}
+                    • {place.walking_time} {t.placeCard.walk}
                   </span>
                 )}
                 {place.driving_time && (
                   <span className="text-muted-foreground">
-                    • 🚗 {place.driving_time} {t.placeCard.drive}
+                    • {place.driving_time} {t.placeCard.drive}
                   </span>
                 )}
               </span>

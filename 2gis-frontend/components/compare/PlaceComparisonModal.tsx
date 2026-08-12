@@ -143,7 +143,7 @@ export function PlaceComparisonModal({
 
                           {compItem?.best_for && (
                             <div className="mb-3 rounded-full bg-[hsl(var(--secondary))] px-3 py-1 text-[11px] font-semibold text-[hsl(var(--primary))]">
-                              ✨ {compItem.best_for}
+                              {compItem.best_for}
                             </div>
                           )}
 
@@ -172,7 +172,7 @@ export function PlaceComparisonModal({
 
                         {place.address && (
                           <p className="mt-4 border-t border-[hsl(var(--border))] pt-2 text-[11px] text-muted-foreground truncate">
-                            📍 {place.address}
+                            {place.address}
                           </p>
                         )}
                       </div>
