@@ -1,0 +1,14 @@
+# This override skips the build step and uses locally available images.
+# Use when Docker Hub is unreachable (DNS / firewall issues).
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up
+#
+services:
+  api:
+    build: !reset null
+    image: 2gis-api:latest
+
+  frontend:
+    build: !reset null
+    image: 2gis-frontend:latest
