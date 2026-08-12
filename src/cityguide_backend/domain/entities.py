@@ -38,6 +38,8 @@ class SearchIntent:
     requires_quiet: bool = False
     laptop_friendly: bool = False
     romantic: bool = False
+    travel_mode: str | None = None
+    max_travel_time_min: int | None = None
 
 
 @dataclass(slots=True)
@@ -101,6 +103,28 @@ class PlaceRecommendation:
     phone: str | None = None
     url: str | None = None
     photos: list[str] = field(default_factory=list)
+    driving_time: int | None = None
+
+
+@dataclass(slots=True)
+class PlaceComparisonItem:
+    place_id: str
+    name: str
+    best_for: str
+    pros: list[str] = field(default_factory=list)
+    cons: list[str] = field(default_factory=list)
+    rating: float | None = None
+    price_category: str | None = None
+    address: str | None = None
+
+
+@dataclass(slots=True)
+class PlaceComparisonResult:
+    verdict: str
+    winner_place_id: str | None
+    comparisons: list[PlaceComparisonItem]
+    key_differences: list[str]
+
 
 
 @dataclass(slots=True)

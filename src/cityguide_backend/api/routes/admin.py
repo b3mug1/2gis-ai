@@ -62,6 +62,22 @@ async def get_admin_summary(
     )
     total_admins = admin_count_res.scalar() or 0
 
+    # Auth Provider Breakdown
+    email_users_res = await session.execute(
+        select(func.count(UserModel.id)).where(real_filter & (UserModel.oauth_provider.is_(None)))
+    )
+    email_users = email_users_res.scalar() or 0
+
+    google_users_res = await session.execute(
+        select(func.count(UserModel.id)).where(real_filter & (UserModel.oauth_provider == "google"))
+    )
+    google_users = google_users_res.scalar() or 0
+
+    github_users_res = await session.execute(
+        select(func.count(UserModel.id)).where(real_filter & (UserModel.oauth_provider == "github"))
+    )
+    github_users = github_users_res.scalar() or 0
+
     # Health Pings
     # 1. DB Ping
     db_ok = True
@@ -99,6 +115,11 @@ async def get_admin_summary(
             "total_admins": total_admins,
             "uptime_pct": 100.0 if db_ok and redis_ok else 95.0,
             "avg_latency_s": 1.15,
+            "auth_providers": {
+                "email": email_users,
+                "google": google_users,
+                "github": github_users,
+            },
         },
         "services": {
             "database": "operational" if db_ok else "down",
@@ -132,9 +153,11 @@ async def get_all_users(
             "is_active": u.is_active,
             "created_at": u.created_at.isoformat() if u.created_at else None,
             "last_login_at": u.last_login_at.isoformat() if u.last_login_at else None,
+            "oauth_provider": u.oauth_provider or "email",
         }
         for u in users
     ]
+
 
 
 @router.post("/tests/run")

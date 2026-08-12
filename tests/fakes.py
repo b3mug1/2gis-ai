@@ -287,6 +287,19 @@ class MemoryAIUsageLogRepository:
             }
         )
 
+from cityguide_backend.domain.entities import (
+    Coordinates,
+    PlaceCandidate,
+    PlaceComparisonItem,
+    PlaceComparisonResult,
+    PlaceReview,
+    ReviewSummary,
+    SearchIntent,
+    SearchResult,
+    UserProfile,
+    UserRole,
+)
+
 @dataclass
 class StaticAIClient:
     intent: SearchIntent
@@ -306,6 +319,30 @@ class StaticAIClient:
     ) -> ReviewSummary:
         return self.summaries[place.place_id]
 
+    async def compare_places(
+        self,
+        places: list[PlaceCandidate],
+        *,
+        user_query: str | None = None,
+        locale: str = "ru",
+    ) -> PlaceComparisonResult:
+        return PlaceComparisonResult(
+            verdict="Test comparison verdict",
+            winner_place_id=places[0].place_id if places else None,
+            comparisons=[
+                PlaceComparisonItem(
+                    place_id=p.place_id,
+                    name=p.name,
+                    best_for="Testing",
+                    pros=["Good"],
+                    cons=["Bad"],
+                    rating=p.rating,
+                )
+                for p in places
+            ],
+            key_differences=["Diff 1"],
+        )
+
 @dataclass
 class StaticTwoGISClient:
     places: list[PlaceCandidate]
@@ -317,5 +354,11 @@ class StaticTwoGISClient:
     async def get_reviews(self, place_id: str) -> list[PlaceReview]:
         return self.reviews.get(place_id, [])
 
-    async def geocode_location(self, location_text: str) -> Coordinates | None:
+    async def get_place_by_id(self, place_id: str) -> PlaceCandidate | None:
+        for p in self.places:
+            if p.place_id == place_id:
+                return p
         return None
+
+    async def geocode_location(self, location_text: str) -> Coordinates | None:
+        return Coordinates(latitude=51.1, longitude=71.1)

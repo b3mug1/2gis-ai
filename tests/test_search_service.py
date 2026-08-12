@@ -313,3 +313,97 @@ async def test_search_service_survives_single_candidate_failure() -> None:
     assert response.recommendation.place_id == "good"
     assert ai_client.intent_locales == ["kz"]
     assert ai_client.summary_locales == ["kz", "kz"]
+
+
+@pytest.mark.asyncio
+async def test_search_service_compare_places() -> None:
+    session = FakeSession()
+    settings = Settings.model_construct(
+        database_url="sqlite+aiosqlite:///:memory:",
+        redis_url="redis://localhost:6379/0",
+        jwt_secret_key="secret",
+        gemini_api_key="key",
+        gemini_model="gemini-1.5-flash",
+        twogis_api_key="key",
+        search_max_candidates=5,
+        search_cache_ttl_seconds=900,
+    )
+    places = [
+        PlaceCandidate(place_id="p1", name="Place One", rating=4.8),
+        PlaceCandidate(place_id="p2", name="Place Two", rating=4.5),
+    ]
+    service = SearchService(
+        session=session,
+        settings=settings,
+        ai_client=StaticAIClient(intent=SearchIntent(query="test"), summaries={}),
+        place_client=StaticTwoGISClient(places=places, reviews={}),
+        cache_backend=InMemoryCache(),
+        session_repo=MemorySearchSessionRepository(),
+        history_repo=MemorySearchHistoryRepository(),
+        statistics_repo=MemorySearchStatisticsRepository(),
+        ai_usage_repo=MemoryAIUsageLogRepository(),
+        cached_ai_repo=MemoryCachedAIResultRepository(),
+    )
+
+    from cityguide_backend.application.schemas import ComparePlacesRequest
+    result = await service.compare(ComparePlacesRequest(place_ids=["p1", "p2"], user_query="best place"))
+    assert result.verdict == "Test comparison verdict"
+    assert len(result.comparisons) == 2
+    assert result.winner_place_id == "p1"
+
+
+@pytest.mark.asyncio
+async def test_search_service_stream_events() -> None:
+    session = FakeSession()
+    settings = Settings.model_construct(
+        database_url="sqlite+aiosqlite:///:memory:",
+        redis_url="redis://localhost:6379/0",
+        jwt_secret_key="secret",
+        gemini_api_key="key",
+        gemini_model="gemini-1.5-flash",
+        twogis_api_key="key",
+        search_max_candidates=5,
+        search_cache_ttl_seconds=900,
+    )
+    places = [
+        PlaceCandidate(
+            place_id="1",
+            name="Good Place",
+            rating=4.9,
+            distance_m=1000,
+            reviews=[PlaceReview(author="A", rating=5, text="great")],
+        )
+    ]
+    ai_client = StaticAIClient(
+        intent=SearchIntent(query="cafe", radius_m=2000),
+        summaries={
+            "1": ReviewSummary(
+                summary="great", pros=["nice"], cons=[], reason="fits request well", confidence=0.9, sentiment_score=0.8
+            )
+        },
+    )
+    service = SearchService(
+        session=session,
+        settings=settings,
+        ai_client=ai_client,
+        place_client=StaticTwoGISClient(places=places, reviews={}),
+        cache_backend=InMemoryCache(),
+        session_repo=MemorySearchSessionRepository(),
+        history_repo=MemorySearchHistoryRepository(),
+        statistics_repo=MemorySearchStatisticsRepository(),
+        ai_usage_repo=MemoryAIUsageLogRepository(),
+        cached_ai_repo=MemoryCachedAIResultRepository(),
+    )
+
+    events = []
+    async for event in service.search_stream(
+        SearchRequest(query="cafe near me", travel_mode="walking", max_travel_time_min=15),
+        user_id=None,
+    ):
+        events.append(event["event"])
+
+    assert "status" in events
+    assert "intent" in events
+    assert "places" in events
+    assert "done" in events
+

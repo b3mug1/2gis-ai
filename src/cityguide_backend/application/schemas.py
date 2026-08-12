@@ -66,6 +66,9 @@ class SearchRequest(BaseModel):
     query: str = Field(min_length=3, max_length=1000)
     coordinates: CoordinatesSchema | None = None
     locale: str = Field(default="en")
+    travel_mode: str | None = Field(default=None, description="walking or driving")
+    max_travel_time_min: int | None = Field(default=None, ge=1, le=120)
+    max_distance_m: int | None = Field(default=None, ge=100, le=20000)
 
     @field_validator("query")
     @classmethod
@@ -80,7 +83,7 @@ class SearchIntentSchema(BaseModel):
     query: str
     location_text: str | None = None
     coordinates: CoordinatesSchema | None = None
-    radius_m: int = Field(default=2000, ge=100, le=10000)
+    radius_m: int = Field(default=2000, ge=100, le=20000)
     budget_kzt: int | None = Field(default=None, ge=0, le=1000000)
     party_size: int = Field(default=1, ge=1, le=50)
     cuisine: str | None = None
@@ -95,6 +98,8 @@ class SearchIntentSchema(BaseModel):
     requires_quiet: bool = False
     laptop_friendly: bool = False
     romantic: bool = False
+    travel_mode: str | None = None
+    max_travel_time_min: int | None = None
 
 
 class ReviewSummarySchema(BaseModel):
@@ -111,6 +116,7 @@ class PlaceRecommendationSchema(BaseModel):
     name: str
     rating: float | None
     walking_time: int | None
+    driving_time: int | None = None
     pros: list[str]
     cons: list[str]
     reason: str
@@ -142,6 +148,31 @@ class SearchResponse(BaseModel):
     intent: SearchIntentSchema
     source: str
     generated_at: datetime
+
+
+class ComparePlacesRequest(BaseModel):
+    place_ids: list[str] = Field(..., min_length=2, max_length=5)
+    user_query: str | None = Field(default=None, max_length=500)
+    locale: str = Field(default="ru")
+
+
+class PlaceComparisonItemSchema(BaseModel):
+    place_id: str
+    name: str
+    best_for: str
+    pros: list[str] = Field(default_factory=list)
+    cons: list[str] = Field(default_factory=list)
+    rating: float | None = None
+    price_category: str | None = None
+    address: str | None = None
+
+
+class ComparePlacesResponse(BaseModel):
+    verdict: str
+    winner_place_id: str | None = None
+    comparisons: list[PlaceComparisonItemSchema] = Field(default_factory=list)
+    key_differences: list[str] = Field(default_factory=list)
+
 
 
 class FavoriteCreateRequest(BaseModel):

@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query, Request
 
+from fastapi.responses import StreamingResponse
+
 from cityguide_backend.api.dependencies import get_current_user, get_search_service
 from cityguide_backend.application.schemas import (
+    ComparePlacesRequest,
+    ComparePlacesResponse,
     PlaceRecommendationSchema,
     PopularResponse,
     SearchRequest,
@@ -28,6 +32,29 @@ async def search_places(
     current_user: UserProfile = Depends(get_current_user),
 ) -> SearchResponse:
     return await service.search(payload, user_id=current_user.id)
+
+
+@router.post("/stream")
+async def stream_search_places(
+    payload: SearchRequest,
+    service: SearchService = Depends(get_search_service),
+    current_user: UserProfile = Depends(get_current_user),
+):
+    async def event_generator():
+        async for sse_event in service.search_stream(payload, user_id=current_user.id):
+            yield f"event: {sse_event['event']}\ndata: {sse_event['data']}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@router.post("/compare", response_model=ComparePlacesResponse)
+async def compare_places(
+    payload: ComparePlacesRequest,
+    service: SearchService = Depends(get_search_service),
+    current_user: UserProfile = Depends(get_current_user),
+) -> ComparePlacesResponse:
+    return await service.compare(payload)
+
 
 
 @router.get("/suggest", response_model=SuggestResponse)

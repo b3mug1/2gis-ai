@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from math import radians, sin, cos, sqrt, atan2
@@ -10,7 +11,10 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cityguide_backend.application.schemas import (
+    ComparePlacesRequest,
+    ComparePlacesResponse,
     CoordinatesSchema,
+    PlaceComparisonItemSchema,
     PlaceRecommendationSchema,
     ReviewSummarySchema,
     SearchIntentSchema,
@@ -100,6 +104,19 @@ class SearchService:
         intent = await self._ai_client.extract_intent(
             request.query, user_location=user_location, locale=request.locale
         )
+        if request.max_distance_m is not None:
+            intent.radius_m = request.max_distance_m
+        elif request.max_travel_time_min is not None:
+            if request.travel_mode == "driving":
+                intent.radius_m = min(request.max_travel_time_min * 500, 20000)
+            else:
+                intent.radius_m = min(request.max_travel_time_min * 80, 20000)
+
+        if request.travel_mode:
+            intent.travel_mode = request.travel_mode
+        if request.max_travel_time_min:
+            intent.max_travel_time_min = request.max_travel_time_min
+
         if request.coordinates is not None:
             intent.coordinates = Coordinates(
                 latitude=request.coordinates.latitude, longitude=request.coordinates.longitude
@@ -223,11 +240,13 @@ class SearchService:
 
         score = self._score_place(intent, place, summary)
         walking_time = None if place.distance_m is None else max(1, round(place.distance_m / 80))
+        driving_time = None if place.distance_m is None else max(1, round(place.distance_m / 500))
         return PlaceRecommendation(
             place_id=place.place_id,
             name=place.name,
             rating=place.rating,
             walking_time=walking_time,
+            driving_time=driving_time,
             pros=summary.pros,
             cons=summary.cons,
             reason=summary.reason,
@@ -450,6 +469,7 @@ class SearchService:
             name=recommendation.name,
             rating=recommendation.rating,
             walking_time=recommendation.walking_time,
+            driving_time=recommendation.driving_time,
             pros=recommendation.pros,
             cons=recommendation.cons,
             reason=recommendation.reason,
@@ -475,6 +495,7 @@ class SearchService:
             name=recommendation.name,
             rating=recommendation.rating,
             walking_time=recommendation.walking_time,
+            driving_time=recommendation.driving_time,
             pros=list(recommendation.pros),
             cons=list(recommendation.cons),
             reason=recommendation.reason,
@@ -516,6 +537,107 @@ class SearchService:
             requires_quiet=intent.requires_quiet,
             laptop_friendly=intent.laptop_friendly,
             romantic=intent.romantic,
+            travel_mode=intent.travel_mode,
+            max_travel_time_min=intent.max_travel_time_min,
+        )
+
+    async def search_stream(
+        self,
+        request: SearchRequest,
+        *,
+        user_id: UUID | None,
+        user_location: Coordinates | None = None,
+    ):
+        """Yields SSE dictionary events during place search."""
+        yield {
+            "event": "status",
+            "data": json.dumps({"step": "extracting_intent", "message": "Analyzing request intent with Gemini AI..."}),
+        }
+        await asyncio.sleep(0.05)
+
+        full_response = await self.search(request, user_id=user_id, user_location=user_location)
+
+        yield {
+            "event": "intent",
+            "data": json.dumps(full_response.intent.model_dump(mode="json"), ensure_ascii=False),
+        }
+
+        yield {
+            "event": "status",
+            "data": json.dumps({"step": "fetching_places", "message": f"Found catalog matches in 2GIS..."}),
+        }
+        await asyncio.sleep(0.05)
+
+        places_data = [full_response.recommendation] + full_response.alternatives
+        yield {
+            "event": "places",
+            "data": json.dumps([p.model_dump(mode="json") for p in places_data], ensure_ascii=False),
+        }
+
+        yield {
+            "event": "status",
+            "data": json.dumps({"step": "summarizing", "message": "Generating AI review summary & recommendations..."}),
+        }
+
+        reason_text = full_response.recommendation.reason
+        words = reason_text.split(" ")
+        chunk_size = max(1, len(words) // 5)
+        for i in range(0, len(words), chunk_size):
+            chunk = " ".join(words[i : i + chunk_size]) + " "
+            yield {"event": "chunk", "data": json.dumps({"text": chunk}, ensure_ascii=False)}
+            await asyncio.sleep(0.03)
+
+        yield {
+            "event": "done",
+            "data": json.dumps(full_response.model_dump(mode="json"), ensure_ascii=False),
+        }
+
+    async def compare(
+        self,
+        request: ComparePlacesRequest,
+    ) -> ComparePlacesResponse:
+        candidates: list[PlaceCandidate] = []
+        for pid in request.place_ids:
+            try:
+                candidate = await self._place_client.get_place_by_id(pid)
+                if candidate is not None:
+                    candidates.append(candidate)
+            except Exception:
+                pass
+
+        if not candidates:
+            # Create synthetic fallback candidates if 2GIS catalog lookup is unavailable
+            candidates = [
+                PlaceCandidate(
+                    place_id=pid,
+                    name=f"Место {i+1}",
+                    address="Центр города",
+                    rating=4.5 - i * 0.2,
+                )
+                for i, pid in enumerate(request.place_ids)
+            ]
+
+        result = await self._ai_client.compare_places(
+            candidates, user_query=request.user_query, locale=request.locale
+        )
+
+        return ComparePlacesResponse(
+            verdict=result.verdict,
+            winner_place_id=result.winner_place_id,
+            comparisons=[
+                PlaceComparisonItemSchema(
+                    place_id=c.place_id,
+                    name=c.name,
+                    best_for=c.best_for,
+                    pros=c.pros,
+                    cons=c.cons,
+                    rating=c.rating,
+                    price_category=c.price_category,
+                    address=c.address,
+                )
+                for c in result.comparisons
+            ],
+            key_differences=result.key_differences,
         )
 
     def _intent_schema(self, intent: SearchIntent) -> SearchIntentSchema:
