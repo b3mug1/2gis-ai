@@ -23,7 +23,9 @@ import {
   Heart,
   KeyRound,
   UserCheck,
+  Mail,
 } from "lucide-react";
+
 import { useAuth } from "@/features/auth/AuthContext";
 import {
   adminService,
@@ -375,6 +377,84 @@ export default function AdminPage() {
       </div>
 
       <div className="space-y-4 border-t border-[hsl(var(--border))] pt-8">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 className="text-xl font-extrabold text-foreground flex items-center gap-2">
+              <KeyRound className="w-5 h-5 text-indigo-400" />
+              Статистика способов входа (OAuth vs Email)
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Распределение пользователей по методам аутентификации в системе
+            </p>
+          </div>
+        </div>
+
+        {(() => {
+          const authStats = metrics?.auth_providers || {
+            email: usersList.filter((u) => !u.oauth_provider || u.oauth_provider === "email").length,
+            google: usersList.filter((u) => u.oauth_provider === "google").length,
+            github: usersList.filter((u) => u.oauth_provider === "github").length,
+          };
+          const total = (authStats.email + authStats.google + authStats.github) || 1;
+          const emailPct = Math.round((authStats.email / total) * 100);
+          const googlePct = Math.round((authStats.google / total) * 100);
+          const githubPct = Math.round((authStats.github / total) * 100);
+
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-5 rounded-2xl border border-[hsl(var(--border))] bg-card shadow-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                    <Mail className="w-4 h-4 text-brand-400" />
+                    Email / Пароль
+                  </div>
+                  <span className="text-xs font-bold bg-brand-500/10 text-brand-400 border border-brand-500/20 px-2 py-0.5 rounded-md">
+                    {emailPct}%
+                  </span>
+                </div>
+                <div className="text-2xl font-extrabold text-foreground">{authStats.email} чел.</div>
+                <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
+                  <div className="bg-brand-500 h-full transition-all duration-500" style={{ width: `${emailPct}%` }} />
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl border border-[hsl(var(--border))] bg-card shadow-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                    <Globe className="w-4 h-4 text-blue-400" />
+                    Google OAuth
+                  </div>
+                  <span className="text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-md">
+                    {googlePct}%
+                  </span>
+                </div>
+                <div className="text-2xl font-extrabold text-foreground">{authStats.google} чел.</div>
+                <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
+                  <div className="bg-blue-500 h-full transition-all duration-500" style={{ width: `${googlePct}%` }} />
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl border border-[hsl(var(--border))] bg-card shadow-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                    <ShieldCheck className="w-4 h-4 text-purple-400" />
+                    GitHub OAuth
+                  </div>
+                  <span className="text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded-md">
+                    {githubPct}%
+                  </span>
+                </div>
+                <div className="text-2xl font-extrabold text-foreground">{authStats.github} чел.</div>
+                <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
+                  <div className="bg-purple-500 h-full transition-all duration-500" style={{ width: `${githubPct}%` }} />
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
+      <div className="space-y-4 border-t border-[hsl(var(--border))] pt-8">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-extrabold text-foreground flex items-center gap-2">
             <Users className="w-5 h-5 text-amber-500" />
@@ -390,6 +470,7 @@ export default function AdminPage() {
                 <tr>
                   <th className="px-6 py-4">Пользователь</th>
                   <th className="px-6 py-4">Email</th>
+                  <th className="px-6 py-4">Способ входа</th>
                   <th className="px-6 py-4">Роль</th>
                   <th className="px-6 py-4">Дата регистрации</th>
                   <th className="px-6 py-4">Последний вход</th>
@@ -399,7 +480,7 @@ export default function AdminPage() {
               <tbody className="divide-y divide-[hsl(var(--border)/0.5)]">
                 {usersList.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
                       Загрузка пользователей из PostgreSQL...
                     </td>
                   </tr>
@@ -417,6 +498,21 @@ export default function AdminPage() {
                         {u.full_name}
                       </td>
                       <td className="px-6 py-4 text-muted-foreground font-mono">{u.email}</td>
+                      <td className="px-6 py-4">
+                        {u.oauth_provider === "google" ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                            <Globe className="w-3 h-3" /> Google
+                          </span>
+                        ) : u.oauth_provider === "github" ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                            <ShieldCheck className="w-3 h-3" /> GitHub
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-brand-500/15 text-brand-400 border border-brand-500/30">
+                            <Mail className="w-3 h-3" /> Email
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4">
                         <span
                           className={`px-2.5 py-1 rounded-full font-extrabold uppercase text-[10px] ${
@@ -453,6 +549,7 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }

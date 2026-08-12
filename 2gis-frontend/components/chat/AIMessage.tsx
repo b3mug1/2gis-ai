@@ -13,6 +13,8 @@ import { timeAgo } from "@/utils/format";
 
 interface AIMessageProps {
   message: ChatMessage;
+  selectedCompareIds?: string[];
+  onToggleCompare?: (place: any) => void;
 }
 
 function useStreamText(fullText: string, isStreaming: boolean) {
@@ -33,7 +35,7 @@ function useStreamText(fullText: string, isStreaming: boolean) {
   return { displayed, done: displayed.length >= fullText.length };
 }
 
-export function AIMessage({ message }: AIMessageProps) {
+export function AIMessage({ message, selectedCompareIds, onToggleCompare }: AIMessageProps) {
   const { displayed, done } = useStreamText(message.content, message.isStreaming ?? false);
   const [copied, setCopied] = useState(false);
 
@@ -100,7 +102,13 @@ export function AIMessage({ message }: AIMessageProps) {
           </div>
         )}
 
-        {done && message.searchResponse && <SearchResults data={message.searchResponse} />}
+        {done && message.searchResponse && (
+          <SearchResults
+            data={message.searchResponse}
+            selectedCompareIds={selectedCompareIds}
+            onToggleCompare={onToggleCompare}
+          />
+        )}
 
         <span className="block px-0.5 text-[10px] text-muted-foreground">{timeAgo(message.timestamp.toISOString())}</span>
       </div>

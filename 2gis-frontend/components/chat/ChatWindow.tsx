@@ -14,9 +14,17 @@ interface ChatWindowProps {
   messages: ChatMessage[];
   isLoading: boolean;
   onPromptSelect: (prompt: string) => void;
+  selectedCompareIds?: string[];
+  onToggleCompare?: (place: any) => void;
 }
 
-export function ChatWindow({ messages, isLoading, onPromptSelect }: ChatWindowProps) {
+export function ChatWindow({
+  messages,
+  isLoading,
+  onPromptSelect,
+  selectedCompareIds,
+  onToggleCompare,
+}: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
@@ -60,7 +68,12 @@ export function ChatWindow({ messages, isLoading, onPromptSelect }: ChatWindowPr
         <div className="space-y-4 px-4 py-5 sm:px-6">
           <AnimatePresence initial={false}>
             {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                selectedCompareIds={selectedCompareIds}
+                onToggleCompare={onToggleCompare}
+              />
             ))}
           </AnimatePresence>
           {isLoading && <TypingIndicator />}

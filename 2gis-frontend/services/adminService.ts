@@ -9,6 +9,11 @@ export interface AdminMetrics {
   total_admins: number;
   uptime_pct: number;
   avg_latency_s: number;
+  auth_providers?: {
+    email: number;
+    google: number;
+    github: number;
+  };
 }
 
 export interface AdminSummaryResponse {
@@ -29,7 +34,9 @@ export interface AdminUserItem {
   is_active: boolean;
   created_at: string | null;
   last_login_at: string | null;
+  oauth_provider?: string | null;
 }
+
 
 export interface DiagnosticTestResult {
   id: number;

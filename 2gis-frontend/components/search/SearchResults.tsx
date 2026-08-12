@@ -1,14 +1,16 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import type { SearchResponse } from "@/types/api";
+import type { PlaceRecommendation, SearchResponse } from "@/types/api";
 import { PlaceCard } from "@/components/search/PlaceCard";
 
 interface SearchResultsProps {
   data: SearchResponse;
+  selectedCompareIds?: string[];
+  onToggleCompare?: (place: PlaceRecommendation) => void;
 }
 
-export function SearchResults({ data }: SearchResultsProps) {
+export function SearchResults({ data, selectedCompareIds = [], onToggleCompare }: SearchResultsProps) {
   const all = [data.recommendation, ...data.alternatives];
 
   return (
@@ -23,7 +25,14 @@ export function SearchResults({ data }: SearchResultsProps) {
 
         <div className="grid gap-3">
           {all.map((place, i) => (
-            <PlaceCard key={place.place_id} place={place} isTop={i === 0} index={i} />
+            <PlaceCard
+              key={place.place_id}
+              place={place}
+              isTop={i === 0}
+              index={i}
+              isCompared={selectedCompareIds.includes(place.place_id)}
+              onToggleCompare={onToggleCompare ? () => onToggleCompare(place) : undefined}
+            />
           ))}
         </div>
       </motion.div>

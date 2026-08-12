@@ -1,3 +1,3 @@
-import OAuthCallbackPage from "../../(auth)/callback/[provider]/page";
+import OAuthCallbackPage from "@/components/auth/OAuthCallbackPage";
 
 export default OAuthCallbackPage;

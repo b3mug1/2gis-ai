@@ -9,6 +9,8 @@ export interface SearchFilters {
   open_now: boolean;
   min_rating: number;
   price_category: string | null;
+  travel_mode?: "walking" | "driving" | null;
+  max_travel_time_min?: number | null;
 }
 
 interface FilterPanelProps {
@@ -25,14 +27,27 @@ const PRICE_OPTIONS = [
   { value: "premium", labelKey: "premium" as const },
 ];
 
+const TIME_PRESETS = [
+  { value: null, label: "Всё" },
+  { value: 5, label: "5 мин" },
+  { value: 10, label: "10 мин" },
+  { value: 15, label: "15 мин" },
+  { value: 30, label: "30 мин" },
+];
+
 export function FilterPanel({ visible, filters, onChange, onClose }: FilterPanelProps) {
   const { t } = useLanguage();
 
   function handleReset() {
-    onChange({ open_now: false, min_rating: 0, price_category: null });
+    onChange({ open_now: false, min_rating: 0, price_category: null, travel_mode: null, max_travel_time_min: null });
   }
 
-  const activeCount = (filters.open_now ? 1 : 0) + (filters.min_rating > 0 ? 1 : 0) + (filters.price_category ? 1 : 0);
+  const activeCount =
+    (filters.open_now ? 1 : 0) +
+    (filters.min_rating > 0 ? 1 : 0) +
+    (filters.price_category ? 1 : 0) +
+    (filters.travel_mode ? 1 : 0) +
+    (filters.max_travel_time_min ? 1 : 0);
 
   return (
     <AnimatePresence>
@@ -72,7 +87,7 @@ export function FilterPanel({ visible, filters, onChange, onClose }: FilterPanel
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="flex items-center justify-between gap-3 rounded-[1.1rem] border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-3 py-3">
                 <span className="text-xs font-medium text-foreground">{t.filters.openNow}</span>
                 <button
@@ -92,9 +107,67 @@ export function FilterPanel({ visible, filters, onChange, onClose }: FilterPanel
               </div>
 
               <div className="rounded-[1.1rem] border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-3 py-3">
+                <p className="mb-2 text-xs font-medium text-foreground">{t.filters.travelMode}</p>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() =>
+                      onChange({
+                        ...filters,
+                        travel_mode: filters.travel_mode === "walking" ? null : "walking",
+                      })
+                    }
+                    className={cn(
+                      "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                      filters.travel_mode === "walking"
+                        ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                        : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-muted-foreground hover:border-[hsl(var(--primary))]"
+                    )}
+                  >
+                    {t.filters.walking}
+                  </button>
+                  <button
+                    onClick={() =>
+                      onChange({
+                        ...filters,
+                        travel_mode: filters.travel_mode === "driving" ? null : "driving",
+                      })
+                    }
+                    className={cn(
+                      "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                      filters.travel_mode === "driving"
+                        ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                        : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-muted-foreground hover:border-[hsl(var(--primary))]"
+                    )}
+                  >
+                    {t.filters.driving}
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-[1.1rem] border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-3 py-3">
+                <p className="mb-2 text-xs font-medium text-foreground">{t.filters.maxTime}</p>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {TIME_PRESETS.map((tItem) => (
+                    <button
+                      key={tItem.value ?? "any"}
+                      onClick={() => onChange({ ...filters, max_travel_time_min: tItem.value })}
+                      className={cn(
+                        "rounded-full border px-2 py-0.5 text-xs font-medium transition-colors",
+                        filters.max_travel_time_min === tItem.value
+                          ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                          : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-muted-foreground hover:border-[hsl(var(--primary))]"
+                      )}
+                    >
+                      {tItem.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-[1.1rem] border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-3 py-3">
                 <p className="mb-2 text-xs font-medium text-foreground">{t.filters.minRating}</p>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {[0, 1, 2, 3, 4, 5].map((rating) => (
+                  {[0, 3, 4, 5].map((rating) => (
                     <button
                       key={rating}
                       onClick={() => onChange({ ...filters, min_rating: rating })}
@@ -102,31 +175,11 @@ export function FilterPanel({ visible, filters, onChange, onClose }: FilterPanel
                         "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
                         filters.min_rating === rating
                           ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
-                          : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-muted-foreground hover:border-[hsl(var(--primary))] hover:text-foreground"
+                          : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-muted-foreground hover:border-[hsl(var(--primary))]"
                       )}
                     >
                       {rating === 0 ? t.filters.any : `${rating}+`}
                       {rating > 0 && <Star className="w-2.5 h-2.5 fill-current" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-[1.1rem] border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-3 py-3">
-                <p className="mb-2 text-xs font-medium text-foreground">{t.filters.priceRange}</p>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {PRICE_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value ?? "any"}
-                      onClick={() => onChange({ ...filters, price_category: opt.value })}
-                      className={cn(
-                        "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                        filters.price_category === opt.value
-                          ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
-                          : "border-[hsl(var(--border))] bg-[hsl(var(--card))] text-muted-foreground hover:border-[hsl(var(--primary))] hover:text-foreground"
-                      )}
-                    >
-                      {t.filters[opt.labelKey]}
                     </button>
                   ))}
                 </div>
@@ -138,3 +191,4 @@ export function FilterPanel({ visible, filters, onChange, onClose }: FilterPanel
     </AnimatePresence>
   );
 }
+

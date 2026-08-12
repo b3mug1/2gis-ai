@@ -8,9 +8,11 @@ import { AIMessage } from "./AIMessage";
 
 interface MessageBubbleProps {
   message: ChatMessage;
+  selectedCompareIds?: string[];
+  onToggleCompare?: (place: any) => void;
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({ message, selectedCompareIds, onToggleCompare }: MessageBubbleProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -24,7 +26,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       {message.role === "user" ? (
         <UserMessage message={message} />
       ) : (
-        <AIMessage message={message} />
+        <AIMessage
+          message={message}
+          selectedCompareIds={selectedCompareIds}
+          onToggleCompare={onToggleCompare}
+        />
       )}
     </motion.div>
   );

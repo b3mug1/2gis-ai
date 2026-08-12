@@ -61,6 +61,9 @@ export interface SearchRequest {
   query: string;
   coordinates?: Coordinates;
   locale?: string;
+  travel_mode?: "walking" | "driving";
+  max_travel_time_min?: number;
+  max_distance_m?: number;
 }
 
 export interface SearchIntent {
@@ -82,6 +85,8 @@ export interface SearchIntent {
   requires_quiet: boolean;
   laptop_friendly: boolean;
   romantic: boolean;
+  travel_mode?: "walking" | "driving" | null;
+  max_travel_time_min?: number | null;
 }
 
 export interface PlaceRecommendation {
@@ -89,6 +94,7 @@ export interface PlaceRecommendation {
   name: string;
   rating: number | null;
   walking_time: number | null;
+  driving_time?: number | null;
   pros: string[];
   cons: string[];
   reason: string;
@@ -112,6 +118,30 @@ export interface SearchResponse {
   intent: SearchIntent;
   source: string;
   generated_at: string;
+}
+
+export interface ComparePlacesRequest {
+  place_ids: string[];
+  user_query?: string;
+  locale?: string;
+}
+
+export interface PlaceComparisonItem {
+  place_id: string;
+  name: string;
+  best_for: string;
+  pros: string[];
+  cons: string[];
+  rating: number | null;
+  price_category: string | null;
+  address: string | null;
+}
+
+export interface ComparePlacesResponse {
+  verdict: string;
+  winner_place_id: string | null;
+  comparisons: PlaceComparisonItem[];
+  key_differences: string[];
 }
 
 export interface FavoriteCreateRequest {

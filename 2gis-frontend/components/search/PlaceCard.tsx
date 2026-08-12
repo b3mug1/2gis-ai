@@ -32,9 +32,11 @@ interface PlaceCardProps {
   place: PlaceRecommendation;
   isTop?: boolean;
   index?: number;
+  isCompared?: boolean;
+  onToggleCompare?: () => void;
 }
 
-export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
+export function PlaceCard({ place, isTop = false, index = 0, isCompared = false, onToggleCompare }: PlaceCardProps) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const { data: favorites } = useFavorites();
@@ -145,13 +147,17 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
 
           <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
             {place.distance_m != null && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--secondary))] px-2 py-0.5 font-medium text-foreground">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--secondary))] px-2.5 py-1 font-medium text-foreground">
                 <Navigation className="h-3 w-3 text-[hsl(var(--primary))]" />
                 {formatDistance(place.distance_m)}
                 {place.walking_time && (
                   <span className="text-muted-foreground">
-                    {" "}
-                    • {place.walking_time} {t.placeCard.walk}
+                    • 🚶 {place.walking_time} {t.placeCard.walk}
+                  </span>
+                )}
+                {place.driving_time && (
+                  <span className="text-muted-foreground">
+                    • 🚗 {place.driving_time} {t.placeCard.drive}
                   </span>
                 )}
               </span>
@@ -195,6 +201,20 @@ export function PlaceCard({ place, isTop = false, index = 0 }: PlaceCardProps) {
 
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[hsl(var(--border))] pt-3">
             <div className="flex flex-wrap items-center gap-2">
+              {onToggleCompare && (
+                <button
+                  onClick={onToggleCompare}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
+                    isCompared
+                      ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                      : "border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-foreground hover:border-[hsl(var(--primary))]"
+                  )}
+                >
+                  <Sparkles className="h-3 w-3" />
+                  {isCompared ? t.placeCard.selectedForCompare : t.placeCard.compare}
+                </button>
+              )}
               {place.url && (
                 <a
                   href={place.url}
