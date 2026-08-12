@@ -152,7 +152,7 @@ class SearchService:
         enriched = await asyncio.gather(
             *[
                 self._enrich_place(intent, place, locale=request.locale)
-                for place in deduped[:10]
+                for place in deduped[:4]
             ]
         )
 
@@ -172,7 +172,7 @@ class SearchService:
                 enriched_fallback = await asyncio.gather(
                     *[
                         self._enrich_place(intent, place, locale=request.locale)
-                        for place in self._deduplicate_candidates(fallback_places)[:10]
+                        for place in self._deduplicate_candidates(fallback_places)[:4]
                     ]
                 )
                 relevant = [p for p in enriched_fallback if p.confidence > 0.05 and p.score > 0.05]

@@ -106,6 +106,8 @@ export default function ChatPage() {
         }, 1500);
 
         let result: SearchResponse;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 35000);
         try {
           result = await searchService.search({
             query: text,
@@ -115,6 +117,7 @@ export default function ChatPage() {
             max_travel_time_min: filters.max_travel_time_min || undefined,
           });
         } finally {
+          clearTimeout(timeoutId);
           clearInterval(statusInterval);
         }
 
