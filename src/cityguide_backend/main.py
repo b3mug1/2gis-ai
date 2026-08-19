@@ -131,9 +131,12 @@ def main() -> None:
 
     settings = get_settings()
     reload_enabled = settings.app_env == "local" and os.getenv("UVICORN_RELOAD", "1") == "1"
+    reload_dirs = ["/app/src"] if os.path.exists("/app/src") else ["src"] if os.path.exists("src") else None
     uvicorn.run(
         "cityguide_backend.main:app",
         host=settings.app_host,
         port=settings.app_port,
         reload=reload_enabled,
+        reload_dirs=reload_dirs if reload_enabled else None,
     )
+

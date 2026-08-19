@@ -27,9 +27,10 @@ services:
     build: .
     env_file: .env
     environment:
-      UVICORN_RELOAD: "0"
+      UVICORN_RELOAD: "1"
     volumes:
       - ./src:/app/src
+      - ./alembic:/app/alembic
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,9 +42,16 @@ services:
   frontend:
     build:
       context: ./2gis-frontend
-      args:
-        NEXT_PUBLIC_API_URL: http://localhost:8001
-        NEXT_PUBLIC_TWOGIS_API_KEY: ${TWOGIS_API_KEY:-}
+      dockerfile: Dockerfile.dev
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_TWOGIS_API_KEY=${TWOGIS_API_KEY:-}
+      - WATCHPACK_POLLING=true
+      - PORT=7000
+    volumes:
+      - ./2gis-frontend:/app
+      - /app/node_modules
+      - /app/.next
     env_file:
       - ./2gis-frontend/.env.local
     depends_on:
@@ -51,3 +59,4 @@ services:
         condition: service_started
     ports:
       - "7000:7000"
+
