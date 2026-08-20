@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -8,12 +8,16 @@ import { motion } from "framer-motion";
 export function MainLayout() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const publicRoutes = ["/", "/chat"];
+  const isPublic = publicRoutes.includes(location.pathname);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated && !isPublic) {
       navigate("/login", { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, isPublic, navigate]);
 
   if (isLoading) {
     return (
@@ -23,7 +27,7 @@ export function MainLayout() {
     );
   }
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated && !isPublic) return null;
 
   return (
     <div className="flex h-screen overflow-hidden bg-[hsl(var(--background))]">

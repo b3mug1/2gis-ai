@@ -46,6 +46,7 @@ export interface UserResponse {
   full_name: string;
   role: "user" | "admin";
   is_active: boolean;
+  created_at?: string;
 }
 
 export interface AuthResponse {

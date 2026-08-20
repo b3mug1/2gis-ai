@@ -3,80 +3,84 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* MINIMALIST LIGHT THEME: Pure White Base with Crisp Charcoal/Black & Subtle Neutral Accents */
-    --background: 0 0% 100%;             /* Pure Crisp White #FFFFFF */
-    --foreground: 0 0% 9%;               /* Deep Crisp Black #171717 */
-    --card: 0 0% 100%;                   /* White Card #FFFFFF */
-    --card-foreground: 0 0% 9%;          /* #171717 */
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
-    --primary: 0 0% 9%;                  /* Black Minimalist Pill / Button #171717 */
-    --primary-foreground: 0 0% 100%;     /* Pure White on Black */
-    --secondary: 0 0% 96%;               /* Clean Light Gray #F4F4F5 */
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;        /* Slate Neutral Subtext #71717A */
-    --accent: 0 0% 93%;                  /* Neutral Soft #EDEDED */
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 90%;                  /* Subtle Neutral Line #E4E4E7 */
-    --input: 0 0% 90%;
-    --ring: 0 0% 9%;
-    --radius: 1.25rem;
-    --sidebar-bg: 0 0% 100%;             /* White Sidebar */
-    --font-sans:
-      -apple-system,
-      BlinkMacSystemFont,
-      "SF Pro Display",
-      "SF Pro Text",
-      "Inter",
-      "Helvetica Neue",
-      Arial,
-      sans-serif;
-  }
+:root,
+html,
+html.light,
+[data-theme="light"] {
+  /* MINIMALIST LIGHT THEME: Pure White Base with Crisp Charcoal/Black & Subtle Neutral Accents */
+  --background: 0 0% 100%;             /* Pure Crisp White #FFFFFF */
+  --foreground: 0 0% 9%;               /* Deep Crisp Black #171717 */
+  --card: 0 0% 100%;                   /* White Card #FFFFFF */
+  --card-foreground: 0 0% 9%;          /* #171717 */
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9%;
+  --primary: 0 0% 9%;                  /* Black Minimalist Pill / Button #171717 */
+  --primary-foreground: 0 0% 100%;     /* Pure White on Black */
+  --secondary: 0 0% 96%;               /* Clean Light Gray #F4F4F5 */
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;        /* Slate Neutral Subtext #71717A */
+  --accent: 0 0% 93%;                  /* Neutral Soft #EDEDED */
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 90%;                  /* Subtle Neutral Line #E4E4E7 */
+  --input: 0 0% 90%;
+  --ring: 0 0% 9%;
+  --radius: 1.25rem;
+  --sidebar-bg: 0 0% 100%;             /* White Sidebar */
+  --font-sans:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    "Inter",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}
 
-  .dark {
-    /* MINIMALIST DARK THEME: Pure Deep Black Base with Crisp White & Sleek Dark Surfaces */
-    --background: 0 0% 0%;               /* Pure Deep OLED Black #000000 */
-    --foreground: 0 0% 98%;              /* Pure Crisp White #FAFAFA */
-    --card: 0 0% 5%;                     /* Sleek Dark Surface #0D0D0D */
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;                 /* Crisp White Button #FAFAFA */
-    --primary-foreground: 0 0% 0%;       /* Black on White */
-    --secondary: 0 0% 11%;               /* Subtle Dark Gray #1C1C1E */
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 60%;        /* Neutral Subtext #A1A1AA */
-    --accent: 0 0% 14%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 75% 58%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 16%;                  /* Subtle Dark Line #27272A */
-    --input: 0 0% 16%;
-    --ring: 0 0% 98%;
-    --sidebar-bg: 0 0% 0%;               /* Pure Black Sidebar */
-  }
+:root.dark,
+html.dark,
+html[data-theme="dark"],
+.dark {
+  /* MINIMALIST DARK THEME: Pure Deep Black Base with Crisp White & Sleek Dark Surfaces */
+  --background: 0 0% 0%;               /* Pure Deep OLED Black #000000 */
+  --foreground: 0 0% 98%;              /* Pure Crisp White #FAFAFA */
+  --card: 0 0% 5%;                     /* Sleek Dark Surface #0D0D0D */
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 5%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;                 /* Crisp White Button #FAFAFA */
+  --primary-foreground: 0 0% 0%;       /* Black on White */
+  --secondary: 0 0% 11%;               /* Subtle Dark Gray #1C1C1E */
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 60%;        /* Neutral Subtext #A1A1AA */
+  --accent: 0 0% 14%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 75% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 16%;                  /* Subtle Dark Line #27272A */
+  --input: 0 0% 16%;
+  --ring: 0 0% 98%;
+  --sidebar-bg: 0 0% 0%;               /* Pure Black Sidebar */
+}
 
-  .low-light {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 88%;
-    --card: 0 0% 4%;
-    --card-foreground: 0 0% 90%;
-    --popover: 0 0% 4%;
-    --popover-foreground: 0 0% 90%;
-    --secondary: 0 0% 8%;
-    --secondary-foreground: 0 0% 88%;
-    --muted: 0 0% 7%;
-    --muted-foreground: 0 0% 55%;
-    --border: 0 0% 12%;
-    --input: 0 0% 12%;
-    --sidebar-bg: 0 0% 0%;
-  }
+.low-light {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 88%;
+  --card: 0 0% 4%;
+  --card-foreground: 0 0% 90%;
+  --popover: 0 0% 4%;
+  --popover-foreground: 0 0% 90%;
+  --secondary: 0 0% 8%;
+  --secondary-foreground: 0 0% 88%;
+  --muted: 0 0% 7%;
+  --muted-foreground: 0 0% 55%;
+  --border: 0 0% 12%;
+  --input: 0 0% 12%;
+  --sidebar-bg: 0 0% 0%;
 }
 
 @theme {
