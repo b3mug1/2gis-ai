@@ -29,11 +29,11 @@ export function MobileNav() {
                 className={cn(
                   "flex flex-1 flex-col items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-colors",
                   active
-                    ? "bg-[hsl(var(--secondary))] text-foreground font-bold"
+                    ? "bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] font-bold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Icon className={cn("h-4 w-4", active ? "stroke-[2.2px] text-foreground" : "stroke-[1.8px]")} />
+                <Icon className={cn("h-4 w-4", active ? "stroke-[2.2px] text-[hsl(var(--primary))]" : "stroke-[1.8px]")} />
                 <span>{label}</span>
               </Link>
             );

@@ -128,14 +128,14 @@ export function Sidebar() {
                     "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
                     collapsed && "justify-center px-0 py-3",
                     active
-                      ? "border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-[hsl(var(--secondary)/0.5)] hover:text-foreground"
+                      ? "border border-[hsl(var(--primary)/0.25)] bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] font-semibold shadow-sm"
+                      : "text-muted-foreground hover:bg-[hsl(var(--secondary))] hover:text-foreground"
                   )}
                 >
                   <Icon
                     className={cn(
                       "h-4 w-4 shrink-0 transition-colors",
-                      active ? "text-foreground stroke-[2.2]" : "text-muted-foreground group-hover:text-foreground stroke-[1.8]"
+                      active ? "text-[hsl(var(--primary))] stroke-[2.2]" : "text-muted-foreground group-hover:text-foreground stroke-[1.8]"
                     )}
                   />
 
@@ -153,7 +153,7 @@ export function Sidebar() {
                   </AnimatePresence>
 
                   {active && !collapsed && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[hsl(var(--foreground))]" />
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[hsl(var(--primary))]" />
                   )}
                 </Link>
               );

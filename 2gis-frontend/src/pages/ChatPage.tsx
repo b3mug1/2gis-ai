@@ -261,10 +261,10 @@ export function ChatPage() {
             <button
               onClick={() => setFilters((f) => ({ ...f, open_now: !f.open_now }))}
               className={cn(
-                "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                "rounded-full border px-3 py-1 text-xs font-semibold transition-all",
                 filters.open_now
-                  ? "border-[hsl(var(--primary))] bg-[hsl(var(--card))] text-[hsl(var(--primary))]"
-                  : "border-[hsl(var(--border))] bg-[hsl(var(--card)/0.5)] text-muted-foreground hover:text-foreground hover:border-[hsl(var(--muted-foreground))]"
+                  ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                  : "border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-muted-foreground hover:text-foreground"
               )}
             >
               Открыто сейчас
@@ -272,10 +272,10 @@ export function ChatPage() {
             <button
               onClick={() => setFilters((f) => ({ ...f, min_rating: f.min_rating === 4.5 ? 0 : 4.5 }))}
               className={cn(
-                "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                "rounded-full border px-3 py-1 text-xs font-semibold transition-all",
                 filters.min_rating === 4.5
-                  ? "border-[hsl(var(--primary))] bg-[hsl(var(--card))] text-[hsl(var(--primary))]"
-                  : "border-[hsl(var(--border))] bg-[hsl(var(--card)/0.5)] text-muted-foreground hover:text-foreground hover:border-[hsl(var(--muted-foreground))]"
+                  ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                  : "border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-muted-foreground hover:text-foreground"
               )}
             >
               Рейтинг 4.5+
@@ -288,10 +288,10 @@ export function ChatPage() {
                 }))
               }
               className={cn(
-                "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                "rounded-full border px-3 py-1 text-xs font-semibold transition-all",
                 filters.travel_mode === "walking"
-                  ? "border-[hsl(var(--primary))] bg-[hsl(var(--card))] text-[hsl(var(--primary))]"
-                  : "border-[hsl(var(--border))] bg-[hsl(var(--card)/0.5)] text-muted-foreground hover:text-foreground hover:border-[hsl(var(--muted-foreground))]"
+                  ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                  : "border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-muted-foreground hover:text-foreground"
               )}
             >
               Пешком
@@ -304,10 +304,10 @@ export function ChatPage() {
                 }))
               }
               className={cn(
-                "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                "rounded-full border px-3 py-1 text-xs font-semibold transition-all",
                 filters.travel_mode === "driving"
-                  ? "border-[hsl(var(--primary))] bg-[hsl(var(--card))] text-[hsl(var(--primary))]"
-                  : "border-[hsl(var(--border))] bg-[hsl(var(--card)/0.5)] text-muted-foreground hover:text-foreground hover:border-[hsl(var(--muted-foreground))]"
+                  ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+                  : "border-[hsl(var(--border))] bg-[hsl(var(--secondary))] text-muted-foreground hover:text-foreground"
               )}
             >
               На авто
