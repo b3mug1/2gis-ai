@@ -28,9 +28,19 @@ services:
     env_file: .env
     environment:
       UVICORN_RELOAD: "1"
+      WATCHFILES_FORCE_POLLING: "true"
+      PYTHONUNBUFFERED: "1"
     volumes:
       - ./src:/app/src
       - ./alembic:/app/alembic
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src
+        - action: sync
+          path: ./alembic
+          target: /app/alembic
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,14 +54,20 @@ services:
       context: ./2gis-frontend
       dockerfile: Dockerfile.dev
     environment:
+      - VITE_API_URL=http://localhost:8001
+      - VITE_TWOGIS_API_KEY=${TWOGIS_API_KEY:-}
       - NEXT_PUBLIC_API_URL=http://localhost:8001
       - NEXT_PUBLIC_TWOGIS_API_KEY=${TWOGIS_API_KEY:-}
-      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
       - PORT=7000
     volumes:
       - ./2gis-frontend:/app
       - /app/node_modules
-      - /app/.next
+    develop:
+      watch:
+        - action: sync
+          path: ./2gis-frontend/src
+          target: /app/src
     env_file:
       - ./2gis-frontend/.env.local
     depends_on:
@@ -59,4 +75,6 @@ services:
         condition: service_started
     ports:
       - "7000:7000"
+    tty: true
+    stdin_open: true
 

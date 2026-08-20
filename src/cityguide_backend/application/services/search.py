@@ -152,7 +152,7 @@ class SearchService:
         enriched = await asyncio.gather(
             *[
                 self._enrich_place(intent, place, locale=request.locale)
-                for place in deduped[:4]
+                for place in deduped[:6]
             ]
         )
 
@@ -172,7 +172,7 @@ class SearchService:
                 enriched_fallback = await asyncio.gather(
                     *[
                         self._enrich_place(intent, place, locale=request.locale)
-                        for place in self._deduplicate_candidates(fallback_places)[:4]
+                        for place in self._deduplicate_candidates(fallback_places)[:6]
                     ]
                 )
                 relevant = [p for p in enriched_fallback if p.confidence > 0.05 and p.score > 0.05]
@@ -180,14 +180,14 @@ class SearchService:
         final_pool = relevant if relevant else enriched
         ranked = sorted(final_pool, key=lambda item: item.score, reverse=True)
         recommendation = ranked[0]
-        alternatives = ranked[1:4]
+        alternatives = ranked[1:6]
         result = SearchResult(
             recommendation=self._recommendation_from_scored(recommendation),
             alternatives=[
                 self._recommendation_from_scored(candidate) for candidate in alternatives
             ],
             intent=intent,
-            source="2gis+gemini",
+            source="2gis+ai",
             generated_at=datetime.now(timezone.utc),
         )
 
@@ -551,7 +551,7 @@ class SearchService:
         """Yields SSE dictionary events during place search."""
         yield {
             "event": "status",
-            "data": json.dumps({"step": "extracting_intent", "message": "Analyzing request intent with Gemini AI..."}),
+            "data": json.dumps({"step": "extracting_intent", "message": "Analyzing request intent with AI..."}),
         }
         await asyncio.sleep(0.05)
 
@@ -597,25 +597,38 @@ class SearchService:
         request: ComparePlacesRequest,
     ) -> ComparePlacesResponse:
         candidates: list[PlaceCandidate] = []
-        for pid in request.place_ids:
-            try:
-                candidate = await self._place_client.get_place_by_id(pid)
-                if candidate is not None:
-                    candidates.append(candidate)
-            except Exception:
-                pass
+        if request.places:
+            for p in request.places:
+                candidates.append(
+                    PlaceCandidate(
+                        place_id=p.place_id,
+                        name=p.name,
+                        address=p.address or "",
+                        rating=p.rating,
+                        categories=list(p.categories),
+                        price_category=p.price_category,
+                        opening_hours=p.opening_hours,
+                        phone=p.phone,
+                        url=p.url,
+                        photos=list(p.photos),
+                    )
+                )
+        else:
+            for pid in request.place_ids:
+                try:
+                    candidate = await self._place_client.get_place_by_id(pid)
+                    if candidate is not None:
+                        candidates.append(candidate)
+                except Exception:
+                    pass
 
         if not candidates:
-            # Create synthetic fallback candidates if 2GIS catalog lookup is unavailable
-            candidates = [
-                PlaceCandidate(
-                    place_id=pid,
-                    name=f"Место {i+1}",
-                    address="Центр города",
-                    rating=4.5 - i * 0.2,
-                )
-                for i, pid in enumerate(request.place_ids)
-            ]
+            return ComparePlacesResponse(
+                verdict="Не удалось получить данные для сравнения выбранных заведений.",
+                winner_place_id=None,
+                comparisons=[],
+                key_differences=[],
+            )
 
         result = await self._ai_client.compare_places(
             candidates, user_query=request.user_query, locale=request.locale

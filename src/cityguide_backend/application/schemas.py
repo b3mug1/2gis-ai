@@ -151,7 +151,8 @@ class SearchResponse(BaseModel):
 
 
 class ComparePlacesRequest(BaseModel):
-    place_ids: list[str] = Field(..., min_length=2, max_length=5)
+    place_ids: list[str] = Field(default_factory=list, max_length=6)
+    places: list[PlaceRecommendationSchema] | None = None
     user_query: str | None = Field(default=None, max_length=500)
     locale: str = Field(default="ru")
 

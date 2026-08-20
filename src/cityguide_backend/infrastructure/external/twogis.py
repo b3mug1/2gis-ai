@@ -249,6 +249,31 @@ class TwoGISClientHTTP:
             pass
         return None
 
+    async def get_place_by_id(self, place_id: str) -> PlaceCandidate | None:
+        try:
+            params: dict[str, Any] = {
+                "id": place_id,
+                "fields": "items.point,items.rubrics,items.schedule,items.reviews,items.address,items.full_name,items.photos",
+            }
+            payload = await self._request_json("3.0/items/byid", params)
+            items = payload.get("result", {}).get("items", []) or payload.get("items", [])
+            if items:
+                return self._item_to_candidate(items[0])
+            payload2 = await self._request_json(
+                f"3.0/items/{place_id}",
+                params={
+                    "fields": "items.point,items.rubrics,items.schedule,items.reviews,items.address,items.full_name,items.photos"
+                },
+            )
+            items2 = payload2.get("result", {}).get("items", []) or payload2.get("items", [])
+            if items2:
+                return self._item_to_candidate(items2[0])
+            if isinstance(payload2.get("result"), dict):
+                return self._item_to_candidate(payload2["result"])
+        except Exception:
+            pass
+        return None
+
     async def get_reviews(self, place_id: str) -> list[PlaceReview]:
         payload = await self._request_json(f"3.0/items/{place_id}/reviews", params={})
         items = payload.get("result", {}).get("items", []) or payload.get("items", [])

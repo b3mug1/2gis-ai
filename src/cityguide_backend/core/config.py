@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     session_cache_ttl_seconds: int = 86400
     rate_limit_requests: int = 60
     rate_limit_window_seconds: int = 60
-    search_max_candidates: int = 8
+    search_max_candidates: int = 12
     admin_email: str = "admin@cityguide.com"
     admin_password: str = "ChangeMe123!"
 
