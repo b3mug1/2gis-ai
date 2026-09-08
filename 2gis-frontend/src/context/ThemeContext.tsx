@@ -5,21 +5,31 @@ export type Theme = "light" | "dark" | "system";
 export interface ThemeContextType {
   theme: Theme;
   resolvedTheme: "light" | "dark";
+  lowLight: boolean;
   setTheme: (theme: Theme) => void;
+  setLowLight: (enabled: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: "system",
   resolvedTheme: "light",
+  lowLight: false,
   setTheme: () => {},
+  setLowLight: () => {},
 });
 
 const THEME_STORAGE_KEY = "cg_theme";
+const LOW_LIGHT_STORAGE_KEY = "cg_low_light";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window === "undefined") return "system";
     return (localStorage.getItem(THEME_STORAGE_KEY) as Theme) || "system";
+  });
+
+  const [lowLight, setLowLightState] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(LOW_LIGHT_STORAGE_KEY) === "1";
   });
 
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() => {
@@ -65,13 +75,32 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (lowLight) {
+      root.classList.add("low-light");
+      root.setAttribute("data-low-light", "true");
+    } else {
+      root.classList.remove("low-light");
+      root.removeAttribute("data-low-light");
+    }
+    localStorage.setItem(LOW_LIGHT_STORAGE_KEY, lowLight ? "1" : "0");
+  }, [lowLight]);
+
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem(THEME_STORAGE_KEY, newTheme);
   };
 
+  const setLowLight = (enabled: boolean) => {
+    setLowLightState(enabled);
+    if (enabled && resolvedTheme === "light") {
+      setTheme("dark");
+    }
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, lowLight, setTheme, setLowLight }}>
       {children}
     </ThemeContext.Provider>
   );

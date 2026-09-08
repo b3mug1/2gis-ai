@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { ThemeSwitcher } from "@/components/shared/ThemeSwitcher";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { queryClient } from "@/lib/queryClient";
 import { toast } from "@/components/ui/toaster";
 import { useLanguage } from "@/context/LanguageContext";
@@ -24,7 +25,6 @@ import { cn } from "@/utils/cn";
 
 const APP_VERSION = "0.1.0";
 const NOTIFICATIONS_KEY = "settings_notifications_nearby";
-const LOW_LIGHT_KEY = "settings_low_light";
 
 function SettingsSection({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -76,20 +76,20 @@ function Toggle({
       type="button"
       onClick={() => onChange(!enabled)}
       className={cn(
-        "relative inline-flex h-9 w-[72px] items-center rounded-full border px-1 transition-colors",
+        "relative inline-flex h-8 w-14 items-center rounded-full border p-0.5 transition-all duration-200 cursor-pointer shadow-inner",
         enabled
-          ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.12)]"
-          : "border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)]"
+          ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary))]"
+          : "border-[hsl(var(--border))] bg-[hsl(var(--secondary))]"
       )}
       aria-label={label}
     >
       <span
         className={cn(
-          "inline-flex h-7 w-7 items-center justify-center rounded-full bg-[hsl(var(--card))] shadow-sm transition-transform",
-          enabled ? "translate-x-[34px]" : "translate-x-0"
+          "inline-flex h-6 w-6 items-center justify-center rounded-full bg-[hsl(var(--card))] shadow-sm transition-transform duration-200",
+          enabled ? "translate-x-6 text-[hsl(var(--primary))]" : "translate-x-0 text-muted-foreground"
         )}
       >
-        {enabled ? <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--primary))]" /> : <Moon className="h-3.5 w-3.5 text-muted-foreground" />}
+        {enabled ? <Sparkles className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
       </span>
     </button>
   );
@@ -97,6 +97,7 @@ function Toggle({
 
 export function SettingsPage() {
   const { logout } = useAuth();
+  const { lowLight, setLowLight } = useTheme();
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
   const [clearConfirm, setClearConfirm] = useState(false);
@@ -104,20 +105,11 @@ export function SettingsPage() {
     if (typeof window === "undefined") return false;
     return localStorage.getItem(NOTIFICATIONS_KEY) === "1";
   });
-  const [lowLightEnabled, setLowLightEnabled] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(LOW_LIGHT_KEY) === "1";
-  });
   const [policyExpanded, setPolicyExpanded] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(NOTIFICATIONS_KEY, notificationsEnabled ? "1" : "0");
   }, [notificationsEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem(LOW_LIGHT_KEY, lowLightEnabled ? "1" : "0");
-    document.documentElement.classList.toggle("low-light", lowLightEnabled);
-  }, [lowLightEnabled]);
 
   async function handleLogout() {
     await logout();
@@ -151,6 +143,7 @@ export function SettingsPage() {
       </motion.div>
 
       <div className="space-y-6">
+        {/* Appearance Section */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <SettingsSection title={t.settings.appearance}>
             <SettingsRow
@@ -161,13 +154,14 @@ export function SettingsPage() {
             />
             <SettingsRow
               icon={Wand2}
-              label="Режим для слабого освещения"
-              description="Снижает яркость поверхностей и делает интерфейс комфортнее в темноте"
-              action={<Toggle enabled={lowLightEnabled} onChange={setLowLightEnabled} label="Режим для слабого освещения" />}
+              label={t.settings.lowLight}
+              description={t.settings.lowLightSub}
+              action={<Toggle enabled={lowLight} onChange={setLowLight} label={t.settings.lowLight} />}
             />
           </SettingsSection>
         </motion.div>
 
+        {/* Localization Section with ru, en, kz */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <SettingsSection title={t.settings.localization}>
             <SettingsRow
@@ -218,17 +212,19 @@ export function SettingsPage() {
           </SettingsSection>
         </motion.div>
 
+        {/* Notifications Section */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <SettingsSection title="Уведомления">
+          <SettingsSection title={t.settings.notifications}>
             <SettingsRow
               icon={Bell}
-              label="Уведомления о новых местах рядом"
-              description="Получайте мягкие подсказки, когда рядом появляются новые интересные места"
-              action={<Toggle enabled={notificationsEnabled} onChange={setNotificationsEnabled} label="Уведомления о новых местах рядом" />}
+              label={t.settings.notificationsNearby}
+              description={t.settings.notificationsNearbySub}
+              action={<Toggle enabled={notificationsEnabled} onChange={setNotificationsEnabled} label={t.settings.notificationsNearby} />}
             />
           </SettingsSection>
         </motion.div>
 
+        {/* Data & Storage Section */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <SettingsSection title={t.settings.dataStorage}>
             <SettingsRow
@@ -264,18 +260,19 @@ export function SettingsPage() {
           </SettingsSection>
         </motion.div>
 
+        {/* Account & Security Section */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <SettingsSection title="Аккаунт и безопасность">
+          <SettingsSection title={t.settings.account}>
             <SettingsRow
               icon={ShieldCheck}
-              label="Изменить пароль"
-              description="Откроет профиль, где можно обновить данные аккаунта"
+              label={t.settings.changePassword}
+              description={t.settings.changePasswordSub}
               action={
                 <button
                   onClick={() => navigate("/profile")}
                   className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
                 >
-                  Изменить пароль
+                  {t.settings.changePassword}
                 </button>
               }
             />
@@ -295,44 +292,45 @@ export function SettingsPage() {
           </SettingsSection>
         </motion.div>
 
+        {/* Support Section */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <SettingsSection title="Поддержка">
+          <SettingsSection title={t.settings.support}>
             <SettingsRow
               icon={PencilLine}
-              label="Отправить отзыв"
-              description="Расскажите, что стоит улучшить в продукте"
+              label={t.settings.sendFeedback}
+              description={t.settings.sendFeedbackSub}
               action={
                 <button
-                  onClick={() => openMail("Отзыв о City Guide AI")}
+                  onClick={() => openMail("Feedback - City Guide AI")}
                   className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
                 >
-                  Открыть почту
+                  {t.settings.openEmail}
                 </button>
               }
             />
             <SettingsRow
               icon={Bug}
-              label="Сообщить о проблеме"
-              description="Опишите баг, и мы быстрее его исправим"
+              label={t.settings.reportBug}
+              description={t.settings.reportBugSub}
               action={
                 <button
-                  onClick={() => openMail("Проблема в City Guide AI")}
+                  onClick={() => openMail("Bug Report - City Guide AI")}
                   className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
                 >
-                  Открыть почту
+                  {t.settings.openEmail}
                 </button>
               }
             />
             <SettingsRow
               icon={FileText}
-              label="Политика конфиденциальности"
-              description="Кратко о том, как мы работаем с данными"
+              label={t.settings.privacyPolicy}
+              description={t.settings.privacyPolicySub}
               action={
                 <button
                   onClick={() => setPolicyExpanded((v) => !v)}
                   className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
                 >
-                  {policyExpanded ? "Скрыть" : "Открыть"}
+                  {policyExpanded ? t.settings.hide : t.settings.open}
                 </button>
               }
             />
@@ -340,11 +338,9 @@ export function SettingsPage() {
             {policyExpanded && (
               <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--secondary)/0.35)] px-5 py-5 sm:px-6">
                 <div className="rounded-[1.5rem] border border-[hsl(var(--border))] bg-[hsl(var(--card)/0.95)] p-4 text-sm leading-6 text-muted-foreground">
-                  <p className="font-semibold text-foreground">Краткая политика</p>
+                  <p className="font-semibold text-foreground">{t.settings.policyBriefTitle}</p>
                   <p className="mt-2">
-                    Мы используем ваш запрос, язык интерфейса и локальные настройки, чтобы улучшать поиск и
-                    рекомендации. История и избранное хранятся локально и могут быть очищены в настройках.
-                    Геолокация применяется только для поиска рядом с вами.
+                    {t.settings.policyBriefText}
                   </p>
                 </div>
               </div>
@@ -352,12 +348,13 @@ export function SettingsPage() {
           </SettingsSection>
         </motion.div>
 
+        {/* About App Section */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-          <SettingsSection title="О приложении">
+          <SettingsSection title={t.settings.aboutApp}>
             <SettingsRow
               icon={Sparkles}
-              label="Версия приложения"
-              description="Текущая сборка интерфейса и сервисов"
+              label={t.settings.appVersion}
+              description={t.settings.appVersionSub}
               action={
                 <span className="inline-flex items-center rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--secondary)/0.45)] px-3 py-1.5 text-xs font-semibold text-foreground">
                   v{APP_VERSION}

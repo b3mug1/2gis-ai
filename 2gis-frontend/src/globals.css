@@ -34,16 +34,22 @@ html.light,
   --primary-foreground: 0 0% 100%;     /* Pure White on Accent */
   --ring: 221 83% 53%;
   
-  --radius: 1.25rem;
   --font-sans:
+    "Plus Jakarta Sans",
+    "Inter",
     -apple-system,
     BlinkMacSystemFont,
     "SF Pro Display",
     "SF Pro Text",
-    "Inter",
-    "Helvetica Neue",
-    Arial,
+    "Segoe UI",
+    Roboto,
     sans-serif;
+  --font-mono:
+    "JetBrains Mono",
+    ui-monospace,
+    "SF Mono",
+    "Cascadia Code",
+    monospace;
 }
 
 :root.dark,
@@ -78,22 +84,26 @@ html[data-theme="dark"],
   --ring: 217 91% 60%;
 }
 
+:root.low-light,
+html.low-light,
+html[data-low-light="true"],
 .low-light {
-  --background: 240 10% 3%;
-  --foreground: 210 40% 88%;
-  --card: 222 47% 5%;
-  --card-foreground: 210 40% 90%;
-  --popover: 222 47% 5%;
-  --popover-foreground: 210 40% 90%;
-  --secondary: 217 33% 10%;
-  --secondary-foreground: 210 40% 88%;
-  --muted: 217 33% 9%;
-  --muted-foreground: 215 20% 55%;
-  --border: 217 33% 14%;
-  --input: 217 33% 14%;
-  --sidebar-bg: 240 10% 3%;
-  --primary: 217 91% 60%;
-  --primary-foreground: 0 0% 100%;
+  /* ULTRA OLED LOW-LIGHT MODE */
+  --background: 0 0% 0% !important;
+  --foreground: 210 40% 86% !important;
+  --card: 0 0% 2% !important;
+  --card-foreground: 210 40% 88% !important;
+  --popover: 0 0% 2% !important;
+  --popover-foreground: 210 40% 88% !important;
+  --secondary: 0 0% 5% !important;
+  --secondary-foreground: 210 40% 86% !important;
+  --muted: 0 0% 4% !important;
+  --muted-foreground: 215 15% 50% !important;
+  --border: 0 0% 10% !important;
+  --input: 0 0% 10% !important;
+  --sidebar-bg: 0 0% 0% !important;
+  --primary: 217 91% 60% !important;
+  --primary-foreground: 0 0% 100% !important;
 }
 
 @theme {
