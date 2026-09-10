@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from cityguide_backend.application.schemas import SearchStatisticsResponse
 from cityguide_backend.domain.ports import SearchStatisticsRepository
 
+
 class StatisticsService:
     def __init__(self, session: AsyncSession, repository: SearchStatisticsRepository) -> None:
         self._session = session

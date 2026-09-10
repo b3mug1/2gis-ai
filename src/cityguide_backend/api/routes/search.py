@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query, Request
-
 from fastapi.responses import StreamingResponse
 
 from cityguide_backend.api.dependencies import get_current_user, get_search_service
@@ -54,7 +53,6 @@ async def compare_places(
     current_user: UserProfile = Depends(get_current_user),
 ) -> ComparePlacesResponse:
     return await service.compare(payload)
-
 
 
 @router.get("/suggest", response_model=SuggestResponse)

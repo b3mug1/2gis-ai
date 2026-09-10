@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from cityguide_backend.infrastructure.cache.redis import RedisCache
 from cityguide_backend.infrastructure.db.models import (
@@ -41,13 +41,11 @@ class BackgroundJobRunner:
         async with self._session_factory() as session:
             rows = await session.execute(
                 select(CachedAIResultModel).where(
-                    CachedAIResultModel.expires_at > datetime.now(timezone.utc)
+                    CachedAIResultModel.expires_at > datetime.now(UTC)
                 )
             )
             for row in rows.scalars().all():
-                ttl_seconds = max(
-                    60, int((row.expires_at - datetime.now(timezone.utc)).total_seconds())
-                )
+                ttl_seconds = max(60, int((row.expires_at - datetime.now(UTC)).total_seconds()))
                 await self._cache.set_json(row.cache_key, row.payload, ttl_seconds)
                 refreshed += 1
         return refreshed
@@ -71,13 +69,12 @@ class BackgroundJobRunner:
             async with session.begin():
                 result = await session.execute(
                     delete(SearchSessionModel).where(
-                        SearchSessionModel.created_at
-                        < datetime.now(timezone.utc) - timedelta(days=1)
+                        SearchSessionModel.created_at < datetime.now(UTC) - timedelta(days=1)
                     )
                 )
                 await session.execute(
                     delete(CachedAIResultModel).where(
-                        CachedAIResultModel.expires_at < datetime.now(timezone.utc)
+                        CachedAIResultModel.expires_at < datetime.now(UTC)
                     )
                 )
                 return int(result.rowcount or 0)
@@ -85,9 +82,7 @@ class BackgroundJobRunner:
     async def collect_statistics(self) -> None:
         async with self._session_factory() as session:
             async with session.begin():
-                today = datetime.combine(
-                    datetime.now(timezone.utc).date(), datetime.min.time(), tzinfo=timezone.utc
-                )
+                today = datetime.combine(datetime.now(UTC).date(), datetime.min.time(), tzinfo=UTC)
                 statement = (
                     select(
                         SearchSessionModel.user_id,
@@ -116,7 +111,7 @@ class BackgroundJobRunner:
                                 + row.total_searches,
                                 "successful_searches": SearchStatisticsModel.successful_searches
                                 + row.successful_searches,
-                                "updated_at": datetime.now(timezone.utc),
+                                "updated_at": datetime.now(UTC),
                             },
                         )
                     )

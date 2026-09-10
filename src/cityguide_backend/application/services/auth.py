@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -129,16 +129,13 @@ class AuthService:
 
         return AuthResult(user=self._to_user_response(user_profile), tokens=tokens)
 
-
     async def refresh(self, refresh_token: str) -> AuthTokens:
         token_hash = hash_token(refresh_token)
         async with self._session.begin():
             token_row = await self._refresh_tokens.get_by_hash(token_hash)
             if token_row is None:
                 raise AuthenticationError("Invalid refresh token")
-            if token_row["revoked_at"] is not None or token_row["expires_at"] < datetime.now(
-                timezone.utc
-            ):
+            if token_row["revoked_at"] is not None or token_row["expires_at"] < datetime.now(UTC):
                 raise AuthenticationError("Refresh token expired")
             await self._refresh_tokens.revoke(token_hash)
             tokens = await self._issue_tokens(token_row["user_id"])
@@ -150,9 +147,7 @@ class AuthService:
             token_row = await self._refresh_tokens.get_by_hash(token_hash)
             if token_row is None:
                 raise AuthenticationError("Invalid refresh token")
-            if token_row["revoked_at"] is not None or token_row["expires_at"] < datetime.now(
-                timezone.utc
-            ):
+            if token_row["revoked_at"] is not None or token_row["expires_at"] < datetime.now(UTC):
                 raise AuthenticationError("Refresh token expired")
             user_profile = await self._users.get_by_id(token_row["user_id"])
             if user_profile is None:
@@ -174,7 +169,7 @@ class AuthService:
     async def _issue_tokens(self, user_id: UUID) -> AuthTokens:
         refresh_token = create_refresh_token_raw()
         refresh_token_hash = hash_token(refresh_token)
-        expires_at = datetime.now(timezone.utc) + timedelta(
+        expires_at = datetime.now(UTC) + timedelta(
             days=self._settings.jwt_refresh_token_expire_days
         )
         await self._refresh_tokens.create(

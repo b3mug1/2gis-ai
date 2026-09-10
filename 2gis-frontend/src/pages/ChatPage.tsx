@@ -106,7 +106,7 @@ export function ChatPage() {
 
         let result: SearchResponse;
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 35000);
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
         try {
           result = await searchService.search({
             query: text,
@@ -120,16 +120,19 @@ export function ChatPage() {
           clearInterval(statusInterval);
         }
 
-        let all = [result.recommendation, ...result.alternatives];
+        let all = [result.recommendation, ...result.alternatives].filter(Boolean);
 
         if (filters.open_now) {
-          all = all.filter((p) => (p as unknown as { is_open_now?: boolean }).is_open_now !== false);
+          const openOnly = all.filter((p) => (p as unknown as { is_open_now?: boolean }).is_open_now !== false);
+          if (openOnly.length > 0) all = openOnly;
         }
         if (filters.min_rating > 0) {
-          all = all.filter((p) => (p.rating ?? 0) >= filters.min_rating);
+          const highRating = all.filter((p) => (p.rating ?? 0) >= filters.min_rating);
+          if (highRating.length > 0) all = highRating;
         }
         if (filters.price_category) {
-          all = all.filter((p) => p.price_category === filters.price_category);
+          const matchingPrice = all.filter((p) => p.price_category === filters.price_category);
+          if (matchingPrice.length > 0) all = matchingPrice;
         }
 
         setPlaces(all);
@@ -157,9 +160,23 @@ export function ChatPage() {
           )
         );
       } catch (err: unknown) {
-        const message =
-          (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-          t.chat.errorMsg;
+        let message =
+          (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+
+        if (!message) {
+          const errName = (err as { name?: string })?.name;
+          const errCode = (err as { code?: string })?.code;
+          if (errName === "AbortError" || errCode === "ECONNABORTED") {
+            message =
+              language === "ru"
+                ? "Превышено время ожидания ответа. Пожалуйста, повторите запрос."
+                : language === "kz"
+                ? "Жауап күту уақыты аяқталды. Сұранысты қайталаңыз."
+                : "Request timed out. Please try again.";
+          } else {
+            message = t.chat.errorMsg;
+          }
+        }
 
         setMessages((prev) =>
           prev.map((m) =>

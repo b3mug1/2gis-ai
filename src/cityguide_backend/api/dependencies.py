@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from collections.abc import AsyncIterator
 from typing import Annotated
 from uuid import UUID
 
@@ -13,7 +12,6 @@ from cityguide_backend.application.services.favorites import FavoritesService
 from cityguide_backend.application.services.search import SearchService
 from cityguide_backend.application.services.statistics import StatisticsService
 from cityguide_backend.core.config import Settings, get_settings
-from cityguide_backend.core.exceptions import AuthenticationError, AuthorizationError
 from cityguide_backend.core.exceptions import AuthenticationError, AuthorizationError
 from cityguide_backend.core.security import decode_jwt
 from cityguide_backend.domain.entities import UserProfile, UserRole

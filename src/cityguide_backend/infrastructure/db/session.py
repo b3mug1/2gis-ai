@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import (
 from cityguide_backend.core.config import Settings
 from cityguide_backend.infrastructure.db.base import Base
 
+
 def create_engine(settings: Settings) -> AsyncEngine:
     engine = create_async_engine(settings.database_url, pool_pre_ping=True)
 
@@ -35,13 +36,18 @@ def create_engine(settings: Settings) -> AsyncEngine:
 
     return engine
 
+
 def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(engine, expire_on_commit=False, autoflush=False, autocommit=False)
+
 
 async def init_models(engine: AsyncEngine) -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-async def get_session(session_factory: async_sessionmaker[AsyncSession]) -> AsyncIterator[AsyncSession]:
+
+async def get_session(
+    session_factory: async_sessionmaker[AsyncSession],
+) -> AsyncIterator[AsyncSession]:
     async with session_factory() as session:
         yield session

@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
 from cityguide_backend.domain.entities import (
     Coordinates,
     PlaceCandidate,
+    PlaceComparisonItem,
+    PlaceComparisonResult,
     PlaceReview,
     ReviewSummary,
     SearchIntent,
@@ -16,12 +18,14 @@ from cityguide_backend.domain.entities import (
     UserRole,
 )
 
+
 class NoopTransaction:
     async def __aenter__(self):
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
         return False
+
 
 class FakeSession:
     def __init__(self) -> None:
@@ -52,6 +56,7 @@ class FakeSession:
 
     async def get(self, model, key):
         return None
+
 
 @dataclass
 class MemoryUserRepository:
@@ -136,6 +141,7 @@ class MemoryUserRepository:
     async def update_last_login(self, user_id: UUID) -> None:
         return None
 
+
 @dataclass
 class MemoryRefreshTokenRepository:
     tokens: dict[str, dict[str, Any]] = field(default_factory=dict)
@@ -160,12 +166,13 @@ class MemoryRefreshTokenRepository:
 
     async def revoke(self, token_hash: str) -> None:
         if token_hash in self.tokens:
-            self.tokens[token_hash]["revoked_at"] = datetime.now(timezone.utc)
+            self.tokens[token_hash]["revoked_at"] = datetime.now(UTC)
 
     async def revoke_all_for_user(self, user_id: UUID) -> None:
         for token in self.tokens.values():
             if token["user_id"] == user_id:
-                token["revoked_at"] = datetime.now(timezone.utc)
+                token["revoked_at"] = datetime.now(UTC)
+
 
 @dataclass
 class MemorySearchHistoryRepository:
@@ -180,6 +187,7 @@ class MemorySearchHistoryRepository:
 
     async def list_for_user(self, user_id: UUID, limit: int = 50) -> list[dict[str, Any]]:
         return [entry for entry in self.entries if entry["user_id"] == user_id][:limit]
+
 
 @dataclass
 class MemoryFavoritePlaceRepository:
@@ -198,7 +206,7 @@ class MemoryFavoritePlaceRepository:
             "place_name": place.name,
             "payload": {"address": place.address, "rating": place.rating},
             "note": note,
-            "created_at": datetime.now(timezone.utc),
+            "created_at": datetime.now(UTC),
         }
         self.favorites.append(favorite)
         return favorite
@@ -209,6 +217,7 @@ class MemoryFavoritePlaceRepository:
             for favorite in self.favorites
             if not (favorite["id"] == favorite_id and favorite["user_id"] == user_id)
         ]
+
 
 @dataclass
 class MemoryCachedAIResultRepository:
@@ -222,6 +231,7 @@ class MemoryCachedAIResultRepository:
 
     async def delete(self, cache_key: str) -> None:
         self.cache.pop(cache_key, None)
+
 
 @dataclass
 class MemorySearchSessionRepository:
@@ -245,6 +255,7 @@ class MemorySearchSessionRepository:
     async def cleanup_expired(self, before: datetime) -> int:
         return 0
 
+
 @dataclass
 class MemorySearchStatisticsRepository:
     increments: list[dict[str, Any]] = field(default_factory=list)
@@ -255,12 +266,13 @@ class MemorySearchStatisticsRepository:
     async def daily_summary(self, *, user_id: UUID | None = None) -> list[dict[str, Any]]:
         return [
             {
-                "stat_date": datetime.now(timezone.utc),
+                "stat_date": datetime.now(UTC),
                 "user_id": user_id,
                 "total_searches": 1,
                 "successful_searches": 1,
             }
         ]
+
 
 @dataclass
 class MemoryAIUsageLogRepository:
@@ -287,18 +299,6 @@ class MemoryAIUsageLogRepository:
             }
         )
 
-from cityguide_backend.domain.entities import (
-    Coordinates,
-    PlaceCandidate,
-    PlaceComparisonItem,
-    PlaceComparisonResult,
-    PlaceReview,
-    ReviewSummary,
-    SearchIntent,
-    SearchResult,
-    UserProfile,
-    UserRole,
-)
 
 @dataclass
 class StaticAIClient:
@@ -342,6 +342,7 @@ class StaticAIClient:
             ],
             key_differences=["Diff 1"],
         )
+
 
 @dataclass
 class StaticTwoGISClient:

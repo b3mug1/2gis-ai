@@ -70,7 +70,8 @@ export function HomePage() {
   }, []);
 
   function handleSearch(nextQuery?: string) {
-    const finalQuery = (nextQuery ?? query).trim();
+    const fallbackQuery = t.home.placeholder.replace(/\.{2,}$/, "").trim();
+    const finalQuery = (nextQuery ?? query).trim() || fallbackQuery;
     if (!finalQuery) return;
     setShowSuggestions(false);
     navigate(`/chat?q=${encodeURIComponent(finalQuery)}`);
@@ -145,7 +146,13 @@ export function HomePage() {
               </div>
 
               <div className="relative max-w-2xl" ref={searchWrapRef}>
-                <div className="premium-input-shell flex items-center gap-3 p-2.5">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSearch();
+                  }}
+                  className="premium-input-shell flex items-center gap-3 p-2.5"
+                >
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]">
                     <Search className="h-4 w-4" />
                   </div>
@@ -160,16 +167,18 @@ export function HomePage() {
                         setShowSuggestions(false);
                       }
                     }}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                     placeholder={t.home.placeholder}
                     className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-base"
                   />
-                  <button onClick={() => handleSearch()} className="btn-minimal btn-minimal-primary shrink-0 px-4 text-xs uppercase tracking-[0.16em]">
+                  <button
+                    type="submit"
+                    className="btn-minimal btn-minimal-primary shrink-0 px-4 text-xs uppercase tracking-[0.16em]"
+                  >
                     <span>{t.home.searchBtn}</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </button>
-                </div>
+                </form>
 
                 <AnimatePresence>
                   {showSuggestions && suggestions.length > 0 && (

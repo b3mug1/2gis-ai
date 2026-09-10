@@ -1,18 +1,15 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import Select, delete, func, select, update
+from sqlalchemy import Select, delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cityguide_backend.domain.entities import (
-    Coordinates,
     PlaceCandidate,
-    PlaceReview,
-    ReviewSummary,
     SearchIntent,
     SearchResult,
     UserProfile,
@@ -188,11 +185,8 @@ class SqlAlchemyUserRepository(UserRepository):
 
     async def update_last_login(self, user_id: uuid.UUID) -> None:
         await self._session.execute(
-            update(UserModel)
-            .where(UserModel.id == user_id)
-            .values(last_login_at=datetime.now(timezone.utc))
+            update(UserModel).where(UserModel.id == user_id).values(last_login_at=datetime.now(UTC))
         )
-
 
 
 class SqlAlchemyRefreshTokenRepository(RefreshTokenRepository):
@@ -232,14 +226,14 @@ class SqlAlchemyRefreshTokenRepository(RefreshTokenRepository):
         await self._session.execute(
             update(RefreshTokenModel)
             .where(RefreshTokenModel.token_hash == token_hash)
-            .values(revoked_at=datetime.now(timezone.utc))
+            .values(revoked_at=datetime.now(UTC))
         )
 
     async def revoke_all_for_user(self, user_id: uuid.UUID) -> None:
         await self._session.execute(
             update(RefreshTokenModel)
             .where(RefreshTokenModel.user_id == user_id)
-            .values(revoked_at=datetime.now(timezone.utc))
+            .values(revoked_at=datetime.now(UTC))
         )
 
 
@@ -376,7 +370,7 @@ class SqlAlchemyCachedAIResultRepository(CachedAIResultRepository):
         row = await self._session.scalar(
             select(CachedAIResultModel).where(
                 CachedAIResultModel.cache_key == cache_key,
-                CachedAIResultModel.expires_at > datetime.now(timezone.utc),
+                CachedAIResultModel.expires_at > datetime.now(UTC),
             )
         )
         if row is None:
@@ -384,7 +378,7 @@ class SqlAlchemyCachedAIResultRepository(CachedAIResultRepository):
         return {"cache_key": row.cache_key, "payload": row.payload, "expires_at": row.expires_at}
 
     async def set(self, cache_key: str, payload: dict[str, Any], ttl_seconds: int) -> None:
-        expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)
+        expires_at = datetime.now(UTC) + timedelta(seconds=ttl_seconds)
         statement = (
             insert(CachedAIResultModel)
             .values(cache_key=cache_key, payload=payload, expires_at=expires_at)
@@ -422,7 +416,7 @@ class SqlAlchemySearchSessionRepository(SearchSessionRepository):
             .values(
                 result=_to_serialized_result(result),
                 status=status,
-                completed_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(UTC),
             )
         )
 
@@ -440,11 +434,11 @@ class SqlAlchemySearchStatisticsRepository(SearchStatisticsRepository):
     async def increment(
         self, *, user_id: uuid.UUID | None, total: int = 1, successful: int = 0
     ) -> None:
-        stat_date = datetime.now(timezone.utc).date()
+        stat_date = datetime.now(UTC).date()
         statement = (
             insert(SearchStatisticsModel)
             .values(
-                stat_date=datetime.combine(stat_date, datetime.min.time(), tzinfo=timezone.utc),
+                stat_date=datetime.combine(stat_date, datetime.min.time(), tzinfo=UTC),
                 user_id=user_id,
                 total_searches=total,
                 successful_searches=successful,
@@ -454,7 +448,7 @@ class SqlAlchemySearchStatisticsRepository(SearchStatisticsRepository):
                 set_={
                     "total_searches": SearchStatisticsModel.total_searches + total,
                     "successful_searches": SearchStatisticsModel.successful_searches + successful,
-                    "updated_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(UTC),
                 },
             )
         )

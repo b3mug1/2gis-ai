@@ -8,6 +8,7 @@ from cityguide_backend.core.config import Settings
 from cityguide_backend.core.exceptions import RateLimitError
 from cityguide_backend.infrastructure.cache.redis import RedisCache
 
+
 class RateLimitMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, cache: RedisCache, settings: Settings) -> None:
         super().__init__(app)

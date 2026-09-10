@@ -1,22 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from unittest.mock import AsyncMock
 
 from cityguide_backend.domain.entities import (
-    Coordinates,
-    PlaceCandidate,
-    PlaceReview,
-    ReviewSummary,
+    PlaceRecommendation,
     SearchIntent,
     SearchResult,
-    PlaceRecommendation,
 )
 from cityguide_backend.infrastructure.db.models import SearchHistoryModel, UserModel
 from cityguide_backend.infrastructure.repositories import (
@@ -63,7 +57,7 @@ async def test_search_history_repository_serializes_payloads() -> None:
         alternatives=[],
         intent=intent,
         source="2gis+gemini",
-        generated_at=datetime.now(timezone.utc),
+        generated_at=datetime.now(UTC),
     )
 
     await repo.create(user_id=uuid4(), query="sushi", intent=intent, result=result)

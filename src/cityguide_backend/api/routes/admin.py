@@ -38,7 +38,7 @@ async def get_admin_summary(
 
     # Real Active Users count
     active_users_res = await session.execute(
-        select(func.count(UserModel.id)).where(real_filter & (UserModel.is_active == True))
+        select(func.count(UserModel.id)).where(real_filter & UserModel.is_active.is_(True))
     )
     active_users = active_users_res.scalar() or 0
 
@@ -157,7 +157,6 @@ async def get_all_users(
         }
         for u in users
     ]
-
 
 
 @router.post("/tests/run")

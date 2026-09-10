@@ -40,62 +40,102 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   });
 
-  useEffect(() => {
+  function applyThemeToDOM(active: "light" | "dark", isLowLight: boolean) {
+    if (typeof document === "undefined") return;
     const root = document.documentElement;
+    const body = document.body;
 
-    function applyTheme() {
-      let active: "light" | "dark";
-      if (theme === "system") {
-        active = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      } else {
-        active = theme;
+    if (active === "dark") {
+      root.classList.add("dark");
+      root.classList.remove("light");
+      root.setAttribute("data-theme", "dark");
+      root.style.colorScheme = "dark";
+      if (body) {
+        body.classList.add("dark");
+        body.classList.remove("light");
+        body.setAttribute("data-theme", "dark");
       }
-
-      setResolvedTheme(active);
-      if (active === "dark") {
-        root.classList.add("dark");
-        root.classList.remove("light");
-        root.setAttribute("data-theme", "dark");
-        root.style.colorScheme = "dark";
-      } else {
-        root.classList.remove("dark");
-        root.classList.add("light");
-        root.setAttribute("data-theme", "light");
-        root.style.colorScheme = "light";
+    } else {
+      root.classList.remove("dark");
+      root.classList.add("light");
+      root.setAttribute("data-theme", "light");
+      root.style.colorScheme = "light";
+      if (body) {
+        body.classList.remove("dark");
+        body.classList.add("light");
+        body.setAttribute("data-theme", "light");
       }
     }
 
-    applyTheme();
-
-    if (theme === "system") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const listener = () => applyTheme();
-      mediaQuery.addEventListener("change", listener);
-      return () => mediaQuery.removeEventListener("change", listener);
-    }
-  }, [theme]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (lowLight) {
+    if (active === "dark" && isLowLight) {
       root.classList.add("low-light");
       root.setAttribute("data-low-light", "true");
+      if (body) {
+        body.classList.add("low-light");
+        body.setAttribute("data-low-light", "true");
+      }
     } else {
       root.classList.remove("low-light");
       root.removeAttribute("data-low-light");
+      if (body) {
+        body.classList.remove("low-light");
+        body.removeAttribute("data-low-light");
+      }
     }
-    localStorage.setItem(LOW_LIGHT_STORAGE_KEY, lowLight ? "1" : "0");
-  }, [lowLight]);
+  }
+
+  useEffect(() => {
+    let active: "light" | "dark";
+    if (theme === "system") {
+      active = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    } else {
+      active = theme;
+    }
+
+    setResolvedTheme(active);
+    applyThemeToDOM(active, lowLight);
+
+    if (theme === "system") {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const listener = (e: MediaQueryListEvent) => {
+        const nextActive = e.matches ? "dark" : "light";
+        setResolvedTheme(nextActive);
+        applyThemeToDOM(nextActive, lowLight);
+      };
+      mediaQuery.addEventListener("change", listener);
+      return () => mediaQuery.removeEventListener("change", listener);
+    }
+  }, [theme, lowLight]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+
+    let active: "light" | "dark";
+    if (newTheme === "system") {
+      active = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    } else {
+      active = newTheme;
+    }
+
+    let nextLowLight = lowLight;
+    if (active === "light") {
+      nextLowLight = false;
+      setLowLightState(false);
+      localStorage.setItem(LOW_LIGHT_STORAGE_KEY, "0");
+    }
+
+    setResolvedTheme(active);
+    applyThemeToDOM(active, nextLowLight);
   };
 
   const setLowLight = (enabled: boolean) => {
     setLowLightState(enabled);
+    localStorage.setItem(LOW_LIGHT_STORAGE_KEY, enabled ? "1" : "0");
     if (enabled && resolvedTheme === "light") {
       setTheme("dark");
+    } else {
+      applyThemeToDOM(resolvedTheme, enabled);
     }
   };
 

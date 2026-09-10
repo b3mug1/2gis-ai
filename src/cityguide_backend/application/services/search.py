@@ -4,8 +4,7 @@ import asyncio
 import hashlib
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from math import radians, sin, cos, sqrt, atan2
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +15,6 @@ from cityguide_backend.application.schemas import (
     CoordinatesSchema,
     PlaceComparisonItemSchema,
     PlaceRecommendationSchema,
-    ReviewSummarySchema,
     SearchIntentSchema,
     SearchRequest,
     SearchResponse,
@@ -34,8 +32,8 @@ from cityguide_backend.domain.entities import (
 from cityguide_backend.domain.ports import (
     AIClient,
     AIUsageLogRepository,
-    CachedAIResultRepository,
     CacheBackend,
+    CachedAIResultRepository,
     SearchHistoryRepository,
     SearchSessionRepository,
     SearchStatisticsRepository,
@@ -150,10 +148,7 @@ class SearchService:
 
         deduped = self._deduplicate_candidates(places)
         enriched = await asyncio.gather(
-            *[
-                self._enrich_place(intent, place, locale=request.locale)
-                for place in deduped[:6]
-            ]
+            *[self._enrich_place(intent, place, locale=request.locale) for place in deduped[:4]]
         )
 
         # Filter out candidates that are category mismatches or have low confidence/score
@@ -172,7 +167,7 @@ class SearchService:
                 enriched_fallback = await asyncio.gather(
                     *[
                         self._enrich_place(intent, place, locale=request.locale)
-                        for place in self._deduplicate_candidates(fallback_places)[:6]
+                        for place in self._deduplicate_candidates(fallback_places)[:4]
                     ]
                 )
                 relevant = [p for p in enriched_fallback if p.confidence > 0.05 and p.score > 0.05]
@@ -188,7 +183,7 @@ class SearchService:
             ],
             intent=intent,
             source="2gis+ai",
-            generated_at=datetime.now(timezone.utc),
+            generated_at=datetime.now(UTC),
         )
 
         response = self._to_response(result)
@@ -269,8 +264,15 @@ class SearchService:
     ) -> ReviewSummary:
         try:
             if not place.reviews:
-                place.reviews = await self._place_client.get_reviews(place.place_id)
-            return await self._ai_client.summarize_reviews(intent, place, locale=locale)
+                try:
+                    place.reviews = await asyncio.wait_for(
+                        self._place_client.get_reviews(place.place_id), timeout=3.0
+                    )
+                except Exception:
+                    place.reviews = []
+            return await asyncio.wait_for(
+                self._ai_client.summarize_reviews(intent, place, locale=locale), timeout=12.0
+            )
         except Exception:
             return self._fallback_review_summary(intent, place, locale=locale)
 
@@ -446,9 +448,7 @@ class SearchService:
     def _result_from_response(self, response: SearchResponse) -> SearchResult:
         return SearchResult(
             recommendation=self._recommendation_from_schema(response.recommendation),
-            alternatives=[
-                self._recommendation_from_schema(item) for item in response.alternatives
-            ],
+            alternatives=[self._recommendation_from_schema(item) for item in response.alternatives],
             intent=self._intent_from_schema(response.intent),
             source=response.source,
             generated_at=response.generated_at,
@@ -551,7 +551,9 @@ class SearchService:
         """Yields SSE dictionary events during place search."""
         yield {
             "event": "status",
-            "data": json.dumps({"step": "extracting_intent", "message": "Analyzing request intent with AI..."}),
+            "data": json.dumps(
+                {"step": "extracting_intent", "message": "Analyzing request intent with AI..."}
+            ),
         }
         await asyncio.sleep(0.05)
 
@@ -564,19 +566,28 @@ class SearchService:
 
         yield {
             "event": "status",
-            "data": json.dumps({"step": "fetching_places", "message": f"Found catalog matches in 2GIS..."}),
+            "data": json.dumps(
+                {"step": "fetching_places", "message": "Found catalog matches in 2GIS..."}
+            ),
         }
         await asyncio.sleep(0.05)
 
-        places_data = [full_response.recommendation] + full_response.alternatives
+        places_data = [full_response.recommendation, *full_response.alternatives]
         yield {
             "event": "places",
-            "data": json.dumps([p.model_dump(mode="json") for p in places_data], ensure_ascii=False),
+            "data": json.dumps(
+                [p.model_dump(mode="json") for p in places_data], ensure_ascii=False
+            ),
         }
 
         yield {
             "event": "status",
-            "data": json.dumps({"step": "summarizing", "message": "Generating AI review summary & recommendations..."}),
+            "data": json.dumps(
+                {
+                    "step": "summarizing",
+                    "message": "Generating AI review summary & recommendations...",
+                }
+            ),
         }
 
         reason_text = full_response.recommendation.reason

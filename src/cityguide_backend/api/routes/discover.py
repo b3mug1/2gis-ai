@@ -3,8 +3,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Query, Request
 
 from cityguide_backend.application.schemas import (
-    PopularResponse,
     PlaceRecommendationSchema,
+    PopularResponse,
     SuggestResponse,
 )
 from cityguide_backend.infrastructure.external.twogis import TwoGISClientHTTP

@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cityguide_backend.application.schemas import FavoriteCreateRequest, FavoriteResponse
-from cityguide_backend.domain.entities import Coordinates, PlaceCandidate
+from cityguide_backend.domain.entities import PlaceCandidate
 from cityguide_backend.domain.ports import FavoritePlaceRepository
 
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
@@ -25,6 +24,7 @@ from tests.fakes import (
     StaticAIClient,
     StaticTwoGISClient,
 )
+
 
 class InMemoryCache:
     def __init__(self) -> None:
@@ -67,6 +67,7 @@ class RecordingAIClient:
         if place.place_id == "bad":
             raise RuntimeError("boom")
         return self.summaries[place.place_id]
+
 
 @pytest.mark.asyncio
 async def test_search_service_returns_ranked_recommendation() -> None:
@@ -346,7 +347,10 @@ async def test_search_service_compare_places() -> None:
     )
 
     from cityguide_backend.application.schemas import ComparePlacesRequest
-    result = await service.compare(ComparePlacesRequest(place_ids=["p1", "p2"], user_query="best place"))
+
+    result = await service.compare(
+        ComparePlacesRequest(place_ids=["p1", "p2"], user_query="best place")
+    )
     assert result.verdict == "Test comparison verdict"
     assert len(result.comparisons) == 2
     assert result.winner_place_id == "p1"
@@ -378,7 +382,12 @@ async def test_search_service_stream_events() -> None:
         intent=SearchIntent(query="cafe", radius_m=2000),
         summaries={
             "1": ReviewSummary(
-                summary="great", pros=["nice"], cons=[], reason="fits request well", confidence=0.9, sentiment_score=0.8
+                summary="great",
+                pros=["nice"],
+                cons=[],
+                reason="fits request well",
+                confidence=0.9,
+                sentiment_score=0.8,
             )
         },
     )
@@ -406,4 +415,3 @@ async def test_search_service_stream_events() -> None:
     assert "intent" in events
     assert "places" in events
     assert "done" in events
-

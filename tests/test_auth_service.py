@@ -5,8 +5,9 @@ import pytest
 from cityguide_backend.application.schemas import LoginRequest, RegisterRequest
 from cityguide_backend.application.services.auth import AuthService
 from cityguide_backend.core.config import Settings
-from cityguide_backend.core.security import hash_password, hash_token
+from cityguide_backend.core.security import hash_token
 from tests.fakes import FakeSession, MemoryRefreshTokenRepository, MemoryUserRepository
+
 
 @pytest.mark.asyncio
 async def test_register_login_refresh_logout_flow() -> None:
@@ -66,4 +67,3 @@ async def test_get_oauth_url() -> None:
     github_url = service.get_oauth_url("github", "http://localhost:7000/callback/github")
     assert "github-id-456" in github_url
     assert "github.com" in github_url
-

@@ -13,10 +13,10 @@ export function AuthLayout() {
   }, [isAuthenticated, isLoading, navigate]);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden p-4 bg-[hsl(var(--background))]">
-      <div className="orb w-[500px] h-[500px] bg-[hsl(var(--card)/0.4)] -top-40 -right-40" />
-      <div className="orb w-[400px] h-[400px] bg-[hsl(var(--accent)/0.1)] -bottom-40 -left-40" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.05)_0%,transparent_70%)]" />
+    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden p-4 sm:p-6 bg-background">
+      <div className="orb absolute w-[500px] h-[500px] bg-[hsl(var(--primary)/0.08)] -top-40 -left-40 pointer-events-none rounded-full blur-3xl" />
+      <div className="orb absolute w-[400px] h-[400px] bg-[hsl(var(--accent)/0.08)] -bottom-20 -right-20 pointer-events-none rounded-full blur-3xl" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.05)_0%,transparent_70%)] pointer-events-none" />
       <Outlet />
     </div>
   );

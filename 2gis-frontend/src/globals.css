@@ -1,11 +1,10 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root,
 html,
 html.light,
+body.light,
 [data-theme="light"] {
   /* 60-30-10 RULE (LIGHT MODE) */
   /* 60% Neutral Base */
@@ -54,7 +53,9 @@ html.light,
 
 :root.dark,
 html.dark,
+body.dark,
 html[data-theme="dark"],
+body[data-theme="dark"],
 .dark {
   /* 60-30-10 RULE (DARK MODE) */
   /* 60% Neutral Base */
@@ -84,26 +85,28 @@ html[data-theme="dark"],
   --ring: 217 91% 60%;
 }
 
-:root.low-light,
-html.low-light,
-html[data-low-light="true"],
-.low-light {
-  /* ULTRA OLED LOW-LIGHT MODE */
-  --background: 0 0% 0% !important;
-  --foreground: 210 40% 86% !important;
-  --card: 0 0% 2% !important;
-  --card-foreground: 210 40% 88% !important;
-  --popover: 0 0% 2% !important;
-  --popover-foreground: 210 40% 88% !important;
-  --secondary: 0 0% 5% !important;
-  --secondary-foreground: 210 40% 86% !important;
-  --muted: 0 0% 4% !important;
-  --muted-foreground: 215 15% 50% !important;
-  --border: 0 0% 10% !important;
-  --input: 0 0% 10% !important;
-  --sidebar-bg: 0 0% 0% !important;
-  --primary: 217 91% 60% !important;
-  --primary-foreground: 0 0% 100% !important;
+:root.dark.low-light,
+html.dark.low-light,
+body.dark.low-light,
+html[data-theme="dark"][data-low-light="true"],
+body[data-theme="dark"][data-low-light="true"],
+.dark.low-light {
+  /* ULTRA OLED LOW-LIGHT MODE (Only active when Dark Mode is selected) */
+  --background: 0 0% 0%;
+  --foreground: 210 40% 86%;
+  --card: 0 0% 2%;
+  --card-foreground: 210 40% 88%;
+  --popover: 0 0% 2%;
+  --popover-foreground: 210 40% 88%;
+  --secondary: 0 0% 5%;
+  --secondary-foreground: 210 40% 86%;
+  --muted: 0 0% 4%;
+  --muted-foreground: 215 15% 50%;
+  --border: 0 0% 10%;
+  --input: 0 0% 10%;
+  --sidebar-bg: 0 0% 0%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 0 0% 100%;
 }
 
 @theme {
@@ -197,6 +200,14 @@ html.theme-transitioning body * {
 
 .glass-card:hover, .clean-card:hover {
   border-color: hsl(var(--primary) / 0.5);
+}
+
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+  will-change: transform;
 }
 
 .gradient-text {

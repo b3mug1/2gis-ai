@@ -2,15 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
+import bcrypt
 import jwt
+
 from cityguide_backend.core.exceptions import AuthenticationError
-
-import bcrypt
-
-import bcrypt
 
 
 def hash_password(password: str) -> str:
@@ -40,7 +38,7 @@ def create_access_token(
     expires_delta: timedelta,
     extra_claims: dict[str, Any] | None = None,
 ) -> str:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload: dict[str, Any] = {
         "sub": subject,
         "iat": int(now.timestamp()),

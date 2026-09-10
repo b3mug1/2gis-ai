@@ -7,9 +7,9 @@ Create Date: 2026-08-10
 
 from __future__ import annotations
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 revision = "0002_add_oauth_support"
 down_revision = "0001_initial_schema"

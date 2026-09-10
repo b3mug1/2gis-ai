@@ -56,11 +56,11 @@ class GeminiAIClient:
             f"4. For each place, provide a concise 'best_for' phrase (e.g. 'Ideal for romantic dates', 'Great for quick lunch'), 2 pros, 1 con.\n"
             f"5. Provide 2-3 'key_differences' bullet points comparing price, atmosphere, or audience.\n\n"
             f"Return JSON only:\n"
-            f'{{\n'
+            f"{{\n"
             f'  "verdict": "",\n'
             f'  "winner_place_id": "",\n'
             f'  "comparisons": [\n'
-            f'    {{\n'
+            f"    {{\n"
             f'      "place_id": "",\n'
             f'      "name": "",\n'
             f'      "best_for": "",\n'
@@ -69,10 +69,10 @@ class GeminiAIClient:
             f'      "rating": 4.5,\n'
             f'      "price_category": "mid",\n'
             f'      "address": ""\n'
-            f'    }}\n'
-            f'  ],\n'
+            f"    }}\n"
+            f"  ],\n"
             f'  "key_differences": []\n'
-            f'}}\n'
+            f"}}\n"
         )
 
         try:
@@ -105,7 +105,9 @@ class GeminiAIClient:
                     place_id=p.place_id,
                     name=p.name,
                     best_for="Общие критерии поиска",
-                    pros=["Хороший рейтинг" if p.rating and p.rating > 4.0 else "Удобное расположение"],
+                    pros=[
+                        "Хороший рейтинг" if p.rating and p.rating > 4.0 else "Удобное расположение"
+                    ],
                     cons=["Заполняемость в пиковые часы"],
                     rating=p.rating,
                     price_category=p.price_category,
@@ -255,7 +257,7 @@ class GeminiAIClient:
 
     async def _generate_json(self, prompt: str, *, operation: str) -> dict[str, Any]:
         try:
-            response = self._client.models.generate_content(
+            response = await self._client.aio.models.generate_content(
                 model=self._settings.gemini_model,
                 contents=prompt,
                 config=types.GenerateContentConfig(

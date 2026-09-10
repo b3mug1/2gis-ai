@@ -15,7 +15,6 @@ from cityguide_backend.application.schemas import (
 )
 from cityguide_backend.application.services.auth import AuthService
 
-
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
@@ -69,4 +68,3 @@ async def oauth_login(
 ) -> AuthResponse:
     result = await service.oauth_login(provider, payload.code, payload.redirect_uri)
     return AuthResponse(user=result.user, tokens=result.tokens)
-

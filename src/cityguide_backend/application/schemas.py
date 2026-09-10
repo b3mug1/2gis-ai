@@ -39,7 +39,6 @@ class OAuthUrlResponse(BaseModel):
     url: str
 
 
-
 class AuthTokens(BaseModel):
     access_token: str
     refresh_token: str
@@ -48,7 +47,7 @@ class AuthTokens(BaseModel):
 
 
 class AuthResponse(BaseModel):
-    user: "UserResponse"
+    user: UserResponse
     tokens: AuthTokens
 
 
@@ -173,7 +172,6 @@ class ComparePlacesResponse(BaseModel):
     winner_place_id: str | None = None
     comparisons: list[PlaceComparisonItemSchema] = Field(default_factory=list)
     key_differences: list[str] = Field(default_factory=list)
-
 
 
 class FavoriteCreateRequest(BaseModel):

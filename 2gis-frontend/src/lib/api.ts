@@ -8,7 +8,7 @@ const BASE_URL =
 export const api = axios.create({
   baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
-  timeout: 35_000,
+  timeout: 60_000,
 });
 
 export const TOKEN_KEY = "cg_access_token";

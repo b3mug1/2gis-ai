@@ -76,7 +76,7 @@ export function ChatWindow({
               />
             ))}
           </AnimatePresence>
-          {isLoading && <TypingIndicator />}
+          {isLoading && !messages.some((m) => m.isStreaming) && <TypingIndicator />}
           <div ref={bottomRef} />
         </div>
       )}

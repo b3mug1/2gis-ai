@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
 import os
+from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import FastAPI, Request
@@ -131,7 +131,9 @@ def main() -> None:
 
     settings = get_settings()
     reload_enabled = settings.app_env == "local" and os.getenv("UVICORN_RELOAD", "1") == "1"
-    reload_dirs = ["/app/src"] if os.path.exists("/app/src") else ["src"] if os.path.exists("src") else None
+    reload_dirs = (
+        ["/app/src"] if os.path.exists("/app/src") else ["src"] if os.path.exists("src") else None
+    )
     uvicorn.run(
         "cityguide_backend.main:app",
         host=settings.app_host,
@@ -139,4 +141,3 @@ def main() -> None:
         reload=reload_enabled,
         reload_dirs=reload_dirs if reload_enabled else None,
     )
-

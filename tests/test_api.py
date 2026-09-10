@@ -5,16 +5,12 @@ from uuid import uuid4
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from cityguide_backend.application.schemas import (
-    AuthResponse,
-    AuthTokens,
-    MessageResponse,
-    UserResponse,
-)
+from cityguide_backend.application.schemas import AuthTokens, UserResponse
 from cityguide_backend.main import app
 
+
 class FakeAuthService:
-    async def register(self, payload):  # noqa: ANN001
+    async def register(self, payload):
         user = UserResponse(
             id=uuid4(),
             email=payload.email,
@@ -25,7 +21,7 @@ class FakeAuthService:
         tokens = AuthTokens(access_token="access", refresh_token="refresh", expires_in=1800)
         return type("Result", (), {"user": user, "tokens": tokens})()
 
-    async def login(self, payload):  # noqa: ANN001
+    async def login(self, payload):
         user = UserResponse(
             id=uuid4(), email=payload.email, full_name="Test User", role="user", is_active=True
         )
@@ -42,8 +38,9 @@ class FakeAuthService:
     async def logout(self, refresh_token: str) -> None:
         return None
 
+
 class FakeSearchService:
-    async def search(self, request, *, user_id, user_location=None):  # noqa: ANN001
+    async def search(self, request, *, user_id, user_location=None):
         return {
             "recommendation": {
                 "place_id": "1",
@@ -88,13 +85,14 @@ class FakeSearchService:
             "generated_at": "2026-08-04T00:00:00+00:00",
         }
 
+
 @pytest.mark.asyncio
 async def test_search_endpoint_with_dependency_overrides() -> None:
     app.dependency_overrides.clear()
     from cityguide_backend.api.dependencies import (
+        get_auth_service,
         get_current_user,
         get_search_service,
-        get_auth_service,
     )
 
     app.dependency_overrides[get_search_service] = lambda: FakeSearchService()
@@ -112,9 +110,7 @@ async def test_search_endpoint_with_dependency_overrides() -> None:
     app.dependency_overrides[get_auth_service] = lambda: FakeAuthService()
 
     try:
-        async with AsyncClient(
-            transport=ASGITransport(app=app, lifespan="off"), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post(
                 "/search",
                 json={

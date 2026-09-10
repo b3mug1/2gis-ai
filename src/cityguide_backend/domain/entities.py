@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 from uuid import UUID
 
 
-class UserRole(str, Enum):
+class UserRole(StrEnum):
     user = "user"
     admin = "admin"
 
@@ -124,7 +124,6 @@ class PlaceComparisonResult:
     winner_place_id: str | None
     comparisons: list[PlaceComparisonItem]
     key_differences: list[str]
-
 
 
 @dataclass(slots=True)
