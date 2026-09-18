@@ -16,5 +16,7 @@ async def history(
     current_user: UserProfile = Depends(get_current_user),
     session=Depends(get_db_session),
 ) -> list[SearchHistoryResponse]:
-    rows = await SqlAlchemySearchHistoryRepository(session).list_for_user(current_user.id, limit=limit)
+    rows = await SqlAlchemySearchHistoryRepository(session).list_for_user(
+        current_user.id, limit=limit
+    )
     return [SearchHistoryResponse.model_validate(row) for row in rows]
