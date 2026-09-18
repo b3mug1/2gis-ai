@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID
@@ -96,7 +97,8 @@ class SearchService:
                     await self._statistics_repo.increment(user_id=user_id, total=1, successful=1)
                     await self._session.commit()
                 except Exception:
-                    pass
+                    await self._session.rollback()
+                    logging.getLogger(__name__).exception("failed to record cached search")
             return response
 
         intent = await self._ai_client.extract_intent(
@@ -132,6 +134,7 @@ class SearchService:
                 user_id=user_id, query=request.query, intent=intent, status="processing"
             )
             await self._session.flush()
+            await self._session.commit()
         places = await self._place_client.search_places(intent)
         if not places:
             # Broaden radius and retry
@@ -625,13 +628,20 @@ class SearchService:
                     )
                 )
         else:
-            for pid in request.place_ids:
-                try:
-                    candidate = await self._place_client.get_place_by_id(pid)
-                    if candidate is not None:
-                        candidates.append(candidate)
-                except Exception:
-                    pass
+            semaphore = asyncio.Semaphore(4)
+
+            async def fetch_candidate(place_id: str) -> PlaceCandidate | None:
+                async with semaphore:
+                    try:
+                        return await self._place_client.get_place_by_id(place_id)
+                    except Exception:
+                        logging.getLogger(__name__).exception(
+                            "failed to fetch place for comparison", extra={"place_id": place_id}
+                        )
+                        return None
+
+            fetched = await asyncio.gather(*(fetch_candidate(pid) for pid in request.place_ids))
+            candidates.extend(candidate for candidate in fetched if candidate is not None)
 
         if not candidates:
             return ComparePlacesResponse(

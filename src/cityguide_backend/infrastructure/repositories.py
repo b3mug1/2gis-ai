@@ -277,11 +277,12 @@ class SqlAlchemyFavoritePlaceRepository(FavoritePlaceRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def list_for_user(self, user_id: uuid.UUID) -> list[dict[str, Any]]:
+    async def list_for_user(self, user_id: uuid.UUID, limit: int = 50) -> list[dict[str, Any]]:
         rows = await self._session.scalars(
             select(FavoritePlaceModel)
             .where(FavoritePlaceModel.user_id == user_id)
-            .order_by(FavoritePlaceModel.created_at.desc())
+            .order_by(FavoritePlaceModel.created_at.desc(), FavoritePlaceModel.id.desc())
+            .limit(limit)
         )
         return [
             {
@@ -454,13 +455,15 @@ class SqlAlchemySearchStatisticsRepository(SearchStatisticsRepository):
         )
         await self._session.execute(statement)
 
-    async def daily_summary(self, *, user_id: uuid.UUID | None = None) -> list[dict[str, Any]]:
+    async def daily_summary(
+        self, *, user_id: uuid.UUID | None = None, limit: int = 365
+    ) -> list[dict[str, Any]]:
         query: Select[tuple[Any, ...]] = select(
             SearchStatisticsModel.stat_date,
             SearchStatisticsModel.user_id,
             SearchStatisticsModel.total_searches,
             SearchStatisticsModel.successful_searches,
-        ).order_by(SearchStatisticsModel.stat_date.desc())
+        ).order_by(SearchStatisticsModel.stat_date.desc(), SearchStatisticsModel.id.desc()).limit(limit)
         if user_id is not None:
             query = query.where(SearchStatisticsModel.user_id == user_id)
         rows = await self._session.execute(query)

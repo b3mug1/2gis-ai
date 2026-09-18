@@ -3,16 +3,11 @@ from __future__ import annotations
 import asyncio
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import delete, func, select
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from cityguide_backend.infrastructure.cache.redis import RedisCache
-from cityguide_backend.infrastructure.db.models import (
-    CachedAIResultModel,
-    SearchSessionModel,
-    SearchStatisticsModel,
-)
+from cityguide_backend.infrastructure.db.models import CachedAIResultModel, SearchSessionModel
 
 
 class BackgroundJobRunner:
@@ -27,7 +22,6 @@ class BackgroundJobRunner:
     async def start(self) -> None:
         self._tasks = [
             asyncio.create_task(self._cleanup_loop(), name="cleanup-expired-sessions"),
-            asyncio.create_task(self._statistics_loop(), name="collect-search-statistics"),
         ]
 
     async def stop(self) -> None:
@@ -79,44 +73,6 @@ class BackgroundJobRunner:
                 )
                 return int(result.rowcount or 0)
 
-    async def collect_statistics(self) -> None:
-        async with self._session_factory() as session:
-            async with session.begin():
-                today = datetime.combine(datetime.now(UTC).date(), datetime.min.time(), tzinfo=UTC)
-                statement = (
-                    select(
-                        SearchSessionModel.user_id,
-                        func.count(SearchSessionModel.id).label("total_searches"),
-                        func.count(SearchSessionModel.result)
-                        .filter(SearchSessionModel.status == "completed")
-                        .label("successful_searches"),
-                    )
-                    .where(SearchSessionModel.created_at >= today)
-                    .group_by(SearchSessionModel.user_id)
-                )
-                rows = await session.execute(statement)
-                for row in rows.all():
-                    upsert = (
-                        insert(SearchStatisticsModel)
-                        .values(
-                            stat_date=today,
-                            user_id=row.user_id,
-                            total_searches=row.total_searches,
-                            successful_searches=row.successful_searches,
-                        )
-                        .on_conflict_do_update(
-                            constraint="uq_search_statistics_date_user",
-                            set_={
-                                "total_searches": SearchStatisticsModel.total_searches
-                                + row.total_searches,
-                                "successful_searches": SearchStatisticsModel.successful_searches
-                                + row.successful_searches,
-                                "updated_at": datetime.now(UTC),
-                            },
-                        )
-                    )
-                    await session.execute(upsert)
-
     async def _cleanup_loop(self) -> None:
         while not self._stop_event.is_set():
             try:
@@ -125,10 +81,3 @@ class BackgroundJobRunner:
                 pass
             await asyncio.sleep(3600)
 
-    async def _statistics_loop(self) -> None:
-        while not self._stop_event.is_set():
-            try:
-                await self.collect_statistics()
-            except Exception:
-                pass
-            await asyncio.sleep(1800)

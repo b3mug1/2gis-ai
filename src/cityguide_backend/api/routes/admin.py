@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,21 +32,30 @@ async def get_admin_summary(
         & (UserModel.email != "admin@cityguide.local")
     )
 
-    # Real DB User count
-    user_count_res = await session.execute(select(func.count(UserModel.id)).where(real_filter))
-    total_users = user_count_res.scalar() or 0
-
-    # Real Active Users count
-    active_users_res = await session.execute(
-        select(func.count(UserModel.id)).where(real_filter & UserModel.is_active.is_(True))
+    user_counts = await session.execute(
+        select(
+            func.count(UserModel.id).filter(real_filter).label("total_users"),
+            func.count(UserModel.id)
+            .filter(real_filter & UserModel.is_active.is_(True))
+            .label("active_users"),
+            func.count(UserModel.id)
+            .filter(real_filter & UserModel.last_login_at.is_not(None))
+            .label("authenticated_users"),
+            func.count(UserModel.id)
+            .filter(real_filter & (UserModel.role == "admin"))
+            .label("total_admins"),
+            func.count(UserModel.id)
+            .filter(real_filter & UserModel.oauth_provider.is_(None))
+            .label("email_users"),
+            func.count(UserModel.id)
+            .filter(real_filter & (UserModel.oauth_provider == "google"))
+            .label("google_users"),
+            func.count(UserModel.id)
+            .filter(real_filter & (UserModel.oauth_provider == "github"))
+            .label("github_users"),
+        )
     )
-    active_users = active_users_res.scalar() or 0
-
-    # Real Authenticated (Logged-in) Users count
-    auth_users_res = await session.execute(
-        select(func.count(UserModel.id)).where(real_filter & (UserModel.last_login_at.is_not(None)))
-    )
-    authenticated_users = auth_users_res.scalar() or 0
+    user_counts = user_counts.one()
 
     # Real DB Search history count
     search_count_res = await session.execute(select(func.count(SearchHistoryModel.id)))
@@ -55,28 +64,6 @@ async def get_admin_summary(
     # Real DB Favorites count
     fav_count_res = await session.execute(select(func.count(FavoritePlaceModel.id)))
     total_favorites = fav_count_res.scalar() or 0
-
-    # Real DB Admin users count
-    admin_count_res = await session.execute(
-        select(func.count(UserModel.id)).where(real_filter & (UserModel.role == "admin"))
-    )
-    total_admins = admin_count_res.scalar() or 0
-
-    # Auth Provider Breakdown
-    email_users_res = await session.execute(
-        select(func.count(UserModel.id)).where(real_filter & (UserModel.oauth_provider.is_(None)))
-    )
-    email_users = email_users_res.scalar() or 0
-
-    google_users_res = await session.execute(
-        select(func.count(UserModel.id)).where(real_filter & (UserModel.oauth_provider == "google"))
-    )
-    google_users = google_users_res.scalar() or 0
-
-    github_users_res = await session.execute(
-        select(func.count(UserModel.id)).where(real_filter & (UserModel.oauth_provider == "github"))
-    )
-    github_users = github_users_res.scalar() or 0
 
     # Health Pings
     # 1. DB Ping
@@ -107,18 +94,18 @@ async def get_admin_summary(
 
     return {
         "metrics": {
-            "total_users": total_users,
-            "active_users": active_users,
-            "authenticated_users": authenticated_users,
+            "total_users": user_counts.total_users or 0,
+            "active_users": user_counts.active_users or 0,
+            "authenticated_users": user_counts.authenticated_users or 0,
             "total_searches": total_searches,
             "total_favorites": total_favorites,
-            "total_admins": total_admins,
+            "total_admins": user_counts.total_admins or 0,
             "uptime_pct": 100.0 if db_ok and redis_ok else 95.0,
             "avg_latency_s": 1.15,
             "auth_providers": {
-                "email": email_users,
-                "google": google_users,
-                "github": github_users,
+                "email": user_counts.email_users or 0,
+                "google": user_counts.google_users or 0,
+                "github": user_counts.github_users or 0,
             },
         },
         "services": {
@@ -132,6 +119,7 @@ async def get_admin_summary(
 
 @router.get("/users")
 async def get_all_users(
+    limit: int = Query(default=100, ge=1, le=500),
     session: AsyncSession = Depends(get_db_session),
     _admin: UserProfile = Depends(get_admin_user),
 ) -> list[dict[str, Any]]:
@@ -141,7 +129,10 @@ async def get_all_users(
         & (UserModel.email != "admin@cityguide.local")
     )
     result = await session.execute(
-        select(UserModel).where(real_filter).order_by(UserModel.created_at.desc())
+        select(UserModel)
+        .where(real_filter)
+        .order_by(UserModel.created_at.desc(), UserModel.id.desc())
+        .limit(limit)
     )
     users = result.scalars().all()
     return [

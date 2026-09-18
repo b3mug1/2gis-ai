@@ -11,6 +11,6 @@ class StatisticsService:
         self._session = session
         self._repository = repository
 
-    async def daily_summary(self, user_id=None) -> list[SearchStatisticsResponse]:
-        rows = await self._repository.daily_summary(user_id=user_id)
+    async def daily_summary(self, user_id=None, limit: int = 365) -> list[SearchStatisticsResponse]:
+        rows = await self._repository.daily_summary(user_id=user_id, limit=limit)
         return [SearchStatisticsResponse.model_validate(row) for row in rows]

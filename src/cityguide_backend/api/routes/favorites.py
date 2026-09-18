@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Query
 
 from cityguide_backend.api.dependencies import get_current_user, get_favorites_service
 from cityguide_backend.application.schemas import FavoriteCreateRequest, FavoriteResponse
@@ -14,10 +14,11 @@ router = APIRouter(prefix="/favorites", tags=["favorites"])
 
 @router.get("", response_model=list[FavoriteResponse])
 async def list_favorites(
+    limit: int = Query(default=50, ge=1, le=200),
     service: FavoritesService = Depends(get_favorites_service),
     current_user: UserProfile = Depends(get_current_user),
 ) -> list[FavoriteResponse]:
-    return await service.list(current_user.id)
+    return await service.list(current_user.id, limit=limit)
 
 
 @router.post("", response_model=FavoriteResponse)

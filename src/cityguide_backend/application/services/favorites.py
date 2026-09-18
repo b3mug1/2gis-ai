@@ -14,8 +14,8 @@ class FavoritesService:
         self._session = session
         self._repository = repository
 
-    async def list(self, user_id: UUID) -> list[FavoriteResponse]:
-        rows = await self._repository.list_for_user(user_id)
+    async def list(self, user_id: UUID, limit: int = 50) -> list[FavoriteResponse]:
+        rows = await self._repository.list_for_user(user_id, limit=limit)
         return [FavoriteResponse.model_validate(row) for row in rows]
 
     async def add(self, user_id: UUID, request: FavoriteCreateRequest) -> FavoriteResponse:

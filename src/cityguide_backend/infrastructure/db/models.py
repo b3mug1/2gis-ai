@@ -16,6 +16,9 @@ def utcnow() -> datetime:
 
 class UserModel(Base):
     __tablename__ = "users"
+    __table_args__ = (
+        UniqueConstraint("oauth_provider", "oauth_id", name="uq_users_oauth_identity"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False, index=True)

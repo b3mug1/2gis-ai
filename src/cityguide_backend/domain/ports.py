@@ -66,7 +66,7 @@ class SearchHistoryRepository(Protocol):
 
 
 class FavoritePlaceRepository(Protocol):
-    async def list_for_user(self, user_id: UUID) -> list[dict[str, Any]]: ...
+    async def list_for_user(self, user_id: UUID, limit: int = 50) -> list[dict[str, Any]]: ...
 
     async def add(
         self, *, user_id: UUID, place: PlaceCandidate, note: str | None = None
@@ -98,7 +98,9 @@ class SearchStatisticsRepository(Protocol):
         self, *, user_id: UUID | None, total: int = 1, successful: int = 0
     ) -> None: ...
 
-    async def daily_summary(self, *, user_id: UUID | None = None) -> list[dict[str, Any]]: ...
+    async def daily_summary(
+        self, *, user_id: UUID | None = None, limit: int = 365
+    ) -> list[dict[str, Any]]: ...
 
 
 class AIUsageLogRepository(Protocol):

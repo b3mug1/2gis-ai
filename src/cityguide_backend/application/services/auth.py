@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cityguide_backend.application.schemas import (
@@ -109,17 +110,29 @@ class AuthService:
             if user_profile is None:
                 existing = await self._users.get_by_email(email)
                 if existing is not None:
-                    await self._users.link_oauth(existing.id, provider_name, oauth_id)
-                    user_profile = existing
+                    try:
+                        async with self._session.begin_nested():
+                            await self._users.link_oauth(existing.id, provider_name, oauth_id)
+                        user_profile = existing
+                    except IntegrityError:
+                        user_profile = await self._users.get_by_oauth(provider_name, oauth_id)
+                        if user_profile is None:
+                            raise
                 else:
-                    user_profile = await self._users.create(
-                        email=email,
-                        password_hash=None,
-                        full_name=full_name,
-                        role=UserRole.user.value,
-                        oauth_provider=provider_name,
-                        oauth_id=oauth_id,
-                    )
+                    try:
+                        async with self._session.begin_nested():
+                            user_profile = await self._users.create(
+                                email=email,
+                                password_hash=None,
+                                full_name=full_name,
+                                role=UserRole.user.value,
+                                oauth_provider=provider_name,
+                                oauth_id=oauth_id,
+                            )
+                    except IntegrityError:
+                        user_profile = await self._users.get_by_oauth(provider_name, oauth_id)
+                        if user_profile is None:
+                            raise
 
             if not user_profile.is_active:
                 raise AuthenticationError("Account is inactive")
