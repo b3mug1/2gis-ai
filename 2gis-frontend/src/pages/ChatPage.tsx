@@ -36,6 +36,8 @@ export function ChatPage() {
 
   const initialQuerySent = useRef(false);
   const lastQuery = useRef<string>("");
+  const searchControllerRef = useRef<AbortController | null>(null);
+  const searchRequestIdRef = useRef(0);
   const { language, t } = useLanguage();
 
   const handleToggleComparePlace = useCallback((place: PlaceRecommendation) => {
@@ -72,6 +74,10 @@ export function ChatPage() {
 
   const handleSend = useCallback(
     async (text: string, coords?: { latitude: number; longitude: number }) => {
+      const requestId = ++searchRequestIdRef.current;
+      searchControllerRef.current?.abort();
+      const controller = new AbortController();
+      searchControllerRef.current = controller;
       lastQuery.current = text;
       setIsSearching(true);
 
@@ -105,7 +111,6 @@ export function ChatPage() {
         }, 1500);
 
         let result: SearchResponse;
-        const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 60000);
         try {
           result = await searchService.search({
@@ -114,7 +119,7 @@ export function ChatPage() {
             locale: language,
             travel_mode: filters.travel_mode || undefined,
             max_travel_time_min: filters.max_travel_time_min || undefined,
-          });
+          }, controller.signal);
         } finally {
           clearTimeout(timeoutId);
           clearInterval(statusInterval);
@@ -135,6 +140,7 @@ export function ChatPage() {
           if (matchingPrice.length > 0) all = matchingPrice;
         }
 
+        if (requestId !== searchRequestIdRef.current) return;
         setPlaces(all);
 
         const summary =
@@ -160,6 +166,7 @@ export function ChatPage() {
           )
         );
       } catch (err: unknown) {
+        if (requestId !== searchRequestIdRef.current) return;
         let message =
           (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
 
@@ -190,7 +197,10 @@ export function ChatPage() {
           )
         );
       } finally {
-        setIsSearching(false);
+        if (requestId === searchRequestIdRef.current) {
+          setIsSearching(false);
+          searchControllerRef.current = null;
+        }
       }
     },
     [filters, language, t]
@@ -205,6 +215,9 @@ export function ChatPage() {
   }, [handleSend, searchParams]);
 
   function clearChat() {
+    searchRequestIdRef.current += 1;
+    searchControllerRef.current?.abort();
+    searchControllerRef.current = null;
     setMessages([]);
     setPlaces([]);
     setSelectedComparePlaces([]);

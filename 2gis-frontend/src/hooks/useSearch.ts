@@ -5,7 +5,7 @@ import type { SearchRequest, SearchResponse } from "@/types/api";
 
 export function useSearch() {
   return useMutation<SearchResponse, Error, SearchRequest>({
-    mutationFn: searchService.search,
+    mutationFn: (data) => searchService.search(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["history"] });
     },

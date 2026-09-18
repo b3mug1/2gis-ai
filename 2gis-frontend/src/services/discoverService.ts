@@ -5,8 +5,11 @@ export interface SuggestResponse {
 }
 
 export const discoverService = {
-  suggest: async (q: string, limit = 5): Promise<string[]> => {
-    const res = await api.get<SuggestResponse>("/search/suggest", { params: { q, limit } });
+  suggest: async (q: string, limit = 5, signal?: AbortSignal): Promise<string[]> => {
+    const res = await api.get<SuggestResponse>("/search/suggest", {
+      params: { q, limit },
+      signal,
+    });
     return res.data.suggestions;
   },
 

@@ -31,6 +31,7 @@ export function HomePage() {
   const { t } = useLanguage();
   const searchWrapRef = useRef<HTMLDivElement>(null);
   const suggestTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suggestController = useRef<AbortController | null>(null);
 
   const categories = [
     { label: t.home.catLabels.restaurants, count: "240+", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80" },
@@ -47,15 +48,35 @@ export function HomePage() {
 
   useEffect(() => {
     if (suggestTimeout.current) clearTimeout(suggestTimeout.current);
+    suggestController.current?.abort();
+    suggestController.current = null;
     if (query.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
       return;
     }
 
     suggestTimeout.current = setTimeout(async () => {
-      const results = await discoverService.suggest(query.trim(), 5);
-      setSuggestions(results);
-      setShowSuggestions(results.length > 0);
+      const controller = new AbortController();
+      suggestController.current = controller;
+      try {
+        const results = await discoverService.suggest(query.trim(), 5, controller.signal);
+        if (!controller.signal.aborted) {
+          setSuggestions(results);
+          setShowSuggestions(results.length > 0);
+        }
+      } catch {
+        if (!controller.signal.aborted) {
+          setSuggestions([]);
+          setShowSuggestions(false);
+        }
+      }
     }, 220);
+
+    return () => {
+      if (suggestTimeout.current) clearTimeout(suggestTimeout.current);
+      suggestController.current?.abort();
+    };
   }, [query]);
 
   useEffect(() => {

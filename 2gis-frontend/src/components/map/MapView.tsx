@@ -43,6 +43,19 @@ interface DGFeatureGroup {
 
 const ASTANA_CENTER = { lat: 51.1801, lng: 71.4460 };
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>'"]/g, (character) => {
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;",
+    };
+    return entities[character];
+  });
+}
+
 export function MapView({ places, center }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<DGMap | null>(null);
@@ -96,14 +109,17 @@ export function MapView({ places, center }: MapViewProps) {
         const lat = place.latitude!;
         const lng = place.longitude!;
 
+        const safeName = escapeHtml(place.name);
+        const safeAddress = place.address ? escapeHtml(place.address) : "";
+        const safePlaceId = escapeHtml(place.place_id);
         const popupContent = `
           <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:6px;min-width:200px;background:#052659;color:#C1E8FF;border-radius:12px;">
-            <strong style="font-size:13px;font-weight:700;color:#C1E8FF;display:block;margin-bottom:3px;line-height:1.3;">${place.name}</strong>
-            ${place.address ? `<p style="font-size:11px;color:#7DA0CA;margin:0 0 8px 0;line-height:1.3;">${place.address}</p>` : ""}
+            <strong style="font-size:13px;font-weight:700;color:#C1E8FF;display:block;margin-bottom:3px;line-height:1.3;">${safeName}</strong>
+            ${safeAddress ? `<p style="font-size:11px;color:#7DA0CA;margin:0 0 8px 0;line-height:1.3;">${safeAddress}</p>` : ""}
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;">
               ${place.rating ? `<span style="font-size:12px;font-weight:700;color:#C1E8FF;">★ ${place.rating.toFixed(1)}</span>` : "<span></span>"}
               <button
-                onclick="window.__2gisBuildRoute && window.__2gisBuildRoute('${place.place_id}')"
+                onclick="window.__2gisBuildRoute && window.__2gisBuildRoute('${safePlaceId}')"
                 style="background:#C1E8FF;color:#021024;border:none;padding:5px 10px;border-radius:9999px;font-size:11px;font-weight:700;cursor:pointer;transition:transform 0.15s;"
               >
                 Маршрут
@@ -132,17 +148,24 @@ export function MapView({ places, center }: MapViewProps) {
       }
     }
 
-    if (!document.getElementById(scriptId)) {
+    const existingScript = document.getElementById(scriptId);
+    let scriptElement: HTMLScriptElement | null = existingScript as HTMLScriptElement | null;
+    if (!existingScript) {
       const script = document.createElement("script");
       script.id = scriptId;
       script.src = `https://maps.api.2gis.ru/2.0/loader.js?pkg=full&skin=light${apiKey ? `&key=${apiKey}` : ""}`;
       script.onload = initMap;
+      scriptElement = script;
       document.head.appendChild(script);
     } else if (window.DG) {
       initMap();
+    } else {
+      existingScript.addEventListener("load", initMap);
     }
 
     return () => {
+      scriptElement?.removeEventListener("load", initMap);
+      if (scriptElement?.onload === initMap) scriptElement.onload = null;
       mapRef.current?.remove();
       mapRef.current = null;
     };

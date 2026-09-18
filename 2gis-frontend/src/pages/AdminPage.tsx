@@ -42,6 +42,8 @@ export function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [runningTests, setRunningTests] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [diagnosticError, setDiagnosticError] = useState(false);
 
   useEffect(() => {
     if (user && user.role !== "admin") {
@@ -51,6 +53,7 @@ export function AdminPage() {
 
   const loadData = async () => {
     setRefreshing(true);
+    setLoadError(false);
     try {
       const [sumData, uData] = await Promise.all([
         adminService.getSummary(),
@@ -60,6 +63,7 @@ export function AdminPage() {
       setUsersList(uData);
     } catch (err) {
       console.error("Failed to fetch admin metrics:", err);
+      setLoadError(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -68,11 +72,13 @@ export function AdminPage() {
 
   const handleRunTests = async () => {
     setRunningTests(true);
+    setDiagnosticError(false);
     try {
       const results = await adminService.runDiagnosticTests();
       setTestResults(results);
     } catch (err) {
       console.error("Failed to run diagnostic tests:", err);
+      setDiagnosticError(true);
     } finally {
       setRunningTests(false);
     }
@@ -133,6 +139,14 @@ export function AdminPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {loadError && (
+          <div className="sm:col-span-2 lg:col-span-4 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 flex items-center justify-between gap-4">
+            <p className="text-sm font-semibold text-foreground">Не удалось загрузить административные данные</p>
+            <button type="button" onClick={loadData} className="text-sm font-semibold text-[hsl(var(--primary))] hover:underline">
+              Повторить
+            </button>
+          </div>
+        )}
         <motion.div
           whileHover={{ y: -3 }}
           className="p-5 rounded-3xl border border-[hsl(var(--border))] bg-card shadow-xl space-y-2"
@@ -237,7 +251,14 @@ export function AdminPage() {
           </button>
         </div>
 
-        {runningTests ? (
+        {diagnosticError ? (
+          <div className="p-6 text-center bg-card rounded-2xl border border-destructive/30 bg-destructive/5">
+            <p className="text-sm font-semibold text-foreground">Не удалось запустить диагностику</p>
+            <button type="button" onClick={handleRunTests} className="mt-3 text-sm font-semibold text-[hsl(var(--primary))] hover:underline">
+              Повторить
+            </button>
+          </div>
+        ) : runningTests ? (
           <div className="p-8 text-center bg-card rounded-2xl border border-[hsl(var(--border))] space-y-3">
             <RefreshCw className="w-8 h-8 text-[hsl(var(--primary))] animate-spin mx-auto" />
             <p className="text-sm font-bold text-foreground">Запуск 10 диагностических тестов системы...</p>

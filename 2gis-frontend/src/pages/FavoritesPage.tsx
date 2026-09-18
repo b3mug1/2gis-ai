@@ -19,7 +19,7 @@ const SORT_OPTIONS: { key: SortKey; labelKey: "newest" | "oldest" | "alphabetica
 ];
 
 export function FavoritesPage() {
-  const { data: favorites, isLoading } = useFavorites();
+  const { data: favorites, isLoading, isError, refetch } = useFavorites();
   const removeFav = useRemoveFavorite();
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("date_desc");
@@ -123,6 +123,13 @@ export function FavoritesPage() {
         <div className="grid sm:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
         </div>
+      ) : isError ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-6 text-center">
+          <p className="text-sm font-semibold text-foreground">Не удалось загрузить избранное</p>
+          <button type="button" onClick={() => refetch()} className="mt-3 text-sm font-semibold text-[hsl(var(--primary))] hover:underline">
+            Повторить
+          </button>
+        </div>
       ) : filtered.length === 0 ? (
         <EmptyState
           icon="heart"
@@ -168,7 +175,9 @@ export function FavoritesPage() {
                     </div>
                     <button
                       onClick={() => removeFav.mutate(fav.id)}
-                      className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-[hsl(var(--muted))] transition-colors opacity-0 group-hover:opacity-100"
+                      type="button"
+                      aria-label={t.placeCard.favRemoved}
+                      className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-[hsl(var(--muted))] transition-colors sm:opacity-0 sm:group-hover:opacity-100"
                       title={t.placeCard.favRemoved}
                     >
                       <Trash2 className="w-4 h-4" />

@@ -52,6 +52,19 @@ interface TransitStep {
   sub: string;
 }
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>'"]/g, (character) => {
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;",
+    };
+    return entities[character];
+  });
+}
+
 export function MapModal({
   open,
   onClose,
@@ -71,6 +84,7 @@ export function MapModal({
   const [transportMode, setTransportMode] = useState<TransportMode>("car");
   const [routeData, setRouteData] = useState<RouteData | null>(null);
   const [routeLoading, setRouteLoading] = useState<boolean>(false);
+  const routeRequestId = useRef(0);
 
   useEffect(() => {
     if (initialBuildRoute) {
@@ -79,14 +93,23 @@ export function MapModal({
   }, [initialBuildRoute, open]);
 
   const fetchRealRoute = useCallback(
-    async (startLat: number, startLng: number, endLat: number, endLng: number, mode: TransportMode) => {
+    async (
+      startLat: number,
+      startLng: number,
+      endLat: number,
+      endLng: number,
+      mode: TransportMode,
+      signal: AbortSignal,
+      requestId: number,
+    ) => {
       setRouteLoading(true);
       try {
         const osrmProfile = mode === "pedestrian" ? "foot" : "driving";
         const url = `https://router.project-osrm.org/route/v1/${osrmProfile}/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson&steps=true`;
-        const res = await fetch(url);
+        const res = await fetch(url, { signal });
         const data = await res.json();
 
+        if (requestId !== routeRequestId.current) return;
         if (data.code === "Ok" && data.routes && data.routes.length > 0) {
           const route = data.routes[0];
           const coords: [number, number][] = route.geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
@@ -136,19 +159,37 @@ export function MapModal({
         } else {
           setRouteData(null);
         }
-      } catch {
-        setRouteData(null);
+      } catch (error) {
+        if ((error as { name?: string }).name !== "AbortError" && requestId === routeRequestId.current) {
+          setRouteData(null);
+        }
       } finally {
-        setRouteLoading(false);
+        if (requestId === routeRequestId.current) setRouteLoading(false);
       }
     },
     [name]
   );
 
   useEffect(() => {
-    if (activeTab === "route" && userLocation && latitude && longitude) {
-      fetchRealRoute(userLocation.lat, userLocation.lng, latitude, longitude, transportMode);
+    const controller = new AbortController();
+    const requestId = ++routeRequestId.current;
+    if (activeTab === "route" && transportMode === "bus") {
+      setRouteData(null);
+      setRouteLoading(false);
+    } else if (activeTab === "route" && userLocation && latitude && longitude) {
+      fetchRealRoute(
+        userLocation.lat,
+        userLocation.lng,
+        latitude,
+        longitude,
+        transportMode,
+        controller.signal,
+        requestId,
+      );
+    } else {
+      setRouteLoading(false);
     }
+    return () => controller.abort();
   }, [activeTab, userLocation, latitude, longitude, transportMode, fetchRealRoute]);
 
   const busTransitDetails = useMemo(() => {
@@ -272,7 +313,7 @@ export function MapModal({
 
       L.marker(destCoords, { icon: destIcon })
         .addTo(map)
-        .bindPopup(`<strong>${name}</strong>${address ? `<br/><small>${address}</small>` : ""}`)
+        .bindPopup(`<strong>${escapeHtml(name)}</strong>${address ? `<br/><small>${escapeHtml(address)}</small>` : ""}`)
         .openPopup();
 
       if (activeTab === "route" && userLocation) {
@@ -473,6 +514,8 @@ export function MapModal({
 
                 <button
                   onClick={onClose}
+                  type="button"
+                  aria-label="Закрыть карту"
                   className="p-2 rounded-2xl bg-muted/60 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <X className="w-4 h-4" />
@@ -538,6 +581,12 @@ export function MapModal({
                 </div>
               )}
             </div>
+
+            {activeTab === "route" && transportMode === "bus" && (
+              <div className="border-t border-b border-[hsl(var(--border))] bg-[hsl(var(--secondary))] px-5 py-3 text-xs text-muted-foreground">
+                Точный маршрут общественного транспорта доступен в навигаторе 2GIS. Локальная карта не показывает вымышленные номера автобусов или остановки.
+              </div>
+            )}
 
             {activeTab === "route" && transportMode !== "bus" && routeData && routeData.steps.length > 0 && (
               <div className="bg-[hsl(var(--card))] border-t border-b border-[hsl(var(--border))] px-5 py-3 overflow-y-auto max-h-44 space-y-2">
@@ -627,6 +676,10 @@ export function MapModal({
                   {routeLoading ? (
                     <span className="text-xs font-semibold text-muted-foreground animate-pulse">
                       Построение оптимального маршрута...
+                    </span>
+                  ) : transportMode === "bus" ? (
+                    <span className="text-xs text-muted-foreground font-medium">
+                      Откройте маршрут в 2GIS для актуальных данных транспорта.
                     </span>
                   ) : routeData ? (
                     <div className="flex items-center gap-3 text-xs">

@@ -36,17 +36,16 @@ export function useRemoveFavorite() {
     mutationFn: favoritesService.remove,
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: QUERY_KEY });
-      const previous = qc.getQueryData<FavoriteResponse[]>(QUERY_KEY);
       qc.setQueryData<FavoriteResponse[]>(QUERY_KEY, (old = []) =>
         old.filter((f) => f.id !== id)
       );
-      return { previous };
+      return undefined;
     },
-    onError: (_err, _id, context) => {
-      const ctx = context as { previous?: FavoriteResponse[] };
-      if (ctx?.previous) {
-        qc.setQueryData(QUERY_KEY, ctx.previous);
-      }
+    onError: async () => {
+      await qc.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+    onSettled: async () => {
+      await qc.invalidateQueries({ queryKey: QUERY_KEY });
     },
   });
 }

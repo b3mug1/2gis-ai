@@ -10,7 +10,7 @@ import { cn } from "@/utils/cn";
 import { useLanguage } from "@/context/LanguageContext";
 
 export function HistoryPage() {
-  const { data: history, isLoading } = useHistory();
+  const { data: history, isLoading, isError, refetch } = useHistory();
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -61,6 +61,13 @@ export function HistoryPage() {
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-16 w-full rounded-2xl" />
           ))}
+        </div>
+      ) : isError ? (
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+          <p className="text-sm font-semibold text-foreground">Не удалось загрузить историю</p>
+          <button type="button" onClick={() => refetch()} className="mt-3 text-sm font-semibold text-[hsl(var(--primary))] hover:underline">
+            Повторить
+          </button>
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState

@@ -1,15 +1,26 @@
+import eslint from "@eslint/js";
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tseslint from "typescript-eslint";
 
 const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ["**/*.{ts,tsx}"],
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs["recommended-latest"].rules,
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+    },
+  },
   globalIgnores([
-    ".next/**",
-    "out/**",
     "build/**",
-    "next-env.d.ts",
+    "dist/**",
   ]),
 ]);
 

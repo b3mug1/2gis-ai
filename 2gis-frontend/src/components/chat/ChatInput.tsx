@@ -138,6 +138,8 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
         >
           <button
             onClick={getLocation}
+            type="button"
+            aria-label={coords ? "Location attached" : "Attach your location"}
             title={coords ? "Location attached" : "Attach your location"}
             className={cn(
               "mb-0.5 shrink-0 rounded-full p-2 transition-colors",
@@ -152,6 +154,8 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
           {voiceSupported && (
             <button
               onClick={toggleVoice}
+              type="button"
+              aria-label={isRecording ? t.chat.voiceStop : t.chat.voiceStart}
               title={isRecording ? t.chat.voiceStop : t.chat.voiceStart}
               className={cn(
                 "mb-0.5 shrink-0 rounded-full p-2 transition-all",
@@ -181,6 +185,8 @@ export function ChatInput({ onSend, isLoading, disabled, onToggleFilters, showFi
           {onToggleFilters && (
             <button
               onClick={onToggleFilters}
+              type="button"
+              aria-label={t.filters.title}
               title={t.filters.title}
               className={cn(
                 "mb-0.5 shrink-0 rounded-full p-2 transition-colors",

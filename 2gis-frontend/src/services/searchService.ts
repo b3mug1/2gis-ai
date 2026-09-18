@@ -19,8 +19,8 @@ export interface StreamEvent {
 }
 
 export const searchService = {
-  search: async (data: SearchRequest): Promise<SearchResponse> => {
-    const res = await api.post<SearchResponse>("/search", data);
+  search: async (data: SearchRequest, signal?: AbortSignal): Promise<SearchResponse> => {
+    const res = await api.post<SearchResponse>("/search", data, { signal });
     return res.data;
   },
 
