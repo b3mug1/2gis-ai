@@ -18,9 +18,7 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.create_unique_constraint(
-        "uq_users_oauth_identity", "users", ["oauth_provider", "oauth_id"]
-    )
+    op.create_unique_constraint("uq_users_oauth_identity", "users", ["oauth_provider", "oauth_id"])
     op.create_index(
         "ix_search_history_user_created",
         "search_history",

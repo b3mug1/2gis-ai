@@ -458,12 +458,16 @@ class SqlAlchemySearchStatisticsRepository(SearchStatisticsRepository):
     async def daily_summary(
         self, *, user_id: uuid.UUID | None = None, limit: int = 365
     ) -> list[dict[str, Any]]:
-        query: Select[tuple[Any, ...]] = select(
-            SearchStatisticsModel.stat_date,
-            SearchStatisticsModel.user_id,
-            SearchStatisticsModel.total_searches,
-            SearchStatisticsModel.successful_searches,
-        ).order_by(SearchStatisticsModel.stat_date.desc(), SearchStatisticsModel.id.desc()).limit(limit)
+        query: Select[tuple[Any, ...]] = (
+            select(
+                SearchStatisticsModel.stat_date,
+                SearchStatisticsModel.user_id,
+                SearchStatisticsModel.total_searches,
+                SearchStatisticsModel.successful_searches,
+            )
+            .order_by(SearchStatisticsModel.stat_date.desc(), SearchStatisticsModel.id.desc())
+            .limit(limit)
+        )
         if user_id is not None:
             query = query.where(SearchStatisticsModel.user_id == user_id)
         rows = await self._session.execute(query)

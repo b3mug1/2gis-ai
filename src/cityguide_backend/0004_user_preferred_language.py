@@ -5,6 +5,8 @@ Revises: 0003_optimize_queries_and_oauth_identity
 Create Date: 2026-10-12
 """
 
+# ruff: noqa: N999
+
 from __future__ import annotations
 
 import sqlalchemy as sa

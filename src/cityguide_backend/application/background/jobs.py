@@ -80,4 +80,3 @@ class BackgroundJobRunner:
             except Exception:
                 pass
             await asyncio.sleep(3600)
-
